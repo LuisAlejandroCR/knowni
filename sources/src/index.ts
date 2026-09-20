@@ -8,6 +8,9 @@ export { degraded } from "./types.ts";
 export type { HeldCredential, IssueRequest, IssuedSet } from "./issuer.ts";
 export { issueClaimSet } from "./issuer.ts";
 
+export type { CromaClient, CromaClientOptions, CromaOutcome, CromaTelemetry } from "./croma/client.ts";
+export { CROMA_BASE_URL, createCromaClient } from "./croma/client.ts";
+
 export type { PilaClient, PilaContribution, PilaOptions } from "./colombia/pila.ts";
 export { createPilaFormalitySource, createPilaIncomeSource } from "./colombia/pila.ts";
 

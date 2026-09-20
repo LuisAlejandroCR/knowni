@@ -1,96 +1,68 @@
-<!-- docs/ROADMAP.md -->
-Qué sigue, ordenado por riesgo y no por facilidad: primero lo que puede
-resultar imposible, después lo que solo es trabajo.
+<!-- docs/ROADMAP.md
+     El trabajo pendiente ordenado por riesgo: qué puede resultar imposible y qué
+     solo es trabajo. Se distingue de plan.md, que parte lo mismo en bloques con
+     criterios de aceptación; aquí el porqué del orden, allá el qué y el cómo. -->
 
 # Roadmap
 
-## Estado actual
+Los bloques y sus criterios de aceptación viven en [`plan.md`](plan.md). Este archivo dice **en qué
+orden** y **por qué ese orden**: primero lo que puede resultar imposible, después lo que solo es
+trabajo.
 
-| Capa | Estado |
-|---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | Corre. 111 pruebas |
-| Fuentes Colombia (PILA, listas), emisor | Corre, contra fuentes sintéticas |
-| Anclaje agnóstico + adaptadores Stellar | Corre, contra submitters de prueba |
-| Adaptador Chroma | Escrito; probado contra una colección de prueba |
-| Circuitos Circom | Escritos, sin compilar |
-| Contrato Soroban | Escrito, sin compilar ni desplegar |
-| Integraciones reales | Ninguna |
+## Los dos riesgos que pueden cambiar la arquitectura
 
-## 1 — Cerrar el hueco de Poseidon sobre BLS12-381
+### 1 — ¿Croma cubre PILA y SNR?
 
-**El único riesgo técnico que puede cambiar la arquitectura.** Todo lo demás
-es trabajo conocido.
+Es una pregunta, no una integración, y se responde en una tarde con la key. Decide el alcance:
 
-`circomlib` trae constantes de Poseidon para BN254. Para `-p bls12381` hacen
-falta parámetros de ese campo. Compilar con el `bn128` por defecto produce
-pruebas que **no** se verifican en Stellar hasta CAP-0074, y el modo de falla
-es cruel: todo parece funcionar hasta la llamada al contrato.
+- **Si cubre aportes a seguridad social:** `solvency` y `formality` son reales, el producto está
+  completo, y el hackathon muestra los cinco predicados.
+- **Si no:** son sintéticos, **declarados como sintéticos en pantalla** —nunca disimulados— y la
+  demo se apoya en `personhood`, `standing` y `capacity`, que sí son reales. PILA queda como
+  acuerdo con un operador, fuera del fin de semana.
+- **SNR** decide lo mismo para `propertyStanding`, el predicado sobre el inmueble.
 
-En orden:
+Va primero porque es barato y porque todo lo demás se planifica distinto según la respuesta.
 
-1. Generar parámetros de Poseidon para el campo escalar de BLS12-381 y
-   compilar `merkle.circom` solo. Si esto sale, el resto sale.
-2. Compilar `eligibility.circom`. Registrar el conteo de restricciones.
-3. Setup de desarrollo (un contribuyente) y generar una prueba.
-4. **Prueba diferencial**: correr el circuito y `core/src/predicates.ts`
-   sobre las mismas entradas y exigir resultados idénticos. Hasta que exista,
-   la corrección del circuito descansa en revisión.
-5. Verificar on-chain. Medir el fee por simulación (`--send=no`).
+### 2 — Poseidon sobre BLS12-381
 
-**Contingencia, si (1) no sale a tiempo:** camino atestado — un verificador
-off-chain corre la verificación y firma una atestación; el contrato hace
-`require_auth` del atestador y aplica política. Hay que decir lo que es: **no
-es ZK sin confianza**, es un oráculo de cómputo verificable, y el supuesto
-(el atestador) va escrito en el README, no en una nota al pie.
+El único riesgo técnico que puede cambiar la arquitectura. `circomlib` trae constantes de Poseidon
+para BN254; para `-p bls12381` hacen falta parámetros de ese campo. Compilar con el `bn128` por
+defecto produce pruebas que **no** se verifican en Stellar hasta CAP-0074, y el modo de falla es
+cruel: todo parece funcionar hasta la llamada al contrato.
 
-## 2 — Unificar el hash
+Empezar por `merkle.circom` solo. Si sale, el resto sale.
 
-`core/` corre sobre sha256 con separación de dominio. El circuito necesita
-Poseidon. Los dos lados de una prueba tienen que hashear idéntico.
+**Contingencia, si no sale a tiempo:** camino atestado — un verificador off-chain corre la
+verificación y firma una atestación; el contrato hace `require_auth` del atestador y aplica
+política. Hay que decir lo que es: **no es ZK sin confianza**, es un oráculo de cómputo verificable,
+y el supuesto va escrito en el `README.md`, no en una nota al pie.
 
-Por eso existe `FieldHash` y por eso nadie llama a `node:crypto`
-directamente: es un cambio de una implementación, no una cacería por el
-código. Depende de (1).
+## Lo que solo es trabajo
 
-## 3 — Compilar y desplegar el contrato
+| Orden | Qué | Depende de |
+|---|---|---|
+| 3 | Cliente y bloques de Croma (B2) | la key |
+| 4 | Retirar `retrieval/` (B3) | B2 |
+| 5 | Unificar el hash: `core/` usa sha256, el circuito necesita Poseidon | riesgo 2 |
+| 6 | Prover en el dispositivo (B6) | riesgo 2 |
+| 7 | Compilar y desplegar el contrato (B8) | riesgo 2 |
+| 8 | App (B7) | B6 |
+| 9 | Recorrido en teléfono físico (B9) | B7, B8 |
 
-- `cargo build --target wasm32v1-none --release`, tests con `testutils`.
-- Fijar la llave de verificación en el constructor.
-- **Asegurar el orden de señales** de `signals_match` contra una fixture
-  generada por el propio circuito. Equivocarse ahí no falla ruidosamente:
-  autoriza la declaración equivocada.
-- Desplegar en testnet, registrar una raíz de emisor, correr el recorrido.
+El paso 5 es la razón por la que existe `FieldHash` y por la que nadie llama a `node:crypto`
+directamente: es un cambio de una implementación, no una cacería por el código.
 
-## 4 — Fuentes reales, en orden de fricción
+## Se puede paralelizar
 
-1. **Ingestor de listas restrictivas** (OFAC, ONU, Procuraduría,
-   Contraloría). Públicas. Publicar el `listSetRoot` de cada instantánea.
-2. **RUES**. Consulta pública. Habilita `capacity`.
-3. **SNR / certificado de tradición**. Pago por consulta, sin convenio.
-   Habilita `propertyStanding`.
-4. **PILA vía operador**. Acuerdo comercial. Desbloquea el producto.
-5. **Registraduría**. Convenio institucional.
+`B2 → B3 → B4` y `riesgo 2 → B5 → B6/B8` son independientes. El reparto por agente, con la regla de
+que el límite es el puerto, está en [`../AGENTS.md`](../AGENTS.md) → *Varios agentes en paralelo*.
 
-## 5 — La interfaz
+## Lo que se decide después del hackathon
 
-No hay UI todavía, y es deliberado: el sobre y la frontera de privacidad
-tenían que estar primero, porque una UI construida sobre un modelo de datos
-que filtra no se arregla con CSS.
-
-Lo que la UI tiene que hacer bien, y que casi ninguna hace:
-
-- **Mostrar la pregunta antes de la respuesta.** El sujeto lee qué se le
-  pregunta y quién pregunta, y puede negarse por predicado.
-- **Distinguir `unavailable` de `false`.** Son pantallas distintas: una dice
-  "espera", la otra dice "no".
-- **Hacer visible la revisión humana.** Un `ambiguous` en screening es una
-  persona esperando, no un spinner.
-
-## 6 — Lo que se decide después de la hackathon
-
-- `propertyStanding` — el predicado sobre el inmueble. Probablemente el más
-  valioso del catálogo, y le da la vuelta al producto: hoy el arrendatario
-  prueba todo y el arrendador nada.
-- Segunda jurisdicción. Perú primero: RENIEC tiene el mejor servicio de
-  verificación de la región.
-- Segunda cadena, para ejercitar el puerto contra algo que no sea Stellar.
+- **`propertyStanding`** — el predicado sobre el inmueble. Probablemente el más valioso del
+  catálogo: hoy el arrendatario prueba todo y el arrendador nada.
+- **Segunda jurisdicción.** Croma ya cubre Perú y México, así que el coste es un adaptador y un
+  catálogo de endpoints por país, no una integración nueva.
+- **Segunda cadena**, para ejercitar el puerto contra algo que no sea Stellar.
+- **La deuda de `verificacion.md`**: tests planos y cabeceras de código largas.

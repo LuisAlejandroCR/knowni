@@ -1,6 +1,8 @@
-<!-- docs/ARCHITECTURE.md -->
-Las decisiones técnicas y por qué cada una es así: las dos formas de confiar
-en un emisor, dónde va cada vendor, y qué se hereda de `creva-zk`.
+<!-- docs/ARCHITECTURE.md
+     Las decisiones técnicas del sistema: las dos formas de confiar en un emisor,
+     la coincidencia de curvas, dónde va cada proveedor y el anti-replay.
+     Se distingue de MOBILE.md, que baja al cliente, y de memoria.md, que guarda
+     la bitácora fechada de esas mismas decisiones. -->
 
 # Arquitectura
 
@@ -10,14 +12,15 @@ en un emisor, dónde va cada vendor, y qué se hereda de `creva-zk`.
   EMISIÓN (con consentimiento del sujeto, una vez)
   ─────────────────────────────────────────────────
   Registro público ──► SourcePort ──► Claim ──► commitClaim ──┐
-  (PILA, Registraduría,   (adaptador     (el hecho     (+ sal)  │
-   listas restrictivas)   por pregunta)   mínimo)               │
+  (por Croma:            (adaptador     (el hecho     (+ sal)  │
+   Registraduría,         por pregunta)  mínimo)               │
+   Procuraduría, SICAAC)                                       │
                                                                 ▼
                                           issueClaimSet ──► árbol de Merkle
                                                                 │
                                                      raíz publicada y firmada
                                                                 │
-  PRUEBA (el sujeto, solo, sin el emisor en línea)               │
+  PRUEBA (en el teléfono del sujeto, sin el emisor y sin red)    │
   ──────────────────────────────────────────────────────────────┤
   Claim + sal + camino ──► circuito ──► prueba + señales públicas
                               │
@@ -78,6 +81,23 @@ BLS12-381. Stellar verifica BLS12-381 nativamente hoy. **Es el mismo campo.**
 El hueco que queda no es de curva, es de biblioteca: `circomlib` trae
 constantes de Poseidon para BN254. Ver `circuits/README.md`.
 
+## Dónde se consulta
+
+La frontera principal del producto, y es una regla sobre **quién llama**, no sobre tipos.
+
+| Momento | ¿Se consulta una fuente? |
+|---|---|
+| **Emisión** — el sujeto, o una fuente bajo su autorización | Sí. El resultado se vuelve un reclamo, se compromete y entra en la raíz publicada |
+| **Verificación** — la contraparte | **Nunca.** Recibe un sobre |
+
+Una consulta lleva en claro lo que busca. Da igual si el motor es una API tipada o una búsqueda
+semántica: si la corre la contraparte, la inmobiliaria termina con el expediente que los predicados
+reemplazaban. Una `CROMA_API_KEY` en el dispositivo del arrendador convertiría el producto en un
+buscador de personas con un paso extra.
+
+No hay camino de código de una sesión de verificación a una consulta, y añadirlo no es una
+optimización: es el cambio que colapsa el producto.
+
 ## Dónde va cada vendor
 
 Ningún workspace fuera de `*/adapters/` importa un SDK. No es una convención
@@ -86,9 +106,9 @@ de estilo — es lo que hace que el adaptador sea reemplazable.
 | Vendor | Puerto | Adaptadores hoy | Por qué importa |
 |---|---|---|---|
 | Stellar | `AnchoringPort` | `memo`, `contract`, `memory` | Un banco pedirá su propia cadena |
-| Chroma | `RecordIndexPort` | `chroma`, `memory` | Qdrant y pgvector entran sin tocar el screening |
-| PILA | `SourcePort` | operador, sintético | Cada país trae su operador |
-| Groth16 | (pendiente) `ProverPort` | — | Ver `docs/ROADMAP.md` |
+| [Croma](https://docs.usecroma.com) | `SourcePort` | ⏳ pendiente (B2), sintético | Es un proveedor, no la fuente: detrás de él están Registraduría, Procuraduría, SICAAC. Si mañana hay acceso directo a una, entra como otro adaptador |
+| PILA | `SourcePort` | sintético | Croma no la cubre. Cada país trae su operador |
+| Groth16 | (pendiente) `ProverPort` | — | Ver [`ROADMAP.md`](ROADMAP.md) |
 
 `core/test/no-vendor-imports.test.ts` lo verifica sobre `core/`, que es donde
 más dolería.

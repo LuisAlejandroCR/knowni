@@ -1,3 +1,8 @@
+<!-- core/README.md
+     Qué vive en @knowni/core y cuáles son los tres archivos que hay que leer.
+     Se distingue de docs/ARCHITECTURE.md, que describe el sistema entero; aquí
+     solo el workspace de dominio. -->
+
 # `@knowni/core`
 
 Reclamos, predicados, compromisos, Merkle, vinculación de sesión y el sobre

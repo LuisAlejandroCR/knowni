@@ -1,7 +1,7 @@
-<!-- docs/COLOMBIA.md -->
-El panorama de fuentes colombiano y el marco legal bajo el que esto opera.
-Todo lo que aquí se describe como integración es hoy un adaptador contra
-datos sintéticos.
+<!-- docs/COLOMBIA.md
+     Panorama de fuentes colombianas, por qué PILA es la pieza, y el marco legal
+     (Ley 1581, Ley 1266). Se distingue de CROMA.md, que documenta el proveedor y
+     sus endpoints concretos; aquí el terreno, allá la puerta. -->
 
 # Colombia
 
@@ -9,16 +9,20 @@ datos sintéticos.
 
 | Fuente | Autoridad | Responde | Acceso |
 |---|---|---|---|
-| **Registraduría** | Registraduría Nacional del Estado Civil | Vigencia de la cédula, estado vital | Servicio de verificación; requiere convenio |
-| **PILA** | Operadores de información (autorizados por MinSalud) | IBC mensual, continuidad de aportes | Vía operador, con autorización del sujeto |
+| **Registraduría** | Registraduría Nacional del Estado Civil | Estado vital | ✅ por [Croma](CROMA.md) |
+| **Policía · Procuraduría · Contraloría · Contaduría** | Cada autoridad | Antecedentes penales, disciplinarios, fiscales, morosidad con el Estado | ✅ por Croma |
+| **SICAAC** | Supersociedades | Procesos de insolvencia | ✅ por Croma |
+| **Rama Judicial · SAMAI** | Rama Judicial | Procesos por parte o radicado | ✅ por Croma (consulta por nombre) |
+| **RUES** | Confecámaras | Matrícula mercantil, representación legal | ✅ por Croma |
+| **Supersociedades** | Supersociedades | Estados financieros de personas jurídicas | ✅ por Croma |
+| **PILA** | Operadores de información (autorizados por MinSalud) | IBC mensual, continuidad de aportes | ⏳ **no confirmado en Croma.** Si no está: operador, con autorización del sujeto |
+| **SNR** | Superintendencia de Notariado y Registro | Matrícula inmobiliaria, gravámenes | ⏳ **no confirmado en Croma.** Si no está: certificado de tradición, pago por consulta |
 | **DataCrédito / TransUnion** | Central de información crediticia | Historial, ingreso modelado | Comercial; Ley 1266 aplica |
-| **Listas restrictivas** | OFAC, ONU, Procuraduría, Contraloría, Policía | Aparece / no aparece | **Públicas y descargables** |
-| **RUES** | Confecámaras | Matrícula mercantil, representación legal | Consulta pública |
-| **SNR** | Superintendencia de Notariado y Registro | Matrícula inmobiliaria, gravámenes | Certificado de tradición, pago por consulta |
 
-La única columna que importa para el cronograma es la última. Las listas
-restrictivas y RUES se pueden indexar hoy mismo. PILA y DataCrédito son
-acuerdos comerciales.
+La única columna que importa para el cronograma es la última, y Croma la cambió
+de sitio: seis de las nueve filas pasaron de "convenio" a "una key". Las dos que
+siguen abiertas —PILA y SNR— son justo las que alimentan *¿le alcanza?* y el
+predicado sobre el inmueble. Confirmarlas es la primera tarea de integración.
 
 ## Por qué PILA es la pieza
 
@@ -80,12 +84,11 @@ nunca un puntaje.
 
 ## Lo que sigue, en orden de dificultad
 
-1. **Listas restrictivas** — públicas, descargables, indexables hoy. Ya está
-   escrito el adaptador; falta el ingestor real.
-2. **RUES** — consulta pública. Habilita `capacity` para personas jurídicas.
-3. **SNR / certificado de tradición** — pago por consulta, sin convenio.
-   Habilita `propertyStanding`, que es el predicado que le da la vuelta al
-   producto.
-4. **PILA vía operador** — acuerdo comercial. Es el que desbloquea el
-   producto real.
-5. **Registraduría** — convenio institucional. El más lento.
+1. **Confirmar el catálogo de Croma** — ¿aportes a seguridad social? ¿certificado de tradición?
+   Decide el alcance del hackathon, y es una pregunta, no una integración.
+2. **Bloques de Croma** — identidad, antecedentes, insolvencia. Una llamada en vivo por endpoint,
+   anotada con fecha en [`verificacion.md`](verificacion.md).
+3. **SNR / certificado de tradición**, si no está en Croma. Pago por consulta, sin convenio.
+   Habilita `propertyStanding`, que es el predicado que le da la vuelta al producto.
+4. **PILA vía operador**, si no está en Croma. Acuerdo comercial. Es el que desbloquea el producto
+   real, y el único que no se resuelve programando.

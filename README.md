@@ -33,7 +33,20 @@ cabe en diez campos, y ninguno dice nada de ti más allá de lo que te
 preguntaron — eso está verificado, no prometido:
 [`journey/test/journey.test.ts`](journey/test/journey.test.ts).
 
+**Es una app de iOS y Android, y eso no es un detalle de entrega.** La promesa no
+es "no compartimos tus datos": es que **el dato nunca sale del teléfono**. La
+prueba se genera ahí, sin servidor en el medio, y una vez emitidas las
+credenciales funciona sin red. Ver [`docs/MOBILE.md`](docs/MOBILE.md).
+
 ### De dónde salen las respuestas
+
+Los registros oficiales se consultan por [**Croma**](https://docs.usecroma.com),
+una API de datos de gobierno de Latinoamérica: Registraduría, Policía,
+Procuraduría, Contraloría, Contaduría, SICAAC, Rama Judicial y RUES con una sola
+integración, y la misma para Colombia, Perú y México. Detalle en
+[`docs/CROMA.md`](docs/CROMA.md).
+
+Lo que Croma **no** cubre hoy es la pregunta que de verdad decide un arriendo:
 
 **PILA** — la Planilla Integrada de Liquidación de Aportes. Cuando un
 arrendador pide certificación laboral *y* certificación bancaria, está
@@ -64,8 +77,9 @@ verificación ancla en Stellar, en EVM o en memoria sin que nada por encima
 del registro sepa en cuál — ejercitado, no afirmado:
 [`anchoring/test/registry.test.ts`](anchoring/test/registry.test.ts).
 
-Lo mismo con Chroma: es **un** adaptador de `RecordIndexPort`, y la política
-de resolución significa lo mismo con Chroma, Qdrant o pgvector debajo.
+Lo mismo con Croma: es **un** adaptador de `SourcePort`. Detrás de él están la
+Registraduría, la Procuraduría y el SICAAC; si mañana hay acceso directo a una,
+entra como otro adaptador sin tocar un solo predicado.
 
 ### Workspaces
 
@@ -74,11 +88,11 @@ de resolución significa lo mismo con Chroma, Qdrant o pgvector debajo.
   está verificado en `core/test/no-vendor-imports.test.ts`.
 - [`sources/`](sources/) — adaptadores de fuentes y el emisor de conjuntos de
   reclamos. Colombia primero.
-- [`retrieval/`](retrieval/) — resolución de entidades sobre registros
-  públicos. **Lee `retrieval/src/types.ts` antes de añadir un llamador**: la
-  regla sobre quién puede llamar este puerto es la frontera de privacidad
-  principal del producto.
+- [`retrieval/`](retrieval/) — resolución de entidades para las consultas **por
+  nombre** de Croma. **Parcialmente marcado para retirarse** — ver su README.
 - [`anchoring/`](anchoring/) — el puerto de anclaje y sus adaptadores.
+- `app/` — iOS y Android. ⏳ pendiente; el diseño está en
+  [`docs/MOBILE.md`](docs/MOBILE.md).
 - [`circuits/`](circuits/) — los circuitos Circom. Código fuente; ver estado.
 - [`contracts/knowni-verifier/`](contracts/knowni-verifier/) — el verificador
   Soroban. Código fuente; ver estado.
@@ -102,10 +116,12 @@ es el recorrido completo, sin red y sin mocks.
 | Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 111 pruebas |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Contra submitters de prueba |
-| Adaptador de Chroma | **Escrito**, probado contra una colección de prueba; no contra un servidor Chroma |
+| Adaptador de Croma | **No escrito.** Las rutas están verificadas en `Digentia` (2026-08-11), no aquí |
+| App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
-| Integración con PILA, Registraduría o DataCrédito reales | **No.** Ninguna |
+| Llamada en vivo a Croma, PILA o cualquier registro | **No.** Ninguna |
+| Ejecución en un teléfono físico | **No.** Ninguna |
 
 Ningún número de este repositorio viene de una medición que no se haya
 corrido aquí.
@@ -118,7 +134,16 @@ corrido aquí.
   lo que se reutiliza de `creva-zk`.
 - [`docs/COLOMBIA.md`](docs/COLOMBIA.md) — el panorama de fuentes y el marco
   legal (Ley 1581, Habeas Data).
+- [`docs/CROMA.md`](docs/CROMA.md) — la fuente: endpoints, contrato HTTP y la
+  corrección de diseño que obligó a hacer.
+- [`docs/MOBILE.md`](docs/MOBILE.md) — la app: por qué nativo, el stack y dónde
+  vive cada secreto.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — qué sigue, en orden de riesgo.
+- [`docs/plan.md`](docs/plan.md) · [`docs/memoria.md`](docs/memoria.md) ·
+  [`docs/verificacion.md`](docs/verificacion.md) — bloques y criterios,
+  decisiones fechadas, y qué está comprobado y qué no.
+- [`AGENTS.md`](AGENTS.md) — la constitución, incluido el reparto entre varios
+  agentes en paralelo.
 
 ---
 
@@ -134,15 +159,20 @@ person exist, can they cover the rent, is their income steady, are they on a
 restrictive list. Knowni delivers those four answers and nothing else — no
 name, no ID number, no salary, no employer, no date of birth.
 
-The answers come from **social-security contribution records** (PILA in
-Colombia), which already answer what the employment letter and the bank
-certification are really asking, monthly, for employees and independent
-workers alike.
+**It is an iOS and Android app, and that is not a delivery detail.** The promise
+is not "we don't share your data" — it is that the data never leaves the phone.
+The proof is generated there, and once credentials are issued it works offline.
+
+Official records are read through [Croma](https://docs.usecroma.com), a Latin
+American government-data API covering Colombia, Peru and Mexico through one
+integration. What Croma does not cover is the question that actually decides a
+lease — income — which comes from **social-security contribution records**
+(PILA in Colombia).
 
 Colombia is the first jurisdiction, not the design: nothing in `core/` knows
 Colombia exists. Stellar is the first chain, behind a port with a chain
 registry — the same verification anchors on Stellar, on EVM or in memory
-with no change above the registry. Chroma is one adapter of an index port,
+with no change above the registry. Croma is one adapter of a source port,
 for the same reason.
 
 See the Spanish section above for the workspace map, how to run it, and the

@@ -62,6 +62,11 @@ Busqué en tus repos. `creva-zk` no es un antecedente parecido: es
 | La tabla de divulgación como comentario de cabecera en cada circuito | La convención se mantiene, y además se verifica en un test |
 | La disciplina de `degraded` vs `failed` | Idéntica, y por la misma razón: "no calificas" y "no se pudo consultar" son respuestas distintas |
 
+Y de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia), que es debida diligencia notarial
+para compraventa —**el mismo dominio**—: el cliente de Croma entero, verificado en vivo el
+2026-08-11. Rutas, envoltorio `{data}`, jobs `202`, reintento en el `502` de Rama Judicial y el
+patrón `BlockResult<T>` de degradación elegante. No se reescribe.
+
 **Y hay una coincidencia afortunada que vale más que todo lo anterior.**
 
 Midnight prueba sobre **BLS12-381**, y la curva embebida de BLS12-381 es
@@ -77,51 +82,91 @@ Noir y de RISC Zero — **no** sirve en Stellar hasta que aterrice CAP-0074.
 Esa sola decisión de curva es la diferencia entre demo y producto, y ya la
 tomaste sin saberlo.
 
-## 4. Dónde encaja Chroma — y dónde no
+## 4. Dónde encaja Croma — y dónde no
 
-Esta es la parte donde hay que tener cuidado, porque es fácil construir un
-data broker por accidente.
+Primero la corrección, porque costó un workspace: esta sección decía **Chroma**, la base de datos
+vectorial, y sobre esa lectura se construyó `retrieval/` entero — búsqueda semántica, normalización
+de nombres, política de resolución.
 
-**Una búsqueda semántica no es una operación de conocimiento cero.** La
-consulta lleva, en claro, lo que se está buscando. Si el arrendador corre la
-búsqueda, el producto se derrumba en esa capa: la inmobiliaria ahora tiene el
-nombre, el resultado del registro y el expediente que los predicados
-supuestamente reemplazaban.
+[**Croma**](https://docs.usecroma.com) es otra cosa, y es mucho mejor noticia: una **API de datos de
+gobierno de Latinoamérica**. Una sola integración contra registros oficiales de Colombia, Perú y
+México, devueltos como JSON tipado. Una autenticación, un cliente y un contrato en vez de un portal
+distinto por registro.
 
-Así que la regla no es técnica, es sobre **quién llama**:
+Cambia el riesgo principal del proyecto. En la sección 7 estaba escrito que *"el acceso a las
+fuentes es el riesgo real, no la criptografía"*. Croma resuelve la mitad de ese riesgo de un golpe:
 
-| Momento | ¿Se puede consultar? | Qué pasa |
+| Predicado | Antes | Con Croma |
 |---|---|---|
-| **Emisión** | Sí | El sujeto, o una fuente bajo su autorización, se resuelve contra registros públicos. El resultado se vuelve un **reclamo** |
-| **Verificación** | Nunca | El arrendador recibe un sobre. No hay camino de código de una sesión a una búsqueda, y añadirlo colapsa el producto |
+| `personhood` | convenio con Registraduría, el más lento | `POST /co/registraduria/vital-status/v1` |
+| `standing` | indexar cuatro listas públicas y mantenerlas | Policía, Procuraduría, Contraloría y Contaduría, por documento |
+| `capacity` | no estaba en el catálogo | `/co/sicaac/insolvency-cases/v1` y Rama Judicial |
+| `solvency`, `formality` | operador de PILA | **sigue abierto** — ver más abajo |
 
-Lo que el arrendador recibe en vez de una consulta es un **`listSetRoot`**: la
-instantánea que se buscó, publicada y fijable. "No está en listas" se vuelve
-auditable sin que nadie vuelva a correr una consulta sobre una persona.
+Y hay algo mejor todavía: ya trabajaste contra esta API. [`Digentia`](https://github.com/LuisAlejandroCR/Digentia)
+es debida diligencia notarial para compraventa de inmueble, vehículo o negocio — **el mismo dominio**
+— con el cliente de Croma resuelto, verificado en vivo el 2026-08-11. Rutas, envoltorio `{data}`,
+jobs `202`, reintento en el `502` de Rama Judicial y el patrón `BlockResult<T>`. Ese cliente se
+reutiliza, no se reescribe. Detalle completo en [`CROMA.md`](CROMA.md).
 
-Y entonces, ¿para qué sirve Chroma de verdad? Para el problema que los
-registros latinoamericanos tienen de verdad: **los nombres vienen sucios**.
-PDFs escaneados, tildes inconsistentes, "apellidos, nombres" vs "nombres
-apellidos", segundo apellido que aparece o no. Ahí la búsqueda difusa gana.
+### Lo que sigue abierto
 
-Con dos matices que ya están en el código:
+Croma **no** cubre aportes a seguridad social ni certificado de tradición. Son exactamente las
+fuentes de `solvency`, `formality` y `propertyStanding` — es decir, la pregunta *"¿le alcanza?"*,
+que es la que de verdad decide un arriendo. Confirmar si están en el catálogo es la primera tarea
+de integración, porque cambia el alcance del hackathon.
 
-- En **listas de sanciones** — cadenas cortas de nombres, sin prosa
-  alrededor — el solapamiento de tokens compite de tú a tú con embeddings, y
-  además es **determinista**, que es lo que permite que una decisión de
-  screening se pueda reproducir y apelar. Por eso el adaptador en memoria no
-  es un stub: es la implementación correcta para esa fuente.
-- El índice vectorial se gana el puesto en las fuentes difíciles:
-  descripciones de RUES, escrituras notariales, boletines en PDF.
+### Lo que sí sobrevive de la lectura equivocada
 
-Y el problema que de verdad mata un screening: **"MARIA RODRIGUEZ" coincide
-con miles**. Por eso la resolución tiene dos reglas y no un umbral — el mejor
-candidato tiene que ser bueno *y* tiene que ganarle al segundo por margen. Si
-no, la respuesta es `ambiguous`, va a revisión humana, y **nunca** se degrada
-a "limpio". Un producto optimizado para conveniencia devolvería "no está en
-listas" ahí y dejaría pasar a alguien.
+Dos endpoints de Croma consultan **por nombre** y devuelven varios candidatos:
+`rama-judicial/cases-by-entity` y `rues/entities-by-name`. Ahí *"MARIA RODRIGUEZ coincide con
+miles"* sigue siendo el problema real, y la regla de dos partes —piso **y** margen sobre el
+segundo— sigue siendo la respuesta. Si no pasa el margen, es `ambiguous`, va a revisión humana, y
+**nunca** se degrada a "limpio". Un sistema optimizado para conveniencia devolvería "no hay
+procesos" ahí y dejaría pasar a alguien.
 
-## 5. El catálogo de predicados
+### La frontera, que no cambia con el proveedor
+
+Una consulta lleva en claro lo que busca. Da igual si el motor es vectorial o una API tipada: si la
+corre la contraparte, la inmobiliaria termina con el expediente que los predicados reemplazaban.
+
+| Momento | ¿Se consulta? |
+|---|---|
+| **Emisión**, por el sujeto o bajo su autorización | Sí. El resultado se vuelve un reclamo |
+| **Verificación**, por la contraparte | **Nunca.** Recibe un sobre |
+
+Una `CROMA_API_KEY` en el dispositivo del arrendador convertiría esto en un buscador de personas con
+un paso extra.
+
+## 5. El producto es una app, y eso decide cosas
+
+No es un detalle de entrega. La tesis del producto es que **el dato no sale del teléfono**, y eso
+solo es cierto si la prueba se genera ahí. Un proof server remoto ve el testigo entero: ve el
+ingreso, ve el estado de la cédula, ve el resultado del screening. Si la prueba se genera allá, el
+producto se reduce a una promesa contractual — que es exactamente lo que ya existe y no funciona.
+
+Tu propia nota lo tiene escrito como regla (`procedures/00_Files/kuira_android_midnight.md`):
+
+> **Se elige nativo cuando el proving en el dispositivo es la tesis del proyecto.**
+
+Aquí lo es, así que la PWA —que es el camino barato y correcto para otra tesis— queda descartada
+por escrito. iOS y Android sobre React Native, con un núcleo Rust para el prover. El dominio ya es
+TypeScript sin dependencias, así que corre en el teléfono sin puerto. Detalle y descartes en
+[`MOBILE.md`](MOBILE.md).
+
+Tres consecuencias que no son obvias:
+
+1. **Funciona sin red.** Publicada la raíz del emisor, probar no necesita ni al emisor ni a la
+   fuente. En este mercado el teléfono tiene datos intermitentes, y una verificación que falla en la
+   puerta de un apartamento no existe.
+2. **Hay un secreto que sí hay que respaldar.** El secreto del sujeto y las sales se pueden
+   regenerar o re-emitir. Los **factores de cegado** de anclajes pasados, no: sin ellos nadie puede
+   abrir un anclaje ante un juez. Es el que más fácil se olvida.
+3. **El alta no puede pedir una foto de la cédula.** Es el artefacto que el producto existe para
+   eliminar. Pedirlo "solo para el alta" lo reintroduce entero — el número se teclea, o se lee por
+   NFC.
+
+## 6. El catálogo de predicados
 
 Construidos hoy:
 
@@ -158,7 +203,7 @@ Y los que **no** hay que construir, por más que los pidan:
   sociales, scraping, "señales de comportamiento". Un registro público es el
   publicado por una autoridad, no lo que se puede encontrar.
 
-## 6. Quién paga
+## 7. Quién paga
 
 Vale la pena decidirlo temprano porque cambia el diseño.
 
@@ -172,14 +217,15 @@ Vale la pena decidirlo temprano porque cambia el diseño.
 El default: **paga el verificador, por verificación**. Es el único que no le
 cobra a la persona por demostrar que es quien dice.
 
-## 7. Riesgos honestos
+## 8. Riesgos honestos
 
-**El acceso a las fuentes es el riesgo real, no la criptografía.** PILA y
-DataCrédito no tienen una API pública que uno consume un sábado. Se llega por
-un operador de información con la autorización del sujeto. La arquitectura
-está escrita para que eso sea un adaptador y no un bloqueo — todo corre hoy
-contra fuentes sintéticas — pero un acuerdo comercial no se resuelve
-programando.
+**El acceso a las fuentes sigue siendo el riesgo, pero es la mitad del que era.**
+Croma cubre identidad, antecedentes, insolvencia y registro mercantil con una
+sola key. Lo que no cubre es PILA — y PILA es la fuente de la pregunta que de
+verdad decide un arriendo, *¿le alcanza?*. Eso sigue siendo un acuerdo con un
+operador de información, y un acuerdo comercial no se resuelve programando. La
+arquitectura está escrita para que sea un adaptador y no un bloqueo: todo corre
+hoy contra fuentes sintéticas.
 
 **El sesgo de formalidad.** Si "cotiza a seguridad social" se vuelve el
 requisito de facto, el producto excluye a la mitad informal del país. Por eso
@@ -200,10 +246,11 @@ que decirlo; para producción es una ceremonia multi-parte.
 inmobiliaria ya tiene tu correo, la anclaje es igualmente correlacionable por
 tiempo. Anclar no es anonimato de red.
 
-## 8. Regional
+## 9. Regional
 
-El orden lo decide la calidad del registro de aportes, no el tamaño del
-mercado:
+Croma cubre **Colombia, Perú y México** con un solo contrato, así que la parte
+de acceso ya está resuelta para los tres. Lo que sigue decidiendo el orden es la
+calidad del registro de aportes, que es lo que Croma no cubre:
 
 | País | Identidad | Ingreso / formalidad | Nota |
 |---|---|---|---|
@@ -214,23 +261,25 @@ mercado:
 | Brasil | CPF | eSocial / CNIS | Mercado grande, integración más pesada |
 
 Lo que no cambia entre países: los cuatro predicados, el sobre, el anclaje y
-la frontera de privacidad. Lo que cambia es `sources/`.
+la frontera de privacidad. Lo que cambia es `sources/` — y con Croma, para tres
+de estos países, cambia menos de lo que parecía.
 
-## 9. Decisiones que necesitan tu criterio
+## 10. Decisiones que necesitan tu criterio
 
-Estas no las tomé; están abiertas a propósito.
+Estas no las tomé; están abiertas a propósito. Dos de la versión anterior ya no lo están: móvil es
+nativo (sección 5) y la fuente de registros públicos es Croma (sección 4).
 
-1. **¿El inmueble entra en el alcance del hackathon?** `propertyStanding` es
-   probablemente el predicado más valioso del catálogo y es el que nadie más
-   está haciendo. Pero duplica el alcance.
-2. **¿La demo corre con anclaje `memo` o con el contrato Soroban?** `memo`
-   funciona hoy en testnet sin desplegar nada; el contrato es el producto y
-   es el que demuestra la protección contra replay.
-3. **¿Prueba ZK real o atestación firmada para la demo?** Real es más fuerte
-   y depende de cerrar el hueco de Poseidon/BLS12-381. Atestada corre ya. Se
-   pueden mostrar las dos si el puerto las hace intercambiables — que es como
-   está escrito.
-4. **¿Empezamos por arrendamiento o por compraventa?** Arrendamiento tiene
-   más volumen y ciclos más cortos; compraventa tiene notario, que es un
-   verificador institucional con obligación legal de verificar — y por lo
-   tanto, un cliente que ya tiene presupuesto para esto.
+1. **¿Confirmamos PILA y SNR en Croma antes de fijar el alcance?** Es la pregunta que decide el
+   hackathon. Si Croma expone aportes a seguridad social, `solvency` y `formality` son reales y el
+   producto está completo. Si no, son sintéticos —declarados como tales en pantalla— y la demo se
+   apoya en `personhood`, `standing` y `capacity`, que sí son reales.
+2. **¿El inmueble entra en el alcance?** `propertyStanding` —matrícula libre de gravámenes, el
+   vendedor es el titular— le da la vuelta al producto: hoy el arrendatario prueba todo y el
+   arrendador nada. Depende de la respuesta anterior sobre SNR.
+3. **¿Demo con anclaje `memo` o con contrato Soroban?** `memo` corre hoy en testnet sin desplegar
+   nada; el contrato es el producto y es el que demuestra la protección contra replay.
+4. **¿Prueba ZK real o atestación firmada?** Depende de cerrar el hueco de Poseidon sobre
+   BLS12-381. El puerto las hace intercambiables, así que se pueden mostrar las dos.
+5. **¿Arrendamiento o compraventa primero?** Compraventa tiene notario —un verificador
+   institucional con obligación legal de verificar, y por tanto presupuesto— y es el cliente que
+   `Digentia` ya estaba atendiendo. Arrendamiento tiene volumen y ciclos cortos.

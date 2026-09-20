@@ -1,3 +1,8 @@
+<!-- circuits/README.md
+     Estado real de los circuitos, el hueco de toolchain que decide el cronograma
+     y cómo se construyen. Se distingue de docs/ROADMAP.md, que ordena todo el
+     trabajo pendiente y no solo el de circuitos. -->
+
 # `circuits/`
 
 The predicate as a Circom circuit, and an honest account of what has been run.

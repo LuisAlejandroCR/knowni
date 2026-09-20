@@ -13,4 +13,10 @@ circuits/build/
 *.r1cs
 *.wtns
 
-/docs
+# docs/: solo los que un agente necesita para trabajar quedan versionados.
+# Los de exploración se ignoran y viven en local.
+docs/*
+!docs/plan.md
+!docs/memoria.md
+!docs/verificacion.md
+!docs/CROMA.md

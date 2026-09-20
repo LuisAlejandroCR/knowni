@@ -96,7 +96,7 @@ dispositivo. Un proof server remoto ve el testigo entero.
 proving en el dispositivo es la tesis del proyecto".
 
 *Elección:* React Native + Expo con núcleo Rust sobre UniFFI. El dominio ya es TypeScript sin
-dependencias y corre en el teléfono sin puerto. Descartes y razones en [`MOBILE.md`](MOBILE.md).
+dependencias y corre en el teléfono sin puerto. Descartes y razones en `MOBILE.md`.
 
 ### D-06 — La mediana, no la media, para el ingreso · 2026-09-20
 

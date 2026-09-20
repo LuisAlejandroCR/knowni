@@ -55,7 +55,7 @@ escribió el tipo. Añadir un contrato es componer un perfil, no tocar el domini
 **Es una app de iOS y Android, y eso no es un detalle de entrega.** La promesa no es "no
 compartimos tus datos": es que **el dato nunca sale del teléfono**. La prueba se genera ahí, sin
 servidor en el medio, y una vez emitidas las credenciales funciona sin red. Ver
-[`docs/MOBILE.md`](docs/MOBILE.md).
+`docs/MOBILE.md`.
 
 ### De dónde salen las respuestas
 
@@ -128,7 +128,7 @@ entra como otro adaptador sin tocar un solo predicado.
   nombre** de Croma. **Parcialmente marcado para retirarse** — ver su README.
 - [`anchoring/`](anchoring/) — el puerto de anclaje y sus adaptadores.
 - `app/` — iOS y Android. ⏳ pendiente; el diseño está en
-  [`docs/MOBILE.md`](docs/MOBILE.md).
+  `docs/MOBILE.md`.
 - [`circuits/`](circuits/) — los circuitos Circom. Código fuente; ver estado.
 - [`contracts/knowni-verifier/`](contracts/knowni-verifier/) — el verificador
   Soroban. Código fuente; ver estado.
@@ -166,22 +166,15 @@ corrido aquí.
 
 ### Documentos
 
-- [`docs/BRAINSTORM.md`](docs/BRAINSTORM.md) — el razonamiento del producto:
-  qué se construye, qué no, y por qué.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — las decisiones técnicas y
-  lo que se reutiliza del proyecto ZK anterior.
-- [`docs/COLOMBIA.md`](docs/COLOMBIA.md) — el panorama de fuentes y el marco
-  legal (Ley 1581, Habeas Data).
-- [`docs/CROMA.md`](docs/CROMA.md) — la fuente: endpoints, contrato HTTP y la
-  corrección de diseño que obligó a hacer.
-- [`docs/MOBILE.md`](docs/MOBILE.md) — la app: por qué nativo, el stack y dónde
-  vive cada secreto.
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — qué sigue, en orden de riesgo.
-- [`docs/plan.md`](docs/plan.md) · [`docs/memoria.md`](docs/memoria.md) ·
-  [`docs/verificacion.md`](docs/verificacion.md) — bloques y criterios,
-  decisiones fechadas, y qué está comprobado y qué no.
-- [`AGENTS.md`](AGENTS.md) — la constitución, incluido el reparto entre varios
-  agentes en paralelo.
+Versionados, porque un agente los necesita para trabajar:
+
+- [`docs/plan.md`](docs/plan.md) — alcance, fuentes, fases y criterios de aceptación.
+- [`docs/memoria.md`](docs/memoria.md) — las decisiones tomadas, con su razón y su fecha.
+- [`docs/verificacion.md`](docs/verificacion.md) — qué está comprobado, contra qué y cuándo.
+- [`docs/CROMA.md`](docs/CROMA.md) — la fuente: catálogo, rutas verificadas y contrato HTTP.
+
+`ARCHITECTURE.md`, `BRAINSTORM.md`, `COLOMBIA.md`, `MOBILE.md` y `ROADMAP.md` son material de
+exploración y se quedan en local: lo que sobrevive de ellos ya está en los cuatro de arriba.
 
 ---
 

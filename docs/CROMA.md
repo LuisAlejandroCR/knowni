@@ -188,7 +188,7 @@ La regla no es técnica, es sobre **quién llama**, y es la misma con Croma que 
 | **Verificación**, por la contraparte | **Nunca.** Recibe un sobre. No hay camino de código de una sesión a una consulta |
 
 Una `CROMA_API_KEY` en el dispositivo del arrendador convertiría el producto en un buscador de
-personas con un paso extra. Ver [`ARCHITECTURE.md`](ARCHITECTURE.md) → *Dónde se consulta*.
+personas con un paso extra. Ver `ARCHITECTURE.md` → *Dónde se consulta*.
 
 ## Regional, sin tocar el dominio
 

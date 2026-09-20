@@ -36,7 +36,7 @@ Cosas que tienen que ser ciertas:
 | Criterio de evaluación | Funcionalidad/testnet 30% · integración Stellar 25% · originalidad 20% · continuidad 15% · claridad 10% |
 | Producto | Contract-agnostic: cualquier contrato es un perfil. Ver D-14 |
 | Perfil de la demo | **Compraventa de vehículo ante notario** — el único con fuentes reales de punta a punta. Ver D-13 |
-| Plataformas | iOS y Android — ver [`docs/MOBILE.md`](docs/MOBILE.md) |
+| Plataformas | iOS y Android — ver `docs/MOBILE.md` |
 | Fuente de datos | Croma — ver [`docs/CROMA.md`](docs/CROMA.md) |
 | Cadena (primera) | Stellar, detrás de un puerto agnóstico |
 
@@ -96,7 +96,7 @@ No asumir el estado de un archivo sin leerlo.
 | Un tipo de contrato conocido por la capa de dominio | El contrato es un perfil que compone quien pregunta. Una unión cerrada de contratos hace que añadir uno sea un cambio en el dominio. Ver D-14 |
 | Formalidad escondida dentro de otro predicado | Si "cotiza a seguridad social" se vuelve requisito de facto e invisible, el producto excluye a la mitad informal del país |
 | Foto de la cédula en cualquier punto del flujo | Es exactamente el artefacto que el producto existe para eliminar |
-| PWA como camino principal | No hay proving en el dispositivo, ni enclave seguro, ni passkey. Ver [`docs/MOBILE.md`](docs/MOBILE.md) → *Lo que se descartó* |
+| PWA como camino principal | No hay proving en el dispositivo, ni enclave seguro, ni passkey. Ver `docs/MOBILE.md` → *Lo que se descartó* |
 | Curva BN254 en los circuitos | Stellar no la verifica hasta CAP-0074. Compilar con el default de Circom produce pruebas inverificables |
 
 ## Variables de entorno
@@ -114,7 +114,7 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 
 | Capa | Tecnología |
 |---|---|
-| App | React Native + Expo (iOS y Android) — ver [`docs/MOBILE.md`](docs/MOBILE.md) |
+| App | React Native + Expo (iOS y Android) — ver `docs/MOBILE.md` |
 | Dominio | TypeScript, sin dependencias, compartido entre app y backend |
 | Prover | Rust sobre UniFFI (Kotlin + Swift) — ⏳ pendiente |
 | Fuentes | Croma REST — `https://api.croma.run` |

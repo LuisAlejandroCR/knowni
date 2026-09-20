@@ -31,9 +31,9 @@ Cosas que tienen que ser ciertas:
 
 | Dato | Valor |
 |---|---|
-| Entrega / deadline | Hackathon Stellar — fecha ⏳ pendiente |
-| Jurado / cliente | ⏳ pendiente |
-| Criterio de evaluación | ⏳ pendiente |
+| Entrega / deadline | Stellar Odyssey Perú — 25 sep 2026, 23:59 (GMT-5) |
+| Jurado / cliente | Jurado técnico del evento; evaluación asíncrona sobre repositorio y video demo |
+| Criterio de evaluación | Funcionalidad/testnet 30% · integración Stellar 25% · originalidad 20% · continuidad 15% · claridad 10% |
 | Producto | Contract-agnostic: cualquier contrato es un perfil. Ver D-14 |
 | Perfil de la demo | **Compraventa de vehículo ante notario** — el único con fuentes reales de punta a punta. Ver D-13 |
 | Plataformas | iOS y Android — ver [`docs/MOBILE.md`](docs/MOBILE.md) |

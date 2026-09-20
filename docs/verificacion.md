@@ -12,7 +12,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | Qué | Cómo | Fecha |
 |---|---|---|
-| 116 pruebas pasan | `npm test` con Node 22.22.2 | 2026-09-20 |
+| 116 pruebas pasan | `npm test` con Node 24.15.0 en Windows; rutas de fixtures con `fileURLToPath` | 2026-09-20 |
 | Nada en `core/` conoce un tipo de contrato; siete perfiles distintos responden con las mismas credenciales | `core/test/session.test.ts` · `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | El sobre no filtra ningún valor de los reclamos | `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | `core/` no importa ningún SDK ni declara dependencias | `core/test/no-vendor-imports.test.ts` | 2026-09-20 |
@@ -36,13 +36,14 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 ## Pendiente de verificar
 
-1. **¿Existe una vía por la que el titular consulte su historial de aportes PILA?** El ABECÉ de
-   MinSalud describe cómo se *paga*, no cómo se *consulta*. Antes se daba por hecho que era un
-   acuerdo comercial con un operador; ahora hay que confirmar que el servicio existe. Es la
-   pregunta que decide si `solvency` es alcanzable. Ver D-15.
+1. **¿Existe una vía programática por la que el titular consulte sus aportes e IBC?** El ABECÉ de
+   MinSalud describe cómo se *paga*, no cómo se *consulta* (D-15). El candidato identificado es el
+   **Estado Único de Cuenta de la UGPP**, que se los muestra al titular; falta confirmar si hay
+   canal institucional. Sin automatizar el portal. Es la pregunta que decide si `solvency` es
+   alcanzable.
 2. **¿Croma expone RUAF?** No aparece en el catálogo de Colombia. Si se consiguiera, la afiliación
    a ARL sería mejor fuente de `formality` que el régimen de salud, y **quitaría la necesidad de la
-   regla asimétrica de D-12 por esa vía**. Ver D-16.
+   regla asimétrica de D-12 por esa vía**. Ver D-17.
 3. **¿Qué campos devuelve ADRES?** Régimen, estado, tipo de afiliado (cotizante/beneficiario) y EPS
    son supuesto propio. De ello depende que `formality` distinga cotizante de beneficiario, que es
    lo que hace funcionar D-12.
@@ -73,6 +74,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 - Ningún tiempo de prueba, conteo de restricciones ni fee medido.
 - Ninguna prueba verificada on-chain.
 - Ninguna integración real con Croma, Registraduría, PILA o DataCrédito.
+- Investigación documental 2026-09-20: Croma, Truora, Incode, Belvo, operadores PILA, RUAF,
+  ADRES/BDUA, UGPP y Finanzas Abiertas se clasificaron en `plan.md`. Esto no sustituye una llamada
+  real, un contrato comercial ni la comprobación de cobertura por endpoint.
 - Ninguna ejecución en un dispositivo físico.
 - Ninguna afirmación de cumplimiento normativo. `COLOMBIA.md` describe el marco; no es asesoría
   legal ni un concepto.

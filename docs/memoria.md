@@ -333,7 +333,22 @@ asumí, y `formality` tiene que tolerar meses sin fecha sin leerlos como ausenci
 obligatorio es de ese año, y los decretos citados pueden haberse modificado. Nada de esto se da por
 vigente sin re-confirmar.
 
-### D-16 — RUAF y ADRES no reemplazan PILA, pero RUAF mejora D-12 · 2026-09-20
+### D-16 — La credencial funciona sin cadena; la cadena es un registro sustituible · 2026-09-20
+
+`chain-agnostic` no significa recompilar el mismo circuito para cada red. Significa que emisión,
+custodia, presentación y verificación no dependen de una blockchain. Una red publica raíces,
+revocaciones o recibos mediante `RegistryPort`/`AnchorPort`; no define el formato de identidad.
+
+*Razón:* Groth16 sobre BLS12-381 es una buena integración con Stellar, pero convertir esa curva en
+el formato del producto haría costoso portar Knowni y dejaría la verificación atada a la
+disponibilidad de una red. El dominio conserva predicados y perfiles; `ProofPort` permite una vía
+atestada construible y una vía ZK. W3C VC 2.0 y OpenID4VCI/VP serán el sobre y los flujos objetivo;
+AnonCreds se evalúa como prueba agnóstica con predicados y presentaciones no enlazables.
+
+*Consecuencia:* Stellar sigue siendo la primera integración y la evidencia exigida por la
+hackathon, pero verificar una credencial emitida debe seguir funcionando sin anclaje.
+
+### D-17 — RUAF y ADRES no reemplazan PILA, pero RUAF mejora D-12 · 2026-09-20
 
 La pregunta era si RUAF y ADRES bastan para no depender de PILA. La respuesta se parte en dos, y
 una mitad corrige una decisión anterior.
@@ -370,6 +385,12 @@ que `monthsContributedLast12` **no es respondible** por esta vía, y `formality`
 *Y el obstáculo práctico:* **RUAF no está en el catálogo de Croma.** ADRES sí. Así que la mejor de
 las dos señales es, además, la que exige una integración aparte.
 
+*Lo que sí queda como candidato para el IBC:* el **Estado Único de Cuenta de la UGPP**, que muestra
+al titular sus últimos aportes e IBC. Es la única vía de consulta identificada hasta ahora para lo
+que D-15 dejó abierto, y está en el mapa de fuentes de [`plan.md`](plan.md) con la condición
+correcta: canal institucional, **sin automatizar el portal sin autorización**. Sigue sin verificar
+que exista una vía programática.
+
 *Decisión:* D-12 se mantiene tal cual mientras la fuente sea ADRES. Si RUAF entra, `formality` se
 apoya en la afiliación a ARL, la regla asimétrica deja de hacer falta **por esa vía**, y la
 exclusión de Sisbén no cambia. Confirmar si Croma expone RUAF es tarea de `verificacion.md`.
@@ -377,6 +398,7 @@ exclusión de Sisbén no cambia. Confirmar si Croma expone RUAF es tarea de `ver
 *Nivel de evidencia:* que BDUA y RUAF existen y para qué los usan los operadores está **verificado
 en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de afiliado, ARL— es
 **supuesto propio** hasta ver una respuesta real.
+
 
 ## Bitácora
 
@@ -390,7 +412,8 @@ en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de a
 | 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
 | 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
 | 2026-09-20 | PILA contra fuente primaria (ABECÉ MinSalud, jun 2018). Confirma el piso de 1 SMLMV y el conteo por meses; rompe el supuesto de que existe vía de consulta — D-15 |
-| 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
+| 2026-09-20 | Investigación de fuentes y continuidad: credencial, prueba, registro y anclaje quedan separados — D-16 y plan posthackathon |
+| 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-17 |
 
 ## Límites de proceso — estado del ejercicio real
 

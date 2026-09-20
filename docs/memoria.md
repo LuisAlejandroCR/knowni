@@ -23,7 +23,11 @@ nadie. Verificado en `core/test/no-vendor-imports.test.ts`.
 
 ## Decisiones clave
 
-### 1 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
+Numeradas `D-NN` para que un comentario de código pueda citarlas sin repetirlas —
+la convención de [`creva_score`](https://github.com/LuisAlejandroCR/creva_score).
+
+
+### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 
 `creva-zk` verifica la firma del emisor dentro del circuito. Aquí el emisor publica una raíz sobre
 los compromisos emitidos y firma **la raíz**, una vez, fuera.
@@ -37,7 +41,7 @@ es indiferente a cómo firme el emisor.
 *Coste aceptado:* el emisor tiene que publicar algo, y el verificador tiene que saber qué raíz está
 vigente. Eso es `register_issuer_root` en el contrato.
 
-### 2 — Groth16 sobre BLS12-381, nunca BN254 · 2026-09-20
+### D-02 — Groth16 sobre BLS12-381, nunca BN254 · 2026-09-20
 
 *Razón:* es la única curva que Stellar verifica nativamente hoy (CAP-0059, Protocolo 22+). BN254
 —el default de Circom, de Noir y de RISC Zero— está bloqueado hasta CAP-0074.
@@ -48,7 +52,7 @@ planeado.
 
 *Modo de falla si se ignora:* todo parece funcionar hasta la llamada al contrato.
 
-### 3 — `ChainId` es cadena abierta validada, no unión cerrada · 2026-09-20
+### D-03 — `ChainId` es cadena abierta validada, no unión cerrada · 2026-09-20
 
 Corrección sobre `creva-zk`, que la tiene cerrada (`"cardano" | "evm"`).
 
@@ -60,7 +64,7 @@ el acoplamiento que el puerto existe para evitar.
 *Detalle:* el id nombra una **red** (`stellar:testnet`), no un protocolo. Un recibo que no dice en
 cuál no es auditable.
 
-### 4 — "croma" era Croma, no Chroma · 2026-09-20
+### D-04 — "croma" era Croma, no Chroma · 2026-09-20
 
 La primera versión leyó "croma" como la base vectorial **Chroma** y construyó `retrieval/` sobre
 esa lectura. Croma es una **API de datos de gobierno de Latinoamérica** que devuelve JSON tipado
@@ -77,7 +81,14 @@ Croma consultan **por nombre** y devuelven varios candidatos.
 *Lección:* un nombre de producto casi homógrafo costó un workspace entero. El origen debía haberse
 confirmado antes de diseñar sobre él. Ver [`../LEARNINGS.md`](../LEARNINGS.md).
 
-### 5 — Nativo, no PWA · 2026-09-20
+*Corrección posterior, mismo día:* la primera versión de esta entrada atribuyó el trabajo previo de
+Croma a `Digentia` y lo llamó "tu hackathon". No lo es. La hackathon fue
+[`creva_score`](https://github.com/LuisAlejandroCR/creva_score) — IA Hackathon GovTech, 12–16 de
+agosto de 2026 — y `Digentia` es un producto sin terminar. Importa porque cambia de dónde se toma
+el cliente y, sobre todo, porque `creva_score` trae decisiones de producto publicadas que este
+proyecto tiene que respetar — D-09 y D-10.
+
+### D-05 — Nativo, no PWA · 2026-09-20
 
 *Razón:* la tesis del producto es que el dato no sale del teléfono, y eso exige proving en el
 dispositivo. Un proof server remoto ve el testigo entero.
@@ -88,14 +99,14 @@ proving en el dispositivo es la tesis del proyecto".
 *Elección:* React Native + Expo con núcleo Rust sobre UniFFI. El dominio ya es TypeScript sin
 dependencias y corre en el teléfono sin puerto. Descartes y razones en [`MOBILE.md`](MOBILE.md).
 
-### 6 — La mediana, no la media, para el ingreso · 2026-09-20
+### D-06 — La mediana, no la media, para el ingreso · 2026-09-20
 
 *Razón:* una prima o una liquidación arrastra la media y la contraparte termina suscribiendo un año
 contra un evento único. El último mes se leería como cero cuando el aporte se radicó tarde.
 
 *Estado:* la fuente que la alimenta (PILA) no está confirmada en Croma — bloque B4.
 
-### 7 — Tests planos en vez de `unit/ fuzz/ invariant/` · 2026-09-20 · **deuda**
+### D-07 — Tests planos en vez de `unit/ fuzz/ invariant/` · 2026-09-20 · **deuda**
 
 La suite actual está en `*/test/*.test.ts`. La constitución pide
 `test/unit/ · test/fuzz/ · test/invariant/` con sufijo `.spec.ts`.
@@ -103,13 +114,78 @@ La suite actual está en `*/test/*.test.ts`. La constitución pide
 *Razón de la desviación:* velocidad de arranque. *No es una decisión, es deuda*, y está anotada en
 [`verificacion.md`](verificacion.md).
 
-### 8 — Cabeceras de código largas · 2026-09-20 · **deuda**
+### D-08 — Cabeceras de código largas · 2026-09-20 · **deuda**
 
 La constitución pide 2–3 líneas, `// <filename>: <what this file does>`, sin narrativa. Los archivos
 actuales traen cabeceras de 10–30 líneas con justificaciones.
 
 *Razón de la desviación:* se escribieron antes de leer la constitución. El razonamiento de esas
 cabeceras pertenece a este archivo; las cabeceras hay que recortarlas. Deuda anotada.
+
+### D-09 — No se consultan antecedentes penales · 2026-09-20
+
+`creva_score` lo tiene publicado como decisión firme: *"No usamos antecedentes penales. Ni de ella,
+ni de nadie. Es una decisión firme y no va a cambiar."* Este repositorio tenía
+`/co/policia/criminal-records/v1` dentro de `standing`. Se retira.
+
+*Razón:* un antecedente penal no dice si alguien puede pagar un arriendo ni si tiene capacidad
+legal para contratar. Dice que cumplió una condena. Convertirlo en un filtro de vivienda le cierra
+la puerta a quien ya pagó, y lo hace a escala y en silencio — que es exactamente el daño que este
+producto existe para no causar.
+
+*Qué sí se mantiene, y por qué no es lo mismo:* `standing` se parte en dos.
+
+| Nuevo predicado | Fuentes | Qué pregunta |
+|---|---|---|
+| `sanctions` | OFAC, ONU, Procuraduría (inhabilidad disciplinaria), Contraloría (responsabilidad fiscal), Contaduría (moroso del Estado) | ¿Hay una **inhabilidad legal para contratar**? |
+| ~~antecedentes penales~~ | — | Retirado |
+
+La diferencia no es de grado. Una inhabilidad es una restricción vigente sobre la capacidad de
+contratar, y una contraparte regulada tiene obligación de mirarla. Un antecedente penal es un
+hecho del pasado de una persona, y mirarlo para arrendarle es un castigo adicional que nadie
+impuso.
+
+*Coste aceptado:* alguna contraparte lo pedirá. La respuesta es que este producto no lo responde, y
+queda escrito en las exclusiones de [`../CLAUDE.md`](../CLAUDE.md).
+
+### D-10 — Un resultado declara qué es y qué no estima · 2026-09-20
+
+Este repositorio tenía *"nunca emitir un puntaje"* como exclusión no negociable. `creva_score`
+**sí emite un puntaje**, y no se contradicen: lo que hace defendible al suyo es que el resultado
+**se declara a sí mismo**.
+
+Su `ScoreDisclosure` lleva `kind: 'descriptive'`, la ventana que describe, y una lista explícita
+`does_not_estimate`: *la probabilidad de que dejes de pagar · tu historial crediticio, ni lo
+sustituye · una decisión de una institución financiera*.
+
+*Lo que se adopta:* `SolvencyTier` es exactamente eso —una banda descriptiva, no una
+probabilidad— y hoy no lo dice en ninguna parte. Un `PredicateDisclosure` con la misma forma viaja
+con el sobre: qué describe cada respuesta, y qué **no** estima.
+
+*Lo que no cambia:* Knowni sigue sin emitir un número agregado. No por desacuerdo, sino porque son
+productos distintos: `creva_score` le da a un banco algo que mirar donde no había nada, y un
+puntaje es la forma correcta de eso; Knowni le quita a un arrendador un expediente que no debía
+tener, y un puntaje volvería a darle una cifra opaca sobre la que decidir. La exclusión se reescribe
+para decir eso en vez de sonar a principio universal.
+
+*También se adopta:* el eje de procedencia `observed | documentary | self_declared`. Es más limpio
+que el `IncomeBasis` actual y responde la pregunta que la contraparte de verdad tiene — *¿esto lo
+comprobó alguien, o me lo está contando?*
+
+### D-11 — La cobertura se mide antes de decidir si puntúa · 2026-09-20
+
+`creva_score` mide la cobertura del directorio oficial **antes** de decidir si el sello aporta al
+puntaje, y concluye que no debe: *"el directorio cubre muchísimo mejor a unos estados que a otros;
+si diera puntos, premiaría el código postal"*.
+
+*Aplicación directa aquí:* PILA cubre a quien cotiza. Si `formality` alimentara una decisión
+agregada, premiaría la formalidad laboral y castigaría a la mitad informal del país por su forma de
+trabajar, no por su capacidad de pagar. Por eso es un predicado separado que la contraparte tiene
+que **pedir a la vista**.
+
+*Regla generalizada, ahora en [`../AGENTS.md`](../AGENTS.md):* antes de que una fuente influya en
+un resultado, se mide a quién cubre. Una fuente con cobertura desigual que puntúa es un sesgo con
+respaldo oficial.
 
 ## Bitácora
 
@@ -119,6 +195,7 @@ cabeceras pertenece a este archivo; las cabeceras hay que recortarlas. Deuda ano
 | 2026-09-20 | Corrección de Croma. Rutas reales tomadas de `Digentia`. Documentada la deuda de `retrieval/` |
 | 2026-09-20 | Decisión de móvil: nativo iOS + Android sobre React Native |
 | 2026-09-20 | Adoptada la constitución de `procedures/templates/AGENTS.md`: commits de una línea sin trailers, cabeceras en `.md`, reparto por agente |
+| 2026-09-20 | Corregida la atribución: `creva_score` fue la hackathon de Croma, `Digentia` es un producto sin terminar. De ahí salen D-09, D-10 y D-11 |
 
 ## Límites de proceso — estado del ejercicio real
 

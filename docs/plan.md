@@ -52,11 +52,14 @@ Sin dependencias y sin SDK de ninguna cadena.
 
 Reemplazar el adaptador sintético por el cliente real.
 
-1. Cliente: `POST`, `Bearer`, `Prefer: wait=55`, jobs `202` con poll, reintento en `502`, cabeceras
-   de rate limit. Ninguna llamada lanza hacia arriba.
+1. Cliente: **portado desde [`creva_score`](https://github.com/LuisAlejandroCR/creva_score)**, que
+   ya tiene tope de polls, timeout y `sleep`/`fetch`/`logger` inyectables. `POST`, `Bearer`,
+   `Prefer: wait=55`, jobs `202` con poll, reintento en `502`, cabeceras de rate limit. Ninguna
+   llamada lanza hacia arriba.
 2. Bloque **personhood** — `/co/registraduria/vital-status/v1`.
-3. Bloque **standing** — Policía, Procuraduría, Contraloría, Contaduría. Un `SourceResult` por
-   fuente; la composición decide.
+3. Bloque **sanctions** — Procuraduría, Contraloría, Contaduría. Un `SourceResult` por fuente; la
+   composición decide. **Sin Policía**: antecedentes penales quedan fuera por decisión de producto
+   (D-09), y el endpoint no se llama.
 4. Bloque **capacity** — `/co/sicaac/insolvency-cases/v1`.
 5. Validación con esquema y reducción al reclamo mínimo. **Ninguna respuesta cruda sale.**
 
@@ -81,6 +84,18 @@ Croma no cubre PILA. Antes de codear:
    adaptador sintético se queda y se **declara como sintético en pantalla**, nunca disimulado.
 
 *Criterio:* la decisión escrita en `memoria.md` con su razón, no un adaptador a medio hacer.
+
+### B4b — Declaración del resultado ⏳
+
+Un `PredicateDisclosure` con la forma del `ScoreDisclosure` de `creva_score`: qué describe cada
+respuesta y qué **no** estima. Un `tier` es una banda descriptiva, no una probabilidad de impago, y
+hoy no lo dice en ninguna parte.
+
+También el eje de procedencia `observed | documentary | self_declared`, que responde la pregunta
+que la contraparte de verdad tiene: *¿esto lo comprobó alguien, o me lo está contando?*
+
+*Criterio:* el sobre lleva la declaración, y el test de invariante sigue pasando — la declaración
+habla del predicado, nunca del sujeto.
 
 ### B5 — Circuito ⏳
 

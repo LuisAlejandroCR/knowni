@@ -25,7 +25,7 @@ Pero el arrendador no necesita ese expediente. Necesita cuatro respuestas:
 | ¿Existe y es quien dice ser? | Cédula escaneada | `true` |
 | ¿Le alcanza para el canon? | Certificación bancaria, nómina | `STRONG` (≥3× el canon) |
 | ¿Tiene ingresos estables? | Certificación laboral | `true` |
-| ¿Está en listas restrictivas? | Nada, o una consulta a tu nombre | `true` (limpio) |
+| ¿Hay una inhabilidad para contratar? | Nada, o una consulta a tu nombre | `true` (sin inhabilidad) |
 
 Cuatro respuestas. Ni el nombre, ni el número de cédula, ni el salario, ni el
 empleador, ni la fecha de nacimiento. El expediente completo de la solicitud
@@ -41,10 +41,16 @@ credenciales funciona sin red. Ver [`docs/MOBILE.md`](docs/MOBILE.md).
 ### De dónde salen las respuestas
 
 Los registros oficiales se consultan por [**Croma**](https://docs.usecroma.com),
-una API de datos de gobierno de Latinoamérica: Registraduría, Policía,
-Procuraduría, Contraloría, Contaduría, SICAAC, Rama Judicial y RUES con una sola
-integración, y la misma para Colombia, Perú y México. Detalle en
+una API de datos de gobierno de Latinoamérica: Registraduría, Procuraduría,
+Contraloría, Contaduría, SICAAC, Rama Judicial y RUES con una sola integración,
+y la misma para Colombia, Perú y México. Detalle en
 [`docs/CROMA.md`](docs/CROMA.md).
+
+**Lo que no se consulta: antecedentes penales, de nadie.** No dicen si alguien
+puede pagar un arriendo; dicen que cumplió una condena. Como filtro de vivienda
+le cierra la puerta a quien ya pagó. La pregunta que sí se responde es si hay una
+**inhabilidad legal vigente** para contratar, que es otra cosa y es la que una
+contraparte regulada tiene obligación de mirar.
 
 Lo que Croma **no** cubre hoy es la pregunta que de verdad decide un arriendo:
 

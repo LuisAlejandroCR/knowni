@@ -18,8 +18,9 @@ Cosas que tienen que ser ciertas:
 1. La contraparte recibe respuestas, nunca datos. Su registro completo de la solicitud cabe en diez
    campos y ninguno dice nada del solicitante más allá de lo que preguntó.
 2. La app funciona sin red una vez emitidas las credenciales. La prueba se genera en el teléfono.
-3. **Nunca se emite un puntaje.** En el momento en que esto devuelve un número de 0 a 1000 es una
-   central de riesgo con otro nombre.
+3. **Cada respuesta declara qué es y qué no estima.** Un `tier` es una banda descriptiva, no una
+   probabilidad de impago, y lo dice. Nunca un número agregado que sustituya el criterio de la
+   contraparte.
 
 ## Contexto
 
@@ -78,7 +79,9 @@ No asumir el estado de un archivo sin leerlo.
 
 | Excluido | Razón |
 |---|---|
-| Un puntaje de 0 a 1000 | Sería una central de riesgo con otro nombre, hereda su regulación, y devuelve a la contraparte a decidir sobre una cifra opaca |
+| **Antecedentes penales, de nadie** | No dicen si alguien puede pagar un arriendo ni si puede contratar; dicen que cumplió una condena. Como filtro de vivienda le cierra la puerta a quien ya pagó, a escala y en silencio. Decisión firme heredada de `creva_score`. Ver `docs/memoria.md` D-09 |
+| Un número agregado de 0 a 1000 **en este producto** | No es un principio universal —`creva_score` emite un puntaje y hace bien— sino que aquí devolvería a la contraparte a decidir sobre una cifra opaca, que es justo lo que se le está quitando. Ver D-10 |
+| Que una fuente de cobertura desigual alimente una decisión agregada | Premiaría el código postal o la formalidad laboral en vez de la capacidad de pagar. Se mide la cobertura antes de decidir. Ver D-11 |
 | Datos no públicos y no consentidos | Registro público es lo publicado por una autoridad, no lo que se puede encontrar. Sin scraping, sin redes sociales, sin "señales de comportamiento" |
 | Formalidad escondida dentro de otro predicado | Si "cotiza a seguridad social" se vuelve requisito de facto e invisible, el producto excluye a la mitad informal del país |
 | Foto de la cédula en cualquier punto del flujo | Es exactamente el artefacto que el producto existe para eliminar |
@@ -142,7 +145,8 @@ tras tres intentos fallidos, parar y nombrar el supuesto dudoso.
 | De | Qué se reutiliza |
 |---|---|
 | [`creva-zk`](https://github.com/LuisAlejandroCR/creva-zk) | La primitiva: verificar un reclamo firmado, evaluar un predicado público, divulgar solo el resultado. El puerto de anclaje. La regla `degraded` ≠ `failed` |
-| [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) | El contrato real de Croma: rutas, envoltorio `{data}`, jobs 202, reintento en 502 de Rama Judicial, y el patrón `BlockResult<T>` |
+| [`creva_score`](https://github.com/LuisAlejandroCR/creva_score) | **La hackathon de Croma** (IA Hackathon GovTech, 12–16 ago 2026). El cliente maduro —tope de polls, timeout, `sleep`/`fetch`/`logger` inyectables—, `SourceResult<T>`, el caché, y las decisiones D-09, D-10 y D-11 |
+| [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) | Producto sin terminar, mismo dominio (compraventa notarial, Colombia). Aporta el mapa de rutas `/co/*` y sus esquemas de respuesta |
 | `procedures/00_Files/kuira_android_midnight.md` | La regla para elegir nativo vs PWA, y su tabla de costes |
 
 ## Referencias

@@ -95,6 +95,12 @@ test/invariant/  <name>.invariant.spec.ts  propiedades que deben cumplirse para 
 * **La frontera del producto:** una consulta a una fuente ocurre en emisión, con consentimiento del
   sujeto. La contraparte nunca consulta. Añadir un camino de código de una sesión de verificación a
   una consulta colapsa el producto — ver `docs/ARCHITECTURE.md`.
+* **Nunca antecedentes penales**, de nadie, por ninguna vía. No es una preferencia configurable:
+  el endpoint no se llama y el predicado no existe. Ver `docs/memoria.md` D-09.
+* **Medir la cobertura antes de dejar que una fuente influya en un resultado.** Una fuente que
+  cubre desigual y además puntúa es un sesgo con respaldo oficial. Ver D-11.
+* **Un resultado declara qué es y qué no estima.** Una banda descriptiva que no dice que es
+  descriptiva se lee como una predicción. Ver D-10.
 
 ### 8. UX / rendimiento
 

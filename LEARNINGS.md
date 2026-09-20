@@ -41,6 +41,14 @@ nativo y prohíbe cualquier atajo de servidor.
   producto se convierte en un buscador de personas con un paso extra. La frontera no es técnica, es
   sobre *quién llama*.
 
+- `2026-09-20` — Un resultado se puede declarar a sí mismo, y eso es lo que separa un puntaje
+  defendible de una central de riesgo: `kind: 'descriptive'` más una lista explícita de lo que **no**
+  estima. `creva_score` ya lo tenía; yo había escrito "nunca un puntaje" como si fuera un principio,
+  cuando el principio real es *un resultado que no dice qué es, se lee como una predicción*.
+- `2026-09-20` — La diferencia entre "inhabilidad legal vigente" y "antecedente penal" no es de
+  grado y decide si un producto de vivienda es justo. La primera es una restricción actual sobre la
+  capacidad de contratar; la segunda es un castigo adicional que nadie impuso.
+
 ## 2. ¿Qué costó más de lo esperado, y por qué?
 
 - `2026-09-20` — Un workspace entero (`retrieval/`) construido sobre la lectura equivocada de
@@ -51,6 +59,11 @@ nativo y prohíbe cualquier atajo de servidor.
 - `2026-09-20` — Las cabeceras de código salieron de 10–30 líneas con narrativa. **Causa:** se
   escribió el código antes de leer `procedures/templates/AGENTS.md`, que pide 2–3 líneas sin
   justificaciones. El arranque de la constitución existe justo para eso y se saltó.
+- `2026-09-20` — Atribuí el trabajo previo de Croma al repo equivocado: `Digentia` en vez de
+  `creva_score`. **Causa:** lo deduje de una fila de `HARVEST.md` en vez de abrir los dos
+  repositorios. Coste real: no el crédito, sino que me perdí las **decisiones de producto
+  publicadas** de `creva_score` —sin antecedentes penales, el resultado se declara a sí mismo,
+  medir cobertura antes de puntuar— y escribí exclusiones que las contradecían.
 
 ## 3. ¿Qué se decidió, y por qué?
 
@@ -62,7 +75,9 @@ nativo y prohíbe cualquier atajo de servidor.
 | `2026-09-20` | Nativo iOS + Android (React Native + núcleo Rust) | PWA instalable | El proving en el dispositivo **es** la tesis; la PWA vacía el producto |
 | `2026-09-20` | React Native | Flutter, Kotlin Multiplatform, nativo dos veces | El dominio ya es TypeScript sin dependencias y corre en el teléfono sin puerto |
 | `2026-09-20` | Mediana de 12 meses para el ingreso | Media, o último mes | La media la arrastra una prima; el último mes se lee como cero si se radicó tarde |
-| `2026-09-20` | Nunca emitir un puntaje | Un score 0–1000 | Sería una central de riesgo con otro nombre, con su regulación |
+| `2026-09-20` | Sin número agregado **en este producto**, y cada respuesta declara qué no estima | Un score sin declaración | Un resultado que no dice qué es se lee como predicción. `creva_score` emite puntaje y hace bien: son productos distintos |
+| `2026-09-20` | Sin antecedentes penales, de nadie | Incluirlos en `standing` | No dicen si alguien puede pagar un arriendo; como filtro de vivienda castigan a quien ya cumplió. Decisión firme heredada de `creva_score` |
+| `2026-09-20` | Medir la cobertura de una fuente antes de dejarla influir en un resultado | Suponer que una fuente oficial es neutral | Una fuente de cobertura desigual que puntúa es un sesgo con respaldo oficial |
 
 ## 4. ¿Qué se volvería a hacer igual?
 
@@ -77,6 +92,8 @@ nativo y prohíbe cualquier atajo de servidor.
 
 - Diseñar sobre un nombre de herramienta sin abrir su documentación primero. Costó un workspace.
 - Escribir código antes de leer la constitución del proyecto, teniéndola a un `cat` de distancia.
+- Deducir de qué proyecto viene un trabajo previo en vez de abrir los repositorios. Lo caro no fue
+  la atribución: fueron las decisiones de producto ya tomadas que contradije sin saberlo.
 
 ---
 
@@ -88,6 +105,10 @@ nativo y prohíbe cualquier atajo de servidor.
       que no dice en cuál no es auditable` → tema propuesto: `adapter-ids-name-the-network`
 - [ ] `Una búsqueda sobre datos ajenos pertenece al momento de emisión con consentimiento, nunca al
       momento de verificación` → tema propuesto: `query-at-issuance-not-verification`
+- [ ] `Un resultado declara qué es y qué no estima; si no lo dice, se lee como predicción`
+      → tema propuesto: `results-declare-themselves`
+- [ ] `Medir a quién cubre una fuente antes de dejarla influir en un resultado`
+      → tema propuesto: `measure-coverage-before-scoring`
 
 ## Verify
 

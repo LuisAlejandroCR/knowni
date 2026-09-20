@@ -62,10 +62,14 @@ Busqué en tus repos. `creva-zk` no es un antecedente parecido: es
 | La tabla de divulgación como comentario de cabecera en cada circuito | La convención se mantiene, y además se verifica en un test |
 | La disciplina de `degraded` vs `failed` | Idéntica, y por la misma razón: "no calificas" y "no se pudo consultar" son respuestas distintas |
 
-Y de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia), que es debida diligencia notarial
-para compraventa —**el mismo dominio**—: el cliente de Croma entero, verificado en vivo el
-2026-08-11. Rutas, envoltorio `{data}`, jobs `202`, reintento en el `502` de Rama Judicial y el
-patrón `BlockResult<T>` de degradación elegante. No se reescribe.
+Y de los dos proyectos de Croma, que no son lo mismo:
+
+- [**`creva_score`**](https://github.com/LuisAlejandroCR/creva_score) — **la hackathon** (IA
+  Hackathon GovTech, 12–16 ago 2026). De ahí sale el cliente maduro, el caché, `SourceResult<T>`
+  y, sobre todo, un conjunto de decisiones de producto ya publicadas.
+- [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) — **producto sin terminar**, debida
+  diligencia notarial para compraventa. Mismo dominio que esto, así que su mapa de rutas `/co/*`
+  vale; su estado obliga a re-verificar antes de depender.
 
 **Y hay una coincidencia afortunada que vale más que todo lo anterior.**
 
@@ -103,11 +107,10 @@ fuentes es el riesgo real, no la criptografía"*. Croma resuelve la mitad de ese
 | `capacity` | no estaba en el catálogo | `/co/sicaac/insolvency-cases/v1` y Rama Judicial |
 | `solvency`, `formality` | operador de PILA | **sigue abierto** — ver más abajo |
 
-Y hay algo mejor todavía: ya trabajaste contra esta API. [`Digentia`](https://github.com/LuisAlejandroCR/Digentia)
-es debida diligencia notarial para compraventa de inmueble, vehículo o negocio — **el mismo dominio**
-— con el cliente de Croma resuelto, verificado en vivo el 2026-08-11. Rutas, envoltorio `{data}`,
-jobs `202`, reintento en el `502` de Rama Judicial y el patrón `BlockResult<T>`. Ese cliente se
-reutiliza, no se reescribe. Detalle completo en [`CROMA.md`](CROMA.md).
+Y hay algo mejor todavía: ya trabajaste contra esta API, dos veces. El cliente sale de
+[**`creva_score`**](https://github.com/LuisAlejandroCR/creva_score) —la hackathon— y el mapa de
+rutas colombianas de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia). Ninguno se
+reescribe. Detalle completo en [`CROMA.md`](CROMA.md).
 
 ### Lo que sigue abierto
 
@@ -166,7 +169,74 @@ Tres consecuencias que no son obvias:
    eliminar. Pedirlo "solo para el alta" lo reintroduce entero — el número se teclea, o se lee por
    NFC.
 
-## 6. El catálogo de predicados
+## 6. Lo que `creva_score` ya decidió, y que aquí hay que respetar
+
+Tu hackathon de Croma no solo dejó código. Dejó **decisiones de producto publicadas**, y dos de
+ellas chocan de frente con lo que yo había escrito. Las dos las tienes tú bien y yo mal.
+
+### Antecedentes penales: fuera
+
+`creva_score` lo dice sin matices: *"No usamos antecedentes penales. Ni de ella, ni de nadie. Es
+una decisión firme y no va a cambiar."*
+
+Yo había metido `/co/policia/criminal-records/v1` dentro de `standing`. Se retira, y la razón
+aguanta sola: un antecedente penal no dice si alguien puede pagar un arriendo. Dice que cumplió una
+condena. Convertirlo en filtro de vivienda le cierra la puerta a quien ya pagó, a escala y en
+silencio — que es el daño exacto que este producto existe para no causar.
+
+Lo que sí se mantiene es **otra pregunta**, y la diferencia no es de grado:
+
+| | Pregunta | ¿Se responde? |
+|---|---|---|
+| `sanctions` | ¿Hay una **inhabilidad legal vigente** para contratar? (OFAC, ONU, Procuraduría, Contraloría, Contaduría) | Sí. Es una restricción vigente, y una contraparte regulada tiene obligación de mirarla |
+| ~~antecedentes penales~~ | ¿Qué hizo esta persona en el pasado? | **No.** Nadie impuso ese castigo adicional |
+
+### El puntaje: yo dije "nunca", y estaba mal formulado
+
+Escribí *"nunca emitir un puntaje"* como exclusión no negociable. `creva_score` **sí emite uno**, y
+tiene razón — lo que lo hace defendible es que **el resultado se declara a sí mismo**:
+
+```
+kind: 'descriptive'
+does_not_estimate:
+  · La probabilidad de que dejes de pagar un crédito.
+  · Tu historial crediticio, ni lo sustituye.
+  · Una decisión de una institución financiera.
+```
+
+Eso es exactamente lo que le falta a `SolvencyTier`. `STRONG` es una banda descriptiva —"el ingreso
+cubre tres veces el canon"— y hoy no lo dice en ninguna parte, así que un arrendador lo puede leer
+como "buen pagador", que es una predicción que nadie hizo.
+
+Lo que cambia: el sobre lleva una declaración con esa forma. Lo que no cambia: Knowni sigue sin
+emitir un número agregado, y ahora por una razón concreta en vez de un principio de folleto —
+`creva_score` le da a un banco algo que mirar donde no había nada, y un puntaje es la forma correcta
+de eso; Knowni le quita a un arrendador un expediente que no debía tener, y un puntaje se lo
+devolvería convertido en cifra.
+
+### Medir la cobertura antes de que una fuente puntúe
+
+El sello de negocio de `creva_score` no aporta al puntaje, y la razón está medida, no supuesta: *"el
+directorio cubre muchísimo mejor a unos estados que a otros; si diera puntos, premiaría el código
+postal"*.
+
+Aquí aplica igual y más fuerte: PILA cubre a quien cotiza. Si `formality` alimentara una decisión
+agregada, premiaría la formalidad laboral y castigaría a la mitad informal del país por su forma de
+trabajar, no por su capacidad de pagar. Por eso es un predicado separado que la contraparte tiene
+que pedir **a la vista** — y antes de medir nada, hay que medir a quién cubre.
+
+### Y una pieza que no había considerado
+
+`creva_score` resuelve "este reporte no se puede falsificar" **sin cadena**: huella por archivo,
+firma con la llave de Creva, folio visible, y el banco lo comprueba sin pedirle nada al usuario.
+
+Merece una pregunta honesta: para el caso de uso de un arrendador, ¿hace falta anclar en Stellar, o
+un sello firmado resuelve lo mismo más barato? La respuesta que le veo: el sello demuestra
+*integridad y origen*; el ancla demuestra *que existía en un momento* y no depende de que la llave
+de Creva siga viva en diez años. Son complementarios, no alternativos — y el sello es la que
+funciona sin cripto en el flujo, que es lo que `MOBILE.md` marca como fricción abierta.
+
+## 7. El catálogo de predicados
 
 Construidos hoy:
 
@@ -175,7 +245,7 @@ Construidos hoy:
 | `personhood` | ¿Existe, vigente, vivo, mayor de edad? | un booleano |
 | `solvency` | ¿Le alcanza para el canon? | una banda: 1×, 2×, 3× |
 | `formality` | ¿Cotiza, y hace cuánto? | un booleano |
-| `standing` | ¿Está en listas restrictivas? | un booleano |
+| `sanctions` | ¿Hay una inhabilidad legal vigente para contratar? | un booleano |
 
 Candidatos naturales, en orden de valor:
 
@@ -195,15 +265,16 @@ Candidatos naturales, en orden de valor:
 
 Y los que **no** hay que construir, por más que los pidan:
 
-- **Un puntaje**. En el momento en que Knowni emite un número de 0 a 1000,
-  es una central de riesgo con otro nombre, hereda toda su regulación, y el
-  arrendador vuelve a decidir sobre una cifra opaca. El producto responde
-  preguntas que el arrendador formuló; no le da una opinión.
+- **Un número agregado**, aquí. No por principio universal —ver la sección 6— sino porque en este
+  producto le devolvería al arrendador una cifra opaca sobre la que decidir, que es exactamente lo
+  que se le está quitando. Knowni responde preguntas que el arrendador formuló; no le da una
+  opinión.
+- **Antecedentes penales**, de nadie, por ninguna vía. Decisión firme, heredada de `creva_score`.
 - **Cualquier predicado sobre datos no públicos y no consentidos** — redes
   sociales, scraping, "señales de comportamiento". Un registro público es el
   publicado por una autoridad, no lo que se puede encontrar.
 
-## 7. Quién paga
+## 8. Quién paga
 
 Vale la pena decidirlo temprano porque cambia el diseño.
 
@@ -217,7 +288,7 @@ Vale la pena decidirlo temprano porque cambia el diseño.
 El default: **paga el verificador, por verificación**. Es el único que no le
 cobra a la persona por demostrar que es quien dice.
 
-## 8. Riesgos honestos
+## 9. Riesgos honestos
 
 **El acceso a las fuentes sigue siendo el riesgo, pero es la mitad del que era.**
 Croma cubre identidad, antecedentes, insolvencia y registro mercantil con una
@@ -246,7 +317,7 @@ que decirlo; para producción es una ceremonia multi-parte.
 inmobiliaria ya tiene tu correo, la anclaje es igualmente correlacionable por
 tiempo. Anclar no es anonimato de red.
 
-## 9. Regional
+## 10. Regional
 
 Croma cubre **Colombia, Perú y México** con un solo contrato, así que la parte
 de acceso ya está resuelta para los tres. Lo que sigue decidiendo el orden es la
@@ -264,7 +335,7 @@ Lo que no cambia entre países: los cuatro predicados, el sobre, el anclaje y
 la frontera de privacidad. Lo que cambia es `sources/` — y con Croma, para tres
 de estos países, cambia menos de lo que parecía.
 
-## 10. Decisiones que necesitan tu criterio
+## 11. Decisiones que necesitan tu criterio
 
 Estas no las tomé; están abiertas a propósito. Dos de la versión anterior ya no lo están: móvil es
 nativo (sección 5) y la fuente de registros públicos es Croma (sección 4).
@@ -276,10 +347,15 @@ nativo (sección 5) y la fuente de registros públicos es Croma (sección 4).
 2. **¿El inmueble entra en el alcance?** `propertyStanding` —matrícula libre de gravámenes, el
    vendedor es el titular— le da la vuelta al producto: hoy el arrendatario prueba todo y el
    arrendador nada. Depende de la respuesta anterior sobre SNR.
-3. **¿Demo con anclaje `memo` o con contrato Soroban?** `memo` corre hoy en testnet sin desplegar
+3. **¿Sello firmado, ancla en cadena, o los dos?** `creva_score` ya demuestra que un reporte
+   infalsificable no necesita cadena: huella por archivo, firma, folio visible. El sello prueba
+   integridad y origen y funciona sin cripto en el flujo; el ancla prueba que existía en un momento
+   y no depende de que una llave siga viva en diez años. Mi lectura: complementarios, y el sello
+   primero porque quita la fricción de que el usuario necesite XLM.
+4. **¿Demo con anclaje `memo` o con contrato Soroban?** `memo` corre hoy en testnet sin desplegar
    nada; el contrato es el producto y es el que demuestra la protección contra replay.
-4. **¿Prueba ZK real o atestación firmada?** Depende de cerrar el hueco de Poseidon sobre
+5. **¿Prueba ZK real o atestación firmada?** Depende de cerrar el hueco de Poseidon sobre
    BLS12-381. El puerto las hace intercambiables, así que se pueden mostrar las dos.
-5. **¿Arrendamiento o compraventa primero?** Compraventa tiene notario —un verificador
+6. **¿Arrendamiento o compraventa primero?** Compraventa tiene notario —un verificador
    institucional con obligación legal de verificar, y por tanto presupuesto— y es el cliente que
    `Digentia` ya estaba atendiendo. Arrendamiento tiene volumen y ciclos cortos.

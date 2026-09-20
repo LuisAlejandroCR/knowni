@@ -33,22 +33,48 @@ Lo que sobrevive de `retrieval/`, y por qué:
 La deuda está abierta: el código de `retrieval/` sigue en el repositorio con su lectura vieja.
 Ver [`verificacion.md`](verificacion.md) → *Deuda conocida*.
 
+## Los dos proyectos previos, y cuál pesa más
+
+No son lo mismo y conviene no confundirlos:
+
+| Proyecto | Qué es | Qué aporta aquí |
+|---|---|---|
+| [**`creva_score`**](https://github.com/LuisAlejandroCR/creva_score) | **La hackathon.** IA Hackathon GovTech, 12–16 de agosto de 2026, sobre Croma. México, para emprendedoras que piden su primer crédito | El cliente de Croma **más maduro** (tope de polls, timeout, `sleep` y logger inyectables), el caché, y — más importante — un conjunto de decisiones de producto ya tomadas y publicadas. Ver abajo |
+| [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) | **Un producto sin terminar.** Debida diligencia notarial para compraventa, Colombia | Las rutas `/co/*` y sus esquemas de respuesta. Es el mismo dominio que Knowni, así que el mapa de endpoints vale; el estado del proyecto no lo invalida, pero sí obliga a re-verificar antes de depender |
+
+**El cliente se toma de `creva_score`, no de `Digentia`.** Mismo contrato, mejor implementación:
+tope de polls (un job colgado no cuelga la app), timeout explícito, y `sleep`/`fetch`/`logger`
+inyectables — que es lo que permite probarlo entero sin red. Su `SourceResult<T>` es el mismo shape
+que este repositorio ya usa.
+
+**Y hay algo que pesa más que el código.** `creva_score` tiene decisiones de producto publicadas
+que este proyecto tiene que respetar o contradecir a la cara. Están en
+[`memoria.md`](memoria.md) → D-09 y D-10.
+
 ## Endpoints y a qué predicado sirven
 
-Rutas tomadas de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia), donde fueron
-verificadas en vivo el **2026-08-11**. **No re-verificadas en esta sesión** — el proxy de red
-bloquea `docs.usecroma.com`. Antes de implementar, confirmar contra la documentación y anotar la
-fecha en [`verificacion.md`](verificacion.md).
+Rutas tomadas de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia), verificadas en vivo
+allí el **2026-08-11**. **No re-verificadas en esta sesión** — el proxy de red bloquea
+`docs.usecroma.com`. Antes de implementar, confirmar contra la documentación y anotar la fecha en
+[`verificacion.md`](verificacion.md).
+
+Dos cosas suben la confianza en esa lista sin haberla llamado:
+
+- **La URL base `https://api.croma.run` aparece en dos repositorios independientes** — `Digentia` y
+  [`creva_score`](https://github.com/LuisAlejandroCR/creva_score).
+- **La convención de rutas es `/{país}/{fuente}/{recurso}/v1`** en los dos, con países distintos:
+  `/co/registraduria/vital-status/v1` y `/mx/siem/establishments/v1`. Una convención que se sostiene
+  entre países es una convención documentada, no una coincidencia.
 
 ### Personas naturales
 
 | Endpoint | Devuelve | Predicado |
 |---|---|---|
 | `POST /co/registraduria/vital-status/v1` | `{found, status: ALIVE\|DECEASED\|UNKNOWN}` | **personhood** — existe y está vivo |
-| `POST /co/policia/criminal-records/v1` | antecedentes penales | **standing** |
-| `POST /co/procuraduria/disciplinary-records/v1` | `{found, has_records}` | **standing** |
-| `POST /co/contraloria/fiscal-records/v1` | `{is_fiscal_responsible, verification_code}` | **standing** |
-| `POST /co/contaduria/state-delinquent-debtors/v1` | deudores morosos del Estado | **standing** |
+| ~~`POST /co/policia/criminal-records/v1`~~ | antecedentes penales | **excluido** — ver [`memoria.md`](memoria.md) D-09 |
+| `POST /co/procuraduria/disciplinary-records/v1` | `{found, has_records}` | **sanctions** (inhabilidad disciplinaria) |
+| `POST /co/contraloria/fiscal-records/v1` | `{is_fiscal_responsible, verification_code}` | **sanctions** (inhabilidad fiscal) |
+| `POST /co/contaduria/state-delinquent-debtors/v1` | deudores morosos del Estado | **sanctions** (inhabilidad) |
 | `POST /co/sicaac/insolvency-cases/v1` | `{cases: [{entity_name, party_type, request_date}]}` | **capacity** — sin proceso de insolvencia |
 | `POST /co/rama-judicial/cases-by-entity/v1` | procesos por nombre y tipo de parte | **capacity** (consulta por nombre → resolución) |
 | `POST /co/rama-judicial/cases-by-radicado/v1` | un proceso por radicado | detalle |

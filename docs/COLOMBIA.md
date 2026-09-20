@@ -10,7 +10,8 @@
 | Fuente | Autoridad | Responde | Acceso |
 |---|---|---|---|
 | **Registraduría** | Registraduría Nacional del Estado Civil | Estado vital | ✅ por [Croma](CROMA.md) |
-| **Policía · Procuraduría · Contraloría · Contaduría** | Cada autoridad | Antecedentes penales, disciplinarios, fiscales, morosidad con el Estado | ✅ por Croma |
+| **Procuraduría · Contraloría · Contaduría** | Cada autoridad | Inhabilidad disciplinaria, responsabilidad fiscal, morosidad con el Estado | ✅ por Croma |
+| ~~**Policía**~~ | — | Antecedentes penales | **Excluido por decisión de producto**, no por acceso. Ver [`memoria.md`](memoria.md) D-09 |
 | **SICAAC** | Supersociedades | Procesos de insolvencia | ✅ por Croma |
 | **Rama Judicial · SAMAI** | Rama Judicial | Procesos por parte o radicado | ✅ por Croma (consulta por nombre) |
 | **RUES** | Confecámaras | Matrícula mercantil, representación legal | ✅ por Croma |

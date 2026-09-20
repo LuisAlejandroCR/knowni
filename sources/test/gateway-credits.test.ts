@@ -1,6 +1,5 @@
-// sources/test/gateway-credits.test.ts
-// The spend ceiling for the AI gateway: parsing, pricing and the rule that
-// an unreadable meter is never read as "there is budget left".
+// gateway-credits.test.ts: The spend ceiling for the AI gateway: parsing, pricing and the rule
+// that an unreadable meter is never read as "there is budget left".
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

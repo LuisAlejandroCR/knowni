@@ -1,17 +1,5 @@
-// core/src/merkle.ts
-// The issuer's published claim set, as a Merkle tree, and the inclusion
-// proof a subject presents against it.
-//
-// Why this and not an in-circuit signature check: a signature verification
-// gadget is the single most expensive thing a predicate circuit can do, and
-// it forces the circuit's embedded curve to match the issuer's key. A Merkle
-// path costs one hash per level and is indifferent to how the issuer signs.
-// The issuer signs the ROOT, once, out of circuit — see docs/ARCHITECTURE.md,
-// "Two ways to trust an issuer".
-//
-// Revocation comes free: an issuer who republishes the root without a leaf
-// has revoked that claim, and a proof against the old root is refused by the
-// on-chain policy that pins the current one.
+// merkle.ts: the issuer's tree and the inclusion check a verifier runs.
+// The same fold the circuit performs, so both sides agree on what a root means.
 
 import type { FieldHash } from "./hash.ts";
 import { fromHex, u32be, utf8 } from "./hash.ts";
@@ -32,11 +20,6 @@ export interface MerkleTree {
   proveInclusion(leaf: string): MerkleProof | undefined;
 }
 
-// Leaves and internal nodes are hashed under DIFFERENT domains. Without
-// that separation a caller who can choose a leaf's bytes can submit a value
-// that is really an internal node, and prove membership of something the
-// issuer never put in the tree (the classic second-preimage attack on
-// unbalanced Merkle trees).
 export function hashLeaf(h: FieldHash, commitmentHex: string): string {
   return h.hash(LEAF_DOMAIN, [fromHex(commitmentHex)]);
 }
@@ -45,11 +28,6 @@ function hashNode(h: FieldHash, left: string, right: string): string {
   return h.hash(NODE_DOMAIN, [fromHex(left), fromHex(right)]);
 }
 
-// Builds the tree over already-hashed leaves. An odd level promotes its last
-// node unchanged rather than duplicating it: duplicating the last leaf lets
-// a 3-leaf tree and a 4-leaf tree with a repeated last element share a root,
-// which is a forgery surface. Promotion cannot collide, because a promoted
-// node is carried, never re-hashed.
 export function buildMerkleTree(h: FieldHash, leaves: readonly string[]): MerkleTree {
   if (leaves.length === 0) {
     // An empty set still needs a root a contract can pin, and it must not be
@@ -95,9 +73,6 @@ export function buildMerkleTree(h: FieldHash, leaves: readonly string[]): Merkle
   };
 }
 
-// The verifier side, and the exact computation the circuit performs: fold
-// the path into a root and compare. It never looks the leaf up anywhere —
-// that is the point, the relying party holds only the root.
 export function verifyInclusion(h: FieldHash, proof: MerkleProof): boolean {
   let node = proof.leaf;
   for (const step of proof.path) {
@@ -106,9 +81,6 @@ export function verifyInclusion(h: FieldHash, proof: MerkleProof): boolean {
   return constantTimeEqualHex(node, proof.root);
 }
 
-// A root comparison is not secret-dependent, but the same helper is used for
-// commitment openings below, where it is — so there is one comparison in the
-// codebase and it is the safe one.
 export function constantTimeEqualHex(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;

@@ -1,16 +1,6 @@
-// client.ts: the HTTP client for Croma, the government-data API.
-// Speaks the documented contract — 200, 202 + job polling, 502 upstream —
-// and never throws, never lets a raw payload cross. See docs/CROMA.md.
-
-// Two rules this file exists to hold, so no adapter has to restate them:
-//
-//   never throws   a verification asks four sources. An exception from one
-//                  would take down the other three, so every failure comes
-//                  back as a typed degradation from a fixed vocabulary.
-//   never echoes   these registries put the queried document number in their
-//                  own error text. Nothing from an upstream body or message
-//                  crosses this boundary — the caller gets a reason, and the
-//                  operator gets a status code and a rate-limit budget.
+// client.ts: the HTTP client for Croma, the government-data API. Speaks the documented
+// contract — 200, 202 + job polling, 502 upstream — and never throws, never lets a raw payload
+// cross.
 
 import type { SourceFailureReason } from "../types.ts";
 
@@ -30,9 +20,6 @@ const DEFAULT_TIMEOUT_MS = 60_000;
 const DEFAULT_MAX_RETRIES = 3;
 const DEFAULT_BACKOFF_MS = 500;
 
-// What the operator is allowed to see. No body, no upstream message and no
-// request parameter: a status code, the logical route, and the rate-limit
-// budget, which is an operations fact and not a fact about a person.
 export interface CromaTelemetry {
   readonly path: string;
   readonly status: number;
@@ -59,8 +46,6 @@ export interface CromaClientOptions {
   readonly backoffMs?: number;
 }
 
-// `data: null` is a registry answering "no record", which is a different
-// outcome from a failure and must not collapse into one.
 export type CromaOutcome =
   | { readonly status: "data"; readonly data: unknown }
   | { readonly status: "degraded"; readonly reason: SourceFailureReason };
@@ -71,8 +56,6 @@ export interface CromaClient {
 
 const degrade = (reason: SourceFailureReason): CromaOutcome => ({ status: "degraded", reason });
 
-// Terminal job states from the documented contract. Anything else means the
-// job is still running.
 const TERMINAL = new Set(["completed", "failed", "canceled", "expired"]);
 
 function rateLimitOf(response: Response): CromaTelemetry["rateLimit"] {
@@ -154,8 +137,7 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
     }
   }
 
-  // A settled body is `{ data }`; `data: null` is a registry saying no record.
-  function outcomeOf(payload: Record<string, unknown> | undefined): CromaOutcome {
+    function outcomeOf(payload: Record<string, unknown> | undefined): CromaOutcome {
     if (payload === undefined || !("data" in payload)) return degrade("invalid_response");
     const data = payload.data;
     if (data === null || data === undefined) return degrade("not_found");

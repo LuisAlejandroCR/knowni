@@ -1,10 +1,5 @@
-// core/src/index.ts
-// The public surface of @knowni/core: claims, predicates, the commitment
-// and Merkle machinery, session binding, and the disclosure envelope.
-//
-// Nothing in this workspace imports a chain SDK, an HTTP client or a vector
-// database. That is checked, not merely intended — see
-// core/test/no-vendor-imports.test.ts.
+// index.ts: The public surface of @knowni/core: claims, predicates, the commitment and Merkle
+// machinery, session binding, and the disclosure envelope.
 
 export type {
   AssetStandingClaim,

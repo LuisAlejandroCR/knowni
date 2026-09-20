@@ -1,7 +1,6 @@
-// anchoring/test/stellar.test.ts
-// Both Stellar paths, against stub submitters. What is checked here is not
-// that Stellar works — it is that this adapter never throws, never invents a
-// receipt, and never lets a provider's raw error reach a result.
+// stellar.test.ts: Both Stellar paths, against stub submitters. What is checked here is not
+// that Stellar works — it is that this adapter never throws, never invents a receipt, and
+// never lets a provider's raw error reach a result.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

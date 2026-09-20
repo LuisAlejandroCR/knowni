@@ -1,5 +1,4 @@
-// anchoring/src/index.ts
-// The port, the registry, and the adapters that exist today.
+// index.ts: The port, the registry, and the adapters that exist today.
 
 export type {
   AnchorDegraded,

@@ -1,6 +1,6 @@
-// sicaac.ts: capacity from SICAAC's insolvency register.
-// Answers "no insolvency proceeding is on record" — the half of capacity a
-// notary asks about in a conveyance, and no more than that.
+// sicaac.ts: capacity from SICAAC's insolvency register. Answers "no insolvency proceeding is
+// on record" — the half of capacity a notary asks about in a conveyance, and no more than
+// that.
 
 import type { CapacityClaim } from "@knowni/core";
 import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
@@ -9,9 +9,6 @@ import type { CromaClient } from "../../providers/croma/client.ts";
 
 export const INSOLVENCY_PATH = "/co/sicaac/insolvency-cases/v1";
 
-// Only the count matters. The response lists the conciliation centre, the
-// party type and the filing date of every case; reducing to "are there
-// any" is what keeps a bankruptcy history out of the credential.
 function caseCount(data: unknown): number | undefined {
   if (typeof data !== "object" || data === null) return undefined;
   const cases = (data as Record<string, unknown>).cases;
@@ -29,10 +26,6 @@ export function createSicaacCapacitySource(client: CromaClient): SourcePort {
         document_type: subject.documentKind,
       });
       if (outcome.status === "degraded") {
-        // An empty register is the normal, good answer here: nobody is in
-        // insolvency proceedings. The route says so with `cases: []`, but a
-        // `data: null` would arrive as not_found and must not be read as a
-        // restriction either way.
         return degraded(outcome.reason);
       }
 

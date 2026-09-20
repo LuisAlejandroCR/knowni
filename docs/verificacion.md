@@ -71,7 +71,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | `ofAge` se deriva de que la cédula de ciudadanía solo se expide a mayores de edad. Es una regla jurídica, no un dato que devuelva la fuente | `sources/src/country/colombia/registraduria.ts` | confirmar con el concepto legal |
 | Ningún adaptador se ha ejercido contra una respuesta real sobre una persona: los esquemas vienen del OpenAPI de Croma, no de una llamada | `sources/src/country/colombia/` | requiere un titular que autorice |
 | Los tests están planos (`*/test/*.test.ts`); la constitución pide `test/unit · fuzz · invariant` con sufijo `.spec.ts` | todos los workspaces | ⏳ sin bloque |
-| Las cabeceras de código tienen 10–30 líneas con narrativa; la constitución pide 2–3 líneas sin justificaciones. El razonamiento va a `memoria.md` | todos los `.ts` | ⏳ sin bloque |
+| ~~Cabeceras de 10–30 líneas con narrativa~~ **Saldada el 2026-09-20:** 65 archivos con cabecera de 2–3 líneas y 146 bloques narrativos retirados. El razonamiento vive en `memoria.md` | todos los `.ts` | ✅ |
 | `sources/src/country/colombia/pila.ts` habla de un operador que todavía no existe como integración | `sources/` | B4 |
 | El código sigue llamando `standing` a lo que la documentación ya llama `sanctions` (`StandingClaim`, `proveStanding`, el campo del sobre). El renombrado va con B2 | `core/`, `sources/`, `journey/` | B2 |
 | `IncomeBasis` no tiene el eje de procedencia `observed \| documentary \| self_declared` del proyecto GovTech anterior | `core/src/claims.ts` | B4b |

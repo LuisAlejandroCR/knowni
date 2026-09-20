@@ -1,7 +1,6 @@
-// core/test/support/fixtures.ts
-// Synthetic claims used across the core tests. The values are deliberately
-// distinctive (odd amounts, a rare month) so an invariant test can search a
-// serialised disclosure for them and know a match is not a coincidence.
+// fixtures.ts: Synthetic claims used across the core tests. The values are deliberately
+// distinctive (odd amounts, a rare month) so an invariant test can search a serialised
+// disclosure for them and know a match is not a coincidence.
 
 import type { FormalityClaim, IdentityClaim, IncomeClaim, StandingClaim } from "../../src/claims.ts";
 

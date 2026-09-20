@@ -1,8 +1,6 @@
-// anchoring/src/adapters/memory.ts
-// An in-process anchor with a real nullifier set. Two uses, both honest:
-// every test in this repository runs against it, and a deployment that has
-// not chosen a chain yet can run the whole journey on it and swap later —
-// which is the claim the port makes, exercised rather than asserted.
+// memory.ts: an in-process anchor with a real nullifier set.
+// For tests and for a demo with the chain switched off: it guards replays
+// like a contract would, and says so through the same port.
 
 import type { AnchorRequest, AnchorResult, AnchoringPort } from "../types.ts";
 import { degraded, nowSeconds } from "../types.ts";

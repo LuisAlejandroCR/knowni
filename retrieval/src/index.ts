@@ -1,7 +1,6 @@
-// retrieval/src/index.ts
-// Entity resolution over public records. Read types.ts before adding a
-// caller: the rule about who may call this port is the product's main
-// privacy boundary, and it is a rule about call sites, not about types.
+// index.ts: entity resolution over public records.
+// Normalisation and a resolution policy with a floor and a margin; read types.ts
+// before adding a caller.
 
 export type { Candidate, PublicRecord, RecordIndexPort, RecordQuery } from "./types.ts";
 export { normalizeName, tokenOverlap, tokenizeName } from "./normalize.ts";

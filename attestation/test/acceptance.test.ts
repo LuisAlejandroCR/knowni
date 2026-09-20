@@ -1,5 +1,4 @@
-// attestation/test/acceptance.test.ts
-// The whole acceptance, in order: request, binding, evidence, revocation,
+// acceptance.test.ts: The whole acceptance, in order: request, binding, evidence, revocation,
 // and one atomic claim of the nullifier at the end — never before.
 
 import { test } from "node:test";
@@ -212,9 +211,6 @@ test("a different presentation under the same nullifier is a replay", () => {
 });
 
 test("nothing before the last step consumes the nullifier", () => {
-  // Every refusal path, then a good presentation: if any of them had
-  // claimed, the subject would be locked out of their own credential by a
-  // failure that was never theirs.
   const ledger = createMemoryNullifierLedger();
   const silent: RevocationOracle = { stateOf: () => ({ status: "unknown" }) };
   const impostor = generateIssuerKeypair();

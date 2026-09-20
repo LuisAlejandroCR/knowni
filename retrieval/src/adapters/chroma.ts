@@ -1,18 +1,6 @@
-// retrieval/src/adapters/chroma.ts
-// Chroma behind the port, written against the smallest slice of its API
-// this system uses rather than against the chromadb package.
-//
-// The point of the indirection is not to avoid a dependency for its own
-// sake. It is that the choice between Chroma, Qdrant, pgvector and Weaviate
-// is an operational one a deployment makes — a bank will insist on the
-// database it already runs — and it must not be a change to the screening
-// logic. Everything above this file sees RecordIndexPort.
-//
-// The one substantive adaptation is the score mapping. Chroma returns
-// DISTANCES, and what that distance means depends on the collection's
-// configured space (l2, cosine, ip). The resolution policy in resolve.ts is
-// written against a 0..1 similarity, so the conversion belongs here, named
-// and tested, instead of being a `1 - distance` somewhere in a call site.
+// chroma.ts: Chroma behind the port, written against the smallest slice of its API this system
+// uses rather than against the chromadb package. The point of the indirection is not to avoid
+// a dependency for its own sake.
 
 import type { Candidate, PublicRecord, RecordIndexPort, RecordQuery } from "../types.ts";
 
@@ -36,9 +24,6 @@ export interface ChromaCollection {
   }>;
 }
 
-// Which distance the collection was created with. Getting this wrong does
-// not fail loudly — it silently reorders candidates — so it is required
-// rather than defaulted.
 export type ChromaSpace = "cosine" | "l2" | "ip";
 
 export interface ChromaIndexOptions {
@@ -85,9 +70,6 @@ export function createChromaIndex(
       const candidates: Candidate[] = [];
       for (let i = 0; i < ids.length; i += 1) {
         const distance = distances[i];
-        // A missing distance is not a perfect match. Dropping the row is the
-        // safe direction here: including it at score 1 would make it win the
-        // resolution outright.
         if (typeof distance !== "number" || !Number.isFinite(distance)) continue;
 
         const metadata = metadatas[i] ?? {};
@@ -108,17 +90,11 @@ export function createChromaIndex(
   };
 }
 
-// Distance to a 0..1 similarity, per space. Clamped at both ends: floating
-// point makes an identical vector come back as -1e-17, and a score outside
-// 0..1 would walk straight past the resolution policy's floor check.
 export function toSimilarity(distance: number, space: ChromaSpace): number {
   switch (space) {
     // Chroma's cosine distance is 1 - cosine_similarity, in [0, 2].
     case "cosine":
       return clamp01(1 - distance / 2);
-    // Squared L2, unbounded above. 1/(1+d) is monotone decreasing and lands
-    // in (0, 1]; it is a ranking, not a calibrated probability, which is why
-    // the floor in SCREENING_POLICY must be tuned per corpus.
     case "l2":
       return clamp01(1 / (1 + Math.max(0, distance)));
     // Inner product: Chroma returns 1 - ip, and ip is unbounded, so this can

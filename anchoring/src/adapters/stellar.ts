@@ -1,27 +1,5 @@
-// anchoring/src/adapters/stellar.ts
-// Anchors a commitment on Stellar, two ways, behind one port.
-//
-// Written against a minimal submitter interface rather than against
-// @stellar/stellar-sdk. That is not a shortcut around the integration — it
-// is what keeps the SDK, its version churn and its raw errors out of every
-// other workspace, and what lets these adapters be tested without a network.
-// Wiring a real client in means implementing one small interface.
-//
-// Which of the two to use is a real decision, not a preference:
-//
-//   memo      a payment to self carrying the commitment in MEMO_HASH. 32
-//             bytes exactly, which is the whole commitment and nothing more.
-//             Costs ~0.00001 XLM, needs no contract, works on any Stellar
-//             network today. It CANNOT refuse a repeated nullifier — there
-//             is no state to check against — so replayGuarded is false and
-//             the relying party keeps its own spent set.
-//   contract  a Soroban invocation that verifies the proof, refuses a spent
-//             nullifier and stores the commitment. Replay-guarded, auditable
-//             by anyone, and the path the product ships. Costs more and
-//             needs the contract deployed. See contracts/knowni-verifier.
-//
-// The hackathon demo runs `memo` so the whole journey works on testnet with
-// nothing deployed; the architecture targets `contract`.
+// stellar.ts: Anchors a commitment on Stellar, two ways, behind one port. Written against a
+// minimal submitter interface rather than against @stellar/stellar-sdk.
 
 import type {
   AnchorRequest,
@@ -69,10 +47,6 @@ export function createStellarMemoAnchor(
       try {
         bytes = decode32(request.commitment.hex);
       } catch (error) {
-        // A commitment that is not 32 bytes is a caller bug, not a provider
-        // outage — but it still leaves through the degraded channel, because
-        // an adapter that throws would take the whole verification down over
-        // a durability feature.
         logError(error);
         return degraded(chain, "invalid_response");
       }
@@ -136,9 +110,6 @@ export function createStellarContractAnchor(
 
       if (!response?.hash) return degraded(chain, "invalid_response");
       if (!response.accepted) {
-        // The contract's own reason is mapped onto this port's fixed
-        // vocabulary rather than passed through: a contract error string is
-        // still an external string.
         return degraded(
           chain,
           response.reason === "nullifier_already_spent"

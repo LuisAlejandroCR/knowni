@@ -1,13 +1,6 @@
-// core/src/verify.ts
-// The one function that turns held claims into the envelope a relying party
-// receives. It is the narrow waist of the whole system: above it sit the
-// sources that produce claims, below it the chains that anchor outcomes, and
-// nothing crosses without passing through here.
-//
-// It is pure and synchronous. Everything that could fail, wait or cost money
-// — fetching a claim, generating a proof, writing an anchor — happens on
-// either side of it, which is what lets the disclosure invariant be tested
-// as a property of a function rather than of a running system.
+// verify.ts: turns held claims into the envelope a relying party receives.
+// Pure and synchronous — fetching, proving and anchoring all happen outside it,
+// which is what makes the disclosure invariant testable as a property.
 
 import type { Claim, FormalityClaim, IdentityClaim, IncomeClaim, StandingClaim } from "./claims.ts";
 import type { Disclosure, PredicateResult } from "./disclosure.ts";
@@ -16,9 +9,6 @@ import { SolvencyTier, proveFormality, provePersonhood, proveSolvency, proveStan
 import type { FormalityParams, PersonhoodParams, SolvencyParams, StandingParams } from "./predicates.ts";
 import { deriveNullifier, isExpired, isPurpose, sessionId, type SessionRequest, type SubjectSecret } from "./session.ts";
 
-// What the relying party asked. Every field is public — the subject reads
-// this before deciding to answer, and a question they cannot read is a
-// question they cannot refuse.
 export interface VerificationRequest {
   readonly session: SessionRequest;
   readonly personhood?: Omit<PersonhoodParams, "expectedSubjectRef">;
@@ -53,9 +43,6 @@ export function verify(
   held: HeldClaims,
   nowUnix: number,
 ): VerificationResult {
-  // Checked before anything else and refused rather than thrown: the purpose
-  // is caller-supplied and reaches a hash, so a malformed one must not take
-  // the verification down.
   if (!isPurpose(request.session.purpose)) {
     return { status: "refused", reason: "invalid_purpose" };
   }
@@ -64,10 +51,6 @@ export function verify(
     return { status: "refused", reason: "session_expired" };
   }
 
-  // Every claim must be about the same subject. A bundle that mixes two
-  // people is not a partial answer to be scored — it is malformed, and
-  // answering it at all would let a solvent guarantor's income ride along
-  // with someone else's identity.
   const claims: (Claim | undefined)[] = [
     held.identity?.claim,
     held.income?.claim,
@@ -104,10 +87,6 @@ export function verify(
 
   const id = sessionId(h, request.session);
 
-  // Only the roots that actually backed an answer. Listing a root for a
-  // predicate that came back `unavailable` would tell the relying party
-  // which issuers the subject is enrolled with — a fact about them that no
-  // predicate disclosed.
   const issuerRoots = [
     personhood !== "unavailable" ? held.identity?.issuerRoot : undefined,
     solvency !== "unavailable" ? held.income?.issuerRoot : undefined,

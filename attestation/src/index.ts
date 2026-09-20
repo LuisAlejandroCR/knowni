@@ -1,6 +1,6 @@
 // index.ts: signing and checking an attested credential, offline.
-// An issuer signs a root once; a relying party checks signature, inclusion
-// and commitment with no network, no chain and no call back to the source.
+// The issuer signs a root once; the check is signature, Merkle inclusion and
+// commitment opening, with no network and no chain.
 
 import type { Claim, FieldHash, Salt } from "@knowni/core";
 import { commitClaim, hashLeaf, u64be, utf8, verifyInclusion } from "@knowni/core";
@@ -12,15 +12,9 @@ import type {
   IssuerRegistry,
 } from "./types.ts";
 
-// Node's ed25519 only speaks DER, so raw 32-byte keys are wrapped with these
-// two fixed prefixes. Same trick as the Stellar adapter, and the same reason:
-// no dependency is worth adding for sixteen bytes of header.
 const PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
 const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 
-// Domain separation, in bytes rather than in a string that could be spliced:
-// each field is length-prefixed, so an issuer id ending in a hex digit
-// cannot be re-read as part of the root.
 const ROOT_DOMAIN = "knowni/issuer-root/v1";
 
 export function signedBytes(root: Omit<AttestedRoot, "signature" | "algorithm">): Buffer {
@@ -58,9 +52,6 @@ function privateKeyOf(seed: Uint8Array) {
   });
 }
 
-// The issuer's whole job, once per published root. Nothing per credential is
-// signed, which is what keeps issuance cheap and the subject independent
-// afterwards: the root is public, the paths are theirs.
 export function attestRoot(
   seed: Uint8Array,
   root: Omit<AttestedRoot, "signature" | "algorithm">,
@@ -95,9 +86,6 @@ export function verifyAttestedRoot(registry: IssuerRegistry, attestation: Attest
 export interface CredentialCheck {
   readonly registry: IssuerRegistry;
   readonly nowUnix: number;
-  // How old a published root may be before a relying party stops accepting
-  // it. Freshness of the ROOT, not of the claim: the claim carries its own
-  // attestedAt and the predicates check that separately.
   readonly maxRootAgeSeconds: number;
 }
 
@@ -115,9 +103,6 @@ export function verifyCredential(
   // it is not fresher than fresh.
   if (age < 0 || age > check.maxRootAgeSeconds) return { status: "invalid", reason: "root_expired" };
 
-  // The path must lead to the root the ISSUER signed, not to whatever root
-  // the proof carries — otherwise a valid path into an unsigned tree would
-  // pass, which is the whole attack.
   if (credential.proof.root !== credential.attestation.root) {
     return { status: "invalid", reason: "not_included" };
   }
@@ -131,9 +116,6 @@ export function verifyCredential(
   return { status: "valid" };
 }
 
-// The registry a demo and a test run against: a map, held in memory, with no
-// network behind it. Swapping it for HTTPS or for a chain changes this
-// object and nothing else.
 export function createMemoryRegistry(
   keys: Record<string, Uint8Array>,
   revoked: readonly string[] = [],

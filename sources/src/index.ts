@@ -1,6 +1,6 @@
-// sources/src/index.ts
-// Source adapters and the issuance step. Colombia is the first jurisdiction;
-// nothing in types.ts or issuer.ts knows that.
+// index.ts: source adapters and the issuance step.
+// Colombia is the first jurisdiction and nothing in types.ts or issuer.ts
+// knows it.
 
 export type { SourceFailureReason, SourcePort, SourceResult, SubjectLookup } from "./types.ts";
 export { degraded } from "./types.ts";

@@ -1,10 +1,5 @@
-// core/test/no-vendor-imports.test.ts
-// Chain-agnostic and vendor-agnostic, enforced rather than promised.
-//
-// The failure mode this catches is mundane and fatal: someone imports a
-// Stellar SDK into a predicate "just to format an address", and the domain
-// layer is now pinned to one chain. Keeping core dependency-free is what
-// makes the Stellar adapter replaceable at all.
+// no-vendor-imports.test.ts: asserts core imports no chain SDK, HTTP client or vendor package.
+// The architecture claim, checked mechanically rather than promised in a document.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -14,9 +9,6 @@ import { fileURLToPath } from "node:url";
 
 const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 
-// node: builtins are fine — crypto and its randomness are the one thing a
-// commitment scheme cannot provide for itself. Everything else must be a
-// relative import inside this workspace.
 const ALLOWED_BARE = /^node:/;
 
 function walk(dir: string): string[] {

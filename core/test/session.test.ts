@@ -1,6 +1,5 @@
-// core/test/session.test.ts
-// Session binding and nullifier derivation — the two values that stop a
-// valid proof from being a reusable, linkable bearer token.
+// session.test.ts: Session binding and nullifier derivation — the two values that stop a valid
+// proof from being a reusable, linkable bearer token.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -72,9 +71,6 @@ test("expiry is evaluated against the caller's clock, not an internal one", () =
 });
 
 test("any contract type is a purpose, because the product is not about leases", () => {
-  // The product is "prove you qualify to sign", whatever is being signed.
-  // A closed union here would make adding a contract type a change to the
-  // domain layer — the coupling ChainId is open to avoid.
   for (const purpose of [
     "lease",
     "vehicle-sale",

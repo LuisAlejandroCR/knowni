@@ -1,8 +1,5 @@
-// anchor-testnet.ts: anchors one real commitment on Stellar testnet and
-// prints the transaction hash and its Explorer link. Creates and funds the
-// demo account on first run. Testnet XLM has no value.
-//
-// Run: node --experimental-strip-types anchoring/tools/anchor-testnet.ts
+// anchor-testnet.ts: anchors one real commitment on Stellar testnet and prints the transaction
+// hash and its Explorer link. Creates and funds the demo account on first run.
 
 import { commitOutcome, sha256Hash } from "@knowni/core";
 import { createStellarMemoAnchor } from "../src/adapters/stellar.ts";

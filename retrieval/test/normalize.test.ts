@@ -1,5 +1,4 @@
-// retrieval/test/normalize.test.ts
-// The shapes a Latin American registry actually publishes a name in.
+// normalize.test.ts: The shapes a Latin American registry actually publishes a name in.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

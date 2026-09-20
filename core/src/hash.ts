@@ -1,31 +1,14 @@
-// core/src/hash.ts
-// The one hashing seam in the system. Everything that must agree with a
-// circuit — Merkle nodes, claim commitments, nullifiers — goes through
-// FieldHash rather than calling node:crypto directly, so the day the
-// circuit-compatible hash lands there is exactly one implementation to
-// swap and one place to audit.
+// hash.ts: The one hashing seam in the system. Everything that must agree with a circuit —
+// Merkle nodes, claim commitments, nullifiers — goes through FieldHash rather than calling
+// node:crypto directly, so the day the circuit-compatible hash lands there is exactly one
 
 import { createHash } from "node:crypto";
 
-// A hash over a list of byte strings, returning lowercase hex with no 0x
-// prefix. `domain` is not an optional nicety: two different structures
-// hashed with the same function must never be able to collide, so every
-// caller names what it is hashing.
 export interface FieldHash {
   readonly id: string;
   hash(domain: string, parts: readonly Uint8Array[]): string;
 }
 
-// The reference implementation, and the one every test in this repository
-// runs against. It is NOT the implementation a Groth16 circuit can use:
-// sha256 inside an arithmetic circuit costs tens of thousands of
-// constraints, which is why production circuits use an algebraic hash
-// (Poseidon) over the proving field instead.
-//
-// Both sides of a proof must hash identically, so the Poseidon
-// implementation replaces this one everywhere at once — that is the whole
-// reason this port exists rather than a bare `sha256()` call scattered
-// through the codebase. See docs/ROADMAP.md, "Hash unification".
 export const sha256Hash: FieldHash = {
   id: "sha256",
   hash(domain, parts) {
@@ -48,9 +31,6 @@ export function u32be(value: number): Uint8Array {
   return buf;
 }
 
-// Fixed-width big-endian, never decimal text: two integers concatenated as
-// strings are ambiguous (1‖23 and 12‖3 are the same bytes), and a float or
-// NaN would silently change the digest instead of failing loudly.
 export function u64be(value: number | bigint): Uint8Array {
   const n = typeof value === "bigint" ? value : BigInt(assertSafeNonNegative(value));
   if (n < 0n || n > 0xffff_ffff_ffff_ffffn) {

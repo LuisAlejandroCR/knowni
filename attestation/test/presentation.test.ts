@@ -1,5 +1,4 @@
-// attestation/test/presentation.test.ts
-// One answer, to one counterparty, once. The two attacks a working proof
+// presentation.test.ts: One answer, to one counterparty, once. The two attacks a working proof
 // system still loses to — a moved presentation and a replayed one.
 
 import { test } from "node:test";
@@ -159,9 +158,6 @@ test("a fresh challenge makes yesterday's answer useless", () => {
 });
 
 test("an answer cannot be moved to a cheaper question", () => {
-  // Same audience, same challenge, different parameters: a STRONG answer
-  // about a three-million obligation is not an answer about a ten-million
-  // one, and the params hash is inside the session id.
   const disclosure = disclosureFor(requestFor());
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
@@ -223,9 +219,6 @@ test("a refused presentation does not spend the nullifier", () => {
     spent,
     nowUnix: NOW,
   });
-  // The subject's answer was never accepted, so presenting it properly must
-  // still work — a failed attempt that burned the nullifier would lock
-  // someone out of their own credential.
   assert.deepEqual(
     acceptPresentation(sha256Hash, { disclosure, request, audience: AGENCY, spent, nowUnix: NOW }),
     { status: "accepted" },

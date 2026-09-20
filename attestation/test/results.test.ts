@@ -1,5 +1,4 @@
-// attestation/test/results.test.ts
-// What crosses the wire, and what must not: answers signed by the issuer and
+// results.test.ts: What crosses the wire, and what must not: answers signed by the issuer and
 // bound to one request, with the claim and its salt left in the wallet.
 
 import { test } from "node:test";

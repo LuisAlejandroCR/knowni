@@ -1,5 +1,4 @@
-// sources/test/croma.test.ts
-// The Croma HTTP contract, exercised without a network: 202 polling, the
+// croma.test.ts: The Croma HTTP contract, exercised without a network: 202 polling, the
 // retryable band, and the two rules — never throw, never echo upstream text.
 
 import { test } from "node:test";

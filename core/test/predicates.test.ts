@@ -1,7 +1,6 @@
-// core/test/predicates.test.ts
-// The shared spec for the predicate layer. The Circom circuits in circuits/
-// evaluate the same comparisons on the same encodings, so a case added here
-// is a case the circuit owes an answer to — see circuits/README.md.
+// predicates.test.ts: The shared spec for the predicate layer. The Circom circuits in
+// circuits/ evaluate the same comparisons on the same encodings, so a case added here is a
+// case the circuit owes an answer to — see circuits/README.md.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

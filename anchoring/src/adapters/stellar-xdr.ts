@@ -1,11 +1,6 @@
-// stellar-xdr.ts: the smallest slice of Stellar's wire format this project
-// needs — StrKey, a payment transaction carrying MEMO_HASH, and its
-// signature payload. Written out because the repository ships no dependencies.
-
-// Only what an anchor needs. A full XDR implementation would be the wrong
-// thing to hand-roll; this encodes exactly one transaction shape — one
-// payment operation, no preconditions, a 32-byte hash memo — and refuses
-// anything else by simply not being able to express it.
+// stellar-xdr.ts: the smallest slice of Stellar's wire format this project needs — StrKey, a
+// payment transaction carrying MEMO_HASH, and its signature payload. Written out because the
+// repository ships no dependencies.
 
 import { createHash, createPrivateKey, createPublicKey, sign as cryptoSign } from "node:crypto";
 
@@ -156,9 +151,6 @@ export function encodeTransaction(tx: MemoHashPayment): Buffer {
 
 const ENVELOPE_TYPE_TX = 2;
 
-// What actually gets signed: the network passphrase's hash, the envelope
-// type, then the transaction. Signing the transaction alone would let the
-// same bytes be replayed on another Stellar network.
 export function signaturePayload(networkPassphrase: string, transaction: Buffer): Buffer {
   const networkId = createHash("sha256").update(networkPassphrase, "utf8").digest();
   return Buffer.concat([networkId, u32(ENVELOPE_TYPE_TX), transaction]);
@@ -168,9 +160,6 @@ export function transactionHash(networkPassphrase: string, transaction: Buffer):
   return createHash("sha256").update(signaturePayload(networkPassphrase, transaction)).digest("hex");
 }
 
-// The envelope Horizon accepts: the union discriminant, the transaction, and
-// one decorated signature — the last four bytes of the public key as a hint,
-// then the 64-byte signature.
 export function encodeEnvelope(transaction: Buffer, publicKey: Uint8Array, signature: Uint8Array): string {
   return Buffer.concat([
     u32(ENVELOPE_TYPE_TX),

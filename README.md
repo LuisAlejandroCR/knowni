@@ -139,19 +139,34 @@ Node 22.18+. No hay paso de compilación y no hay dependencias externas.
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 165 pruebas
+npm test      # 179 pruebas
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
 es el recorrido completo, sin red y sin mocks.
 
+### Anclado en Stellar testnet, no prometido
+
+Un compromiso real de este repositorio está en el ledger 4783364 de la testnet, como `MEMO_HASH`
+de una transacción firmada sin SDK ni dependencias:
+
+| Qué | Valor |
+|---|---|
+| Transacción | [`0dc0fdf4…f8161`](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161) |
+| Memo (`hash`) | `a88721ff2ce8c84aca495dd751964fe98f41d06a955b7544394c4702da6df523` |
+| Compromiso anclado | `a88721ff2ce8c84aca495dd751964fe98f41d06a955b7544394c4702da6df523` — el mismo, comprobable contra Horizon |
+| Comisión | 100 stroops |
+
+El memo son 32 bytes y nada más: un compromiso cegado. Ni el resultado, ni la referencia del
+sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/tools/anchor-testnet.ts`.
+
 ### Qué está construido y qué no
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 165 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 179 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
-| Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Contra submitters de prueba |
+| Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
 | Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas y un `200` sobre una empresa pública. **Ninguna sobre una persona** |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |

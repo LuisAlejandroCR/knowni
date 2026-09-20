@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { createCromaClient } from "../src/croma/client.ts";
+import { createCromaClient } from "../src/providers/croma/client.ts";
 
 const fixture = (name: string): Record<string, unknown> =>
   JSON.parse(readFileSync(new URL(`./fixtures/croma/${name}`, import.meta.url), "utf8"));

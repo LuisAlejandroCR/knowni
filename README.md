@@ -97,7 +97,7 @@ Dos límites que el producto no esconde: un trabajador informal no cotiza y se
 ve idéntico a alguien sin ingresos — por eso formalidad es un predicado
 aparte y no un proxy de confiabilidad; y muchos independientes cotizan sobre
 el mínimo legal, así que el IBC es un **piso** del ingreso, no una medición.
-Ambos están escritos en [`sources/src/colombia/pila.ts`](sources/src/colombia/pila.ts)
+Ambos están escritos en [`sources/src/country/colombia/pila.ts`](sources/src/country/colombia/pila.ts)
 y probados en [`sources/test/pila.test.ts`](sources/test/pila.test.ts).
 
 ### Empezamos en Colombia; el diseño no es colombiano
@@ -139,7 +139,7 @@ Node 22.18+. No hay paso de compilación y no hay dependencias externas.
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 137 pruebas
+npm test      # 165 pruebas
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
@@ -149,12 +149,12 @@ es el recorrido completo, sin red y sin mocks.
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 137 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 165 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Contra submitters de prueba |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
 | Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas y un `200` sobre una empresa pública. **Ninguna sobre una persona** |
-| Adaptador de Croma | **No escrito.** Las rutas vienen verificadas de trabajo propio anterior (2026-08-11), no de aquí |
+| Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
 | App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |

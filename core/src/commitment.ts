@@ -75,6 +75,16 @@ function encodeClaim(claim: Claim): Uint8Array[] {
         fromHex(claim.listSetRoot),
         u64be(claim.attestedAt),
       ];
+    case "capacity":
+      return [...head, u64be(claim.restricted ? 1 : 0), utf8(claim.basis), u64be(claim.attestedAt)];
+    case "assetStanding":
+      return [
+        ...head,
+        u64be(claim.registered ? 1 : 0),
+        u64be(claim.encumbered ? 1 : 0),
+        u64be(claim.finesOutstanding ? 1 : 0),
+        u64be(claim.attestedAt),
+      ];
   }
 }
 

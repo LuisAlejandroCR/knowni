@@ -87,5 +87,47 @@ export interface StandingClaim {
   readonly attestedAt: number;
 }
 
-export type Claim = IdentityClaim | IncomeClaim | FormalityClaim | StandingClaim;
+
+// Predicate E — capacity. "No legal restriction relevant to signing this
+// act is on record." Colombia's SICAAC answers the insolvency half of that
+// question, and it is the half a notary asks about in a conveyance.
+//
+// `restricted` is the answer, and `basis` says which register produced it —
+// because "no insolvency proceeding" is a narrower statement than "has
+// capacity", and a counterparty is entitled to know which one they got.
+export type CapacityBasis = "insolvency_proceeding" | "interdiction" | "corporate_status";
+
+export interface CapacityClaim {
+  readonly kind: "capacity";
+  readonly jurisdiction: Jurisdiction;
+  readonly subjectRef: SubjectRef;
+  readonly restricted: boolean; // true = a restriction IS on record
+  readonly basis: CapacityBasis;
+  readonly attestedAt: number;
+}
+
+// Predicate F — assetStanding. The only claim in this file that is not
+// about a person: it is about the thing being sold.
+//
+// `subjectRef` here is the salted reference of the ASSET — the plate, not
+// the owner — which is what keeps a vehicle check from becoming a way to
+// look up who owns it. Ownership is a separate question and a separate
+// claim; this one says the asset exists and is unencumbered.
+export interface AssetStandingClaim {
+  readonly kind: "assetStanding";
+  readonly jurisdiction: Jurisdiction;
+  readonly subjectRef: SubjectRef; // salted ref of the asset identifier
+  readonly registered: boolean; // present in the asset registry
+  readonly encumbered: boolean; // pledge, lien or ownership limitation on record
+  readonly finesOutstanding: boolean; // unpaid infractions attached to it
+  readonly attestedAt: number;
+}
+
+export type Claim =
+  | IdentityClaim
+  | IncomeClaim
+  | FormalityClaim
+  | StandingClaim
+  | CapacityClaim
+  | AssetStandingClaim;
 export type ClaimKind = Claim["kind"];

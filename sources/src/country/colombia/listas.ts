@@ -1,5 +1,4 @@
-// sources/src/colombia/listas.ts
-// Restrictive-list screening, as a source.
+// listas.ts: restrictive-list screening for Colombia, as a source.
 //
 // This is the one adapter that calls the retrieval port, and the reason the
 // boundary in retrieval/src/types.ts is written the way it is: the search
@@ -16,8 +15,8 @@
 import type { StandingClaim } from "@knowni/core";
 import type { RecordIndexPort, ResolutionPolicy } from "@knowni/retrieval";
 import { SCREENING_POLICY, resolve, screen } from "@knowni/retrieval";
-import type { SourcePort, SourceResult, SubjectLookup } from "../types.ts";
-import { degraded } from "../types.ts";
+import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
+import { degraded } from "../../types.ts";
 
 // The lists a Colombian counterparty is normally expected to check. OFAC and
 // the UN list are the international obligation; the Procuraduría and

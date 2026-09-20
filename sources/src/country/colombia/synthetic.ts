@@ -1,4 +1,4 @@
-// sources/src/synthetic/co.ts
+// synthetic.ts: synthetic Colombian sources, for tests and demos.
 // A Colombia that answers offline.
 //
 // Every demo of this kind eventually shows a screen that says "connecting to
@@ -12,9 +12,9 @@
 // reason a reviewer should trust it — it is the real code path.
 
 import type { IdentityClaim } from "@knowni/core";
-import type { PilaClient, PilaContribution } from "../colombia/pila.ts";
-import type { SourcePort, SourceResult, SubjectLookup } from "../types.ts";
-import { degraded } from "../types.ts";
+import type { PilaClient, PilaContribution } from "./pila.ts";
+import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
+import { degraded } from "../../types.ts";
 
 export interface SyntheticSubject {
   readonly documentNumber: string;

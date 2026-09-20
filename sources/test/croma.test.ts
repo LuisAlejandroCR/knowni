@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createCromaClient, type CromaTelemetry } from "../src/croma/client.ts";
+import { createCromaClient, type CromaTelemetry } from "../src/providers/croma/client.ts";
 
 const PATH = "/co/registraduria/vital-status/v1";
 const KEY = "test-key";

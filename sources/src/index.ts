@@ -8,18 +8,30 @@ export { degraded } from "./types.ts";
 export type { HeldCredential, IssueRequest, IssuedSet } from "./issuer.ts";
 export { issueClaimSet } from "./issuer.ts";
 
-export type { CromaClient, CromaClientOptions, CromaOutcome, CromaTelemetry } from "./croma/client.ts";
-export { CROMA_BASE_URL, createCromaClient } from "./croma/client.ts";
+export type { CromaClient, CromaClientOptions, CromaOutcome, CromaTelemetry } from "./providers/croma/client.ts";
+export { CROMA_BASE_URL, createCromaClient } from "./providers/croma/client.ts";
 
-export type { PilaClient, PilaContribution, PilaOptions } from "./colombia/pila.ts";
-export { createPilaFormalitySource, createPilaIncomeSource } from "./colombia/pila.ts";
+export { VITAL_STATUS_PATH, createRegistraduriaPersonhoodSource } from "./country/colombia/registraduria.ts";
+export { INSOLVENCY_PATH, createSicaacCapacitySource } from "./country/colombia/sicaac.ts";
+export {
+  CONTADURIA_PATH,
+  CONTRALORIA_PATH,
+  PROCURADURIA_PATH,
+  createSanctionsSource,
+  listSetRoot,
+} from "./country/colombia/sanctions.ts";
+export type { VehicleLookup, VehicleStandingPort } from "./country/colombia/vehicle.ts";
+export { RUNT_VEHICLE_PATH, SIMIT_PATH, createVehicleStandingSource } from "./country/colombia/vehicle.ts";
 
-export type { ListScreeningOptions } from "./colombia/listas.ts";
-export { CO_DEFAULT_LISTS, createListScreeningSource } from "./colombia/listas.ts";
+export type { PilaClient, PilaContribution, PilaOptions } from "./country/colombia/pila.ts";
+export { createPilaFormalitySource, createPilaIncomeSource } from "./country/colombia/pila.ts";
 
-export type { SyntheticSubject } from "./synthetic/co.ts";
+export type { ListScreeningOptions } from "./country/colombia/listas.ts";
+export { CO_DEFAULT_LISTS, createListScreeningSource } from "./country/colombia/listas.ts";
+
+export type { SyntheticSubject } from "./country/colombia/synthetic.ts";
 export {
   createSyntheticNameResolver,
   createSyntheticPilaClient,
   createSyntheticRegistraduriaSource,
-} from "./synthetic/co.ts";
+} from "./country/colombia/synthetic.ts";

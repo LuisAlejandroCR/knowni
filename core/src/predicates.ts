@@ -11,7 +11,14 @@
 // Every function returns an outcome and NOTHING else. No function in this
 // file returns, logs or embeds the claim it read.
 
-import type { FormalityClaim, IdentityClaim, IncomeClaim, StandingClaim } from "./claims.ts";
+import type {
+  AssetStandingClaim,
+  CapacityClaim,
+  FormalityClaim,
+  IdentityClaim,
+  IncomeClaim,
+  StandingClaim,
+} from "./claims.ts";
 
 // What a solvency proof discloses. A band, never an amount: a landlord
 // needs to know the rent is covered, and "COP 4,812,300/month" is a fact
@@ -122,6 +129,52 @@ export function proveStanding(claim: StandingClaim, params: StandingParams): boo
     claim.subjectRef.hex === params.expectedSubjectRef &&
     claim.listSetRoot === params.acceptedListSetRoot &&
     !claim.listed &&
+    withinAge(claim.attestedAt, params.nowUnix, params.maxAgeSeconds)
+  );
+}
+
+export interface CapacityParams {
+  readonly expectedSubjectRef: string;
+  readonly jurisdiction: string;
+  // Which registers the relying party accepts as answering capacity. A
+  // notary in a conveyance asks about insolvency; someone else may need
+  // more, and pretending one register answered the other is the failure
+  // this parameter exists to prevent.
+  readonly acceptedBases: readonly CapacityClaim["basis"][];
+  readonly nowUnix: number;
+  readonly maxAgeSeconds: number;
+}
+
+export function proveCapacity(claim: CapacityClaim, params: CapacityParams): boolean {
+  return (
+    claim.subjectRef.hex === params.expectedSubjectRef &&
+    claim.jurisdiction === params.jurisdiction &&
+    params.acceptedBases.includes(claim.basis) &&
+    !claim.restricted &&
+    withinAge(claim.attestedAt, params.nowUnix, params.maxAgeSeconds)
+  );
+}
+
+export interface AssetStandingParams {
+  // The asset the relying party is buying, as the same salted reference the
+  // claim carries. An attestation about a different car is the exact swap
+  // this check exists to catch.
+  readonly expectedAssetRef: string;
+  readonly jurisdiction: string;
+  readonly nowUnix: number;
+  readonly maxAgeSeconds: number;
+  // Outstanding fines block a transfer in Colombia, but whether they
+  // disqualify the deal is the buyer's call, not ours.
+  readonly requireNoFines: boolean;
+}
+
+export function proveAssetStanding(claim: AssetStandingClaim, params: AssetStandingParams): boolean {
+  return (
+    claim.subjectRef.hex === params.expectedAssetRef &&
+    claim.jurisdiction === params.jurisdiction &&
+    claim.registered &&
+    !claim.encumbered &&
+    (!params.requireNoFines || !claim.finesOutstanding) &&
     withinAge(claim.attestedAt, params.nowUnix, params.maxAgeSeconds)
   );
 }

@@ -287,6 +287,17 @@ una segunda fuente comercial solo cuando su cobertura esté comprobada.
 | 9 | ensayo en modo avión, logs sanitizados y prueba desde cero |
 | 10 | videos demo/pitch, auditoría de afirmaciones y entrega final |
 
+### Día 8 — diseño móvil para aprobación
+
+Entrega de diseño, no app terminada: `design/day-08/README.md` y capturas del prototipo.
+Criterios: ocho pantallas a 390 × 844; solicitud, consentimiento, emisión, revisión,
+entrega, resultado y degradación; destinatario y finalidad visibles antes de compartir;
+sin foto de documento, score ni selector de blockchain; estados no resueltos nunca negativos.
+Los MD separan responsabilidades mobile, core/attestation, sources y QA. La aprobación visual
+no cierra A1, A9, A12 ni acredita ejecución nativa. Compartir en producción queda bloqueado
+hasta autenticar los resultados mínimos sin entregar `claim`/`salt`, integrar verificación
+criptográfica con aceptación y admitir el perfil vehicular en `Disclosure`.
+
 ## Puertas de decisión
 
 1. **Croma/PILA:** no prometer solvencia por aportes hasta comprobar que el endpoint devuelve IBC,

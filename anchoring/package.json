@@ -1,0 +1,9 @@
+{
+  "name": "@knowni/anchoring",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The chain-agnostic anchoring port and its adapters. Stellar is one adapter, not the interface.",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "test": "node --test --experimental-strip-types \"test/**/*.test.ts\"" }
+}

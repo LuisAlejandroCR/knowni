@@ -1,0 +1,14 @@
+node_modules/
+dist/
+target/
+*.tsbuildinfo
+.env
+.env.local
+.DS_Store
+
+# circuit build output — ptau files and zkeys are large and ceremony-specific
+circuits/build/
+*.ptau
+*.zkey
+*.r1cs
+*.wtns

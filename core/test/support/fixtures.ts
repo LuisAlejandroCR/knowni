@@ -1,0 +1,52 @@
+// core/test/support/fixtures.ts
+// Synthetic claims used across the core tests. The values are deliberately
+// distinctive (odd amounts, a rare month) so an invariant test can search a
+// serialised disclosure for them and know a match is not a coincidence.
+
+import type { FormalityClaim, IdentityClaim, IncomeClaim, StandingClaim } from "../../src/claims.ts";
+
+export const SUBJECT_REF = "a".repeat(64);
+export const OTHER_REF = "b".repeat(64);
+export const LIST_ROOT = "c".repeat(64);
+export const NOW = 1_760_000_000; // unix seconds
+export const DAY = 86_400;
+
+export const identity: IdentityClaim = {
+  kind: "identity",
+  jurisdiction: "CO",
+  documentKind: "CC",
+  subjectRef: { hex: SUBJECT_REF },
+  documentValid: true,
+  subjectAlive: true,
+  ofAge: true,
+  attestedAt: NOW - DAY,
+};
+
+// 4,812,300.00 COP a month, in cents. Distinctive on purpose.
+export const income: IncomeClaim = {
+  kind: "income",
+  jurisdiction: "CO",
+  subjectRef: { hex: SUBJECT_REF },
+  monthlyMinor: 481_230_000,
+  currency: "COP",
+  basis: "social_security",
+  attestedAt: NOW - DAY,
+};
+
+export const formality: FormalityClaim = {
+  kind: "formality",
+  jurisdiction: "CO",
+  subjectRef: { hex: SUBJECT_REF },
+  lastContributionMonth: 202_507,
+  monthsContributedLast12: 11,
+  attestedAt: NOW - DAY,
+};
+
+export const standing: StandingClaim = {
+  kind: "standing",
+  jurisdiction: "CO",
+  subjectRef: { hex: SUBJECT_REF },
+  listed: false,
+  listSetRoot: LIST_ROOT,
+  attestedAt: NOW - DAY,
+};

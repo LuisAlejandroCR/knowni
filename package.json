@@ -1,0 +1,20 @@
+{
+  "name": "knowni",
+  "private": true,
+  "type": "module",
+  "description": "Prove you qualify to sign a lease without handing over who you are.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "workspaces": [
+    "core",
+    "retrieval",
+    "anchoring",
+    "sources"
+  ],
+  "scripts": {
+    "test": "node --test --experimental-strip-types \"*/test/**/*.test.ts\"",
+    "verify": "npm test"
+  }
+}

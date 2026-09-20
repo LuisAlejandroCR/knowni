@@ -1,0 +1,17 @@
+{
+  "name": "@knowni/sources",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Source adapters that turn a registry answer into a signed-set claim. Colombia first; the port is jurisdiction-neutral.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test --experimental-strip-types \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@knowni/core": "*",
+    "@knowni/retrieval": "*"
+  }
+}

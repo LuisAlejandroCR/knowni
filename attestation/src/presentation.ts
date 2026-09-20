@@ -1,0 +1,158 @@
+// presentation.ts: the relying party's side of one answer.
+// Signs the request it sends, then refuses a disclosure that was not built
+// for this audience, this purpose, this challenge — or that already arrived.
+
+// Two failures this file exists to prevent, both of which leave a valid
+// proof looking valid:
+//
+//   moved      an agency takes the disclosure a subject gave them and
+//              presents it to a second landlord as their own applicant.
+//              Refused because the session id binds the audience.
+//   replayed   the same subject presents one attestation to fifty
+//              counterparties, or twice to the same one. Refused because the
+//              nullifier is spent, per session.
+
+import type { Disclosure, FieldHash, SessionRequest } from "@knowni/core";
+import { isExpired, isPurpose, sessionId } from "@knowni/core";
+import { createPublicKey, sign, verify } from "node:crypto";
+import type { IssuerRegistry } from "./types.ts";
+
+const PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
+const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
+
+const REQUEST_DOMAIN = "knowni/presentation-request/v1";
+
+// A request the subject can check before answering. Unsigned, the wallet has
+// no way to tell an agency's question from anyone else's — and "who is
+// asking" is the first thing a person is entitled to know.
+export interface SignedRequest {
+  readonly request: SessionRequest;
+  readonly algorithm: "ed25519";
+  readonly signature: string; // hex
+}
+
+export type PresentationFailure =
+  | "wrong_audience"
+  | "unknown_relying_party"
+  | "bad_signature"
+  | "invalid_purpose"
+  | "session_expired"
+  | "session_mismatch"
+  | "replayed";
+
+export type PresentationResult =
+  | { readonly status: "accepted" }
+  | { readonly status: "refused"; readonly reason: PresentationFailure };
+
+function requestBytes(request: SessionRequest): Buffer {
+  const parts = [
+    Buffer.from(REQUEST_DOMAIN, "utf8"),
+    Buffer.from(request.relyingPartyId, "utf8"),
+    Buffer.from(request.purpose, "utf8"),
+    Buffer.from(request.nonce, "utf8"),
+    Buffer.from(String(request.expiresAt), "utf8"),
+    Buffer.from(request.paramsHash, "utf8"),
+  ];
+  // Length-prefixed, so two adjacent fields cannot be re-split into a
+  // different pair that signs the same bytes.
+  return Buffer.concat(
+    parts.map((part) => {
+      const length = Buffer.alloc(4);
+      length.writeUInt32BE(part.length);
+      return Buffer.concat([length, part]);
+    }),
+  );
+}
+
+export function signRequest(seed: Uint8Array, request: SessionRequest): SignedRequest {
+  const key = {
+    key: Buffer.concat([PKCS8_PREFIX, Buffer.from(seed)]),
+    format: "der" as const,
+    type: "pkcs8" as const,
+  };
+  return {
+    request,
+    algorithm: "ed25519",
+    signature: sign(null, requestBytes(request), key).toString("hex"),
+  };
+}
+
+// The wallet's check, before it answers anything. `expectedAudience` is who
+// the subject believes they are talking to: a request that says otherwise is
+// refused even when its signature is perfectly valid, because a valid
+// signature from the wrong party is the phishing case, not the safe one.
+export function verifyRequest(
+  registry: IssuerRegistry,
+  signed: SignedRequest,
+  expectedAudience: string,
+  nowUnix: number,
+): PresentationResult {
+  if (signed.request.relyingPartyId !== expectedAudience) {
+    return { status: "refused", reason: "wrong_audience" };
+  }
+  if (!isPurpose(signed.request.purpose)) return { status: "refused", reason: "invalid_purpose" };
+  if (isExpired(signed.request, nowUnix)) return { status: "refused", reason: "session_expired" };
+
+  const publicKey = registry.publicKeyOf(signed.request.relyingPartyId);
+  if (publicKey === undefined) return { status: "refused", reason: "unknown_relying_party" };
+
+  const key = createPublicKey({
+    key: Buffer.concat([SPKI_PREFIX, Buffer.from(publicKey)]),
+    format: "der",
+    type: "spki",
+  });
+  const ok = verify(null, requestBytes(signed.request), key, Buffer.from(signed.signature, "hex"));
+  return ok ? { status: "accepted" } : { status: "refused", reason: "bad_signature" };
+}
+
+// The spent set. Held by whoever verifies, not by a chain: an anchor can
+// also guard replays, but a counterparty with no chain still has to be able
+// to refuse the same answer twice.
+export interface SpentNullifiers {
+  has(nullifier: string): boolean;
+  remember(nullifier: string): void;
+}
+
+export function createMemorySpentSet(initial: readonly string[] = []): SpentNullifiers {
+  const spent = new Set(initial);
+  return {
+    has: (nullifier) => spent.has(nullifier),
+    remember: (nullifier) => void spent.add(nullifier),
+  };
+}
+
+export interface AcceptOptions {
+  readonly disclosure: Disclosure;
+  // The request this counterparty actually sent. The disclosure is checked
+  // against it rather than trusted to describe itself.
+  readonly request: SessionRequest;
+  readonly audience: string;
+  readonly spent: SpentNullifiers;
+  readonly nowUnix: number;
+}
+
+// Accepting is a side effect on purpose: a caller that checks and forgets to
+// record has no replay protection at all, so the recording happens here, at
+// the moment of acceptance, and only on acceptance.
+export function acceptPresentation(h: FieldHash, options: AcceptOptions): PresentationResult {
+  const { disclosure, request, audience, spent, nowUnix } = options;
+
+  if (disclosure.relyingPartyId !== audience || request.relyingPartyId !== audience) {
+    return { status: "refused", reason: "wrong_audience" };
+  }
+  if (!isPurpose(request.purpose)) return { status: "refused", reason: "invalid_purpose" };
+  if (isExpired(request, nowUnix)) return { status: "refused", reason: "session_expired" };
+
+  // Recomputed, never read off the disclosure: this is what ties the answer
+  // to this challenge, this purpose and these parameters at once.
+  if (disclosure.sessionId !== sessionId(h, request)) {
+    return { status: "refused", reason: "session_mismatch" };
+  }
+  if (disclosure.purpose !== request.purpose) {
+    return { status: "refused", reason: "session_mismatch" };
+  }
+
+  if (spent.has(disclosure.nullifier)) return { status: "refused", reason: "replayed" };
+  spent.remember(disclosure.nullifier);
+  return { status: "accepted" };
+}

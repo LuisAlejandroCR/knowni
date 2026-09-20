@@ -368,6 +368,7 @@ hackathon, pero verificar una credencial emitida debe seguir funcionando sin anc
 | 2026-09-20 | `sources/src` se reordena por jurisdicción: `country/colombia/` para los adaptadores y `providers/croma/` para el transporte. Añadir un país es una carpeta, no un cambio en el dominio |
 | 2026-09-20 | Jev (`typesafe-ai/jev`, vía Vercel AI Gateway) entra solo como herramienta de desarrollo, con medidor de gasto versionado. Precio verificado: $0,042 por millón de tokens de entrada, salida $0. No responde en `/v1/chat/completions`: es modelo de evaluación |
 | 2026-09-20 | Día 5: primer anclaje real en Stellar testnet, con XDR, StrKey y firma ed25519 escritos a mano para no romper la regla de cero dependencias. La firma va sobre el **hash** de la base, no sobre la base — firmarla al revés da `tx_bad_auth` con un sobre bien formado |
+| 2026-09-20 | Día 6: workspace `attestation/`. El emisor firma la raíz una vez y la contraparte verifica firma, inclusión y apertura sin red ni cadena. Regla nueva: la ausencia de respuesta del registro **no** es una revocación — D-18 |
 
 ## Límites de proceso — estado del ejercicio real
 

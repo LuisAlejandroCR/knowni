@@ -1,8 +1,6 @@
-// core/test/merkle.test.ts
-// The issuer's published set and the inclusion proof against it, including
-// the two forgery surfaces this implementation is written to close:
-// second-preimage via domain confusion, and root collision via last-leaf
-// duplication.
+// merkle.test.ts: The issuer's published set and the inclusion proof against it, including the
+// two forgery surfaces this implementation is written to close: second-preimage via domain
+// confusion, and root collision via last-leaf duplication.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -55,9 +53,6 @@ test("flipping the side of a path step does not fold into the root", () => {
 });
 
 test("an internal node cannot be passed off as a leaf", () => {
-  // Leaves and nodes are hashed under different domains precisely so this
-  // fails. A caller who can choose leaf bytes must not be able to submit an
-  // internal node and prove membership of something never issued.
   const set = leaves(4);
   const tree = buildMerkleTree(h, set);
   const internal = h.hash("knowni:merkle:node:v1", [

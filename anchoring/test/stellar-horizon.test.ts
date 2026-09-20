@@ -1,6 +1,5 @@
-// anchoring/test/stellar-horizon.test.ts
-// The hand-written Stellar wire format, pinned against the account and the
-// transaction that testnet actually accepted on 2026-09-20.
+// stellar-horizon.test.ts: The hand-written Stellar wire format, pinned against the account
+// and the transaction that testnet actually accepted on 2026-09-20.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

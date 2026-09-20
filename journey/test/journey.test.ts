@@ -1,11 +1,5 @@
-// journey/test/journey.test.ts
-// The whole thing, end to end, with no network and no mocks: a Colombian
+// journey.test.ts: The whole thing, end to end, with no network and no mocks: a Colombian
 // tenant applies for a lease, and the agency learns four answers.
-//
-// This is the test to read first. Everything else in the repository is a
-// detail of one of these steps, and if this test passes, the claim on the
-// front page is true: the agency's record of the application contains no
-// fact about the applicant beyond what they asked.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -104,9 +98,6 @@ test("a tenant proves four things and the agency learns nothing else", async () 
   assert.equal(issued.credentials.length, 4, "all four sources answered");
   assert.equal(issued.size, 1024, "the published tree is padded");
 
-  // Step 1 — the subject checks each credential proves against the published
-  // root before storing it. An issuer that hands out an unprovable
-  // credential must fail here, on issuance, not later on a landlord's screen.
   for (const credential of issued.credentials) {
     assert.equal(verifyInclusion(h, credential.proof), true);
     assert.equal(credential.proof.root, issued.root);
@@ -269,10 +260,6 @@ test("a replay of the same proof in the same session is refused on-chain", async
 });
 
 test("a tenant on a restrictive list gets no standing claim at all", async () => {
-  // Not a claim saying `listed: true` — no claim. The source will not swear
-  // to a screening it could not settle, and a name that matches an entry
-  // outright is settled the other way: the claim says listed, and the
-  // predicate fails.
   const flagged: SyntheticSubject = { ...ANA, name: "CARLOS ALBERTO MENDOZA RUIZ" };
   const { results } = await issueForSubject(flagged);
   const standing = results.find(

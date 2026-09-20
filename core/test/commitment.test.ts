@@ -1,6 +1,5 @@
-// core/test/commitment.test.ts
-// The two commitments, and the rule that separates them: a claim can become
-// a leaf, an outcome can become an anchor, and neither crosses over.
+// commitment.test.ts: The two commitments, and the rule that separates them: a claim can
+// become a leaf, an outcome can become an anchor, and neither crosses over.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -82,8 +81,5 @@ test("an outcome commitment does not open to a different outcome", () => {
 });
 
 test("the same outcome anchored twice is not recognisably the same", () => {
-  // Without a fresh blinding factor per anchor, an observer could tell that
-  // two anchors carry the same verdict — and the outcome space is tiny
-  // enough to enumerate.
   assert.notEqual(commitOutcome(h, outcome).commitment, commitOutcome(h, outcome).commitment);
 });

@@ -1,5 +1,4 @@
-// anchoring/test/registry.test.ts
-// The chain-agnostic claim, exercised: the same verification anchors to two
+// registry.test.ts: The chain-agnostic claim, exercised: the same verification anchors to two
 // different chains with no change to anything above the registry.
 
 import { test } from "node:test";

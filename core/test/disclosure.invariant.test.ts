@@ -1,12 +1,5 @@
-// core/test/disclosure.invariant.test.ts
-// The invariant the whole product rests on: what the relying party receives
-// carries no fact about the subject beyond the answers they asked for.
-//
-// Written as a search over the SERIALISED envelope rather than as a check on
-// its type, because the failure this guards against is someone widening the
-// type — adding a "debug" field, spreading the claim in for convenience —
-// and a structural assertion would be updated along with it. A landlord's
-// system serialises this envelope to store it; so does this test.
+// disclosure.invariant.test.ts: The invariant the whole product rests on: what the relying
+// party receives carries no fact about the subject beyond the answers they asked for.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -69,10 +62,6 @@ test("a full verification answers every predicate", () => {
   assert.equal(meetsAll(d, SolvencyTier.COMFORTABLE), true);
 });
 
-// The three fields that are hash outputs by construction. They are excluded
-// from the substring search below and checked separately, because a 64-char
-// digest will contain a short needle like "11" by chance — which would make
-// the search flaky rather than strict. Their opacity is asserted by shape.
 const DIGEST_FIELDS = ["sessionId", "nullifier", "issuerRoots"] as const;
 
 test("every disclosed digest is a digest, with nothing hiding in it", () => {
@@ -84,9 +73,6 @@ test("every disclosed digest is a digest, with nothing hiding in it", () => {
 });
 
 test("the envelope carries exactly the fields it is allowed to carry", () => {
-  // A substring search cannot catch a leak someone deliberately widens the
-  // type for. This can: a new field fails here before it can ever be
-  // populated with something revealing.
   assert.deepEqual(Object.keys(disclose()).sort(), [
     "decidedAt",
     "formality",

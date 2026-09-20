@@ -1,6 +1,5 @@
-// core/test/predicates.vehicle.test.ts
-// The two predicates the vehicle-sale profile added: capacity, about the
-// person, and assetStanding, about the car.
+// predicates.vehicle.test.ts: The two predicates the vehicle-sale profile added: capacity,
+// about the person, and assetStanding, about the car.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -46,9 +45,6 @@ test("a claim attested in the future is a clock skew or a forgery, never fresh",
 });
 
 test("a register the relying party did not accept does not answer their question", () => {
-  // Corporate status says nothing about whether a natural person is in
-  // insolvency proceedings, and silently substituting one for the other is
-  // the failure this parameter exists to prevent.
   assert.equal(proveCapacity(capacity({ basis: "corporate_status" }), params), false);
 });
 

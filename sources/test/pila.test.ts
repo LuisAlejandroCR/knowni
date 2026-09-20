@@ -1,5 +1,4 @@
-// sources/test/pila.test.ts
-// What PILA can and cannot answer, made explicit.
+// pila.test.ts: What PILA can and cannot answer, made explicit.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

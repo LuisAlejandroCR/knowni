@@ -1,5 +1,4 @@
-// attestation/test/attested.test.ts
-// The offline path, end to end and then attacked: a signed root, a Merkle
+// attested.test.ts: The offline path, end to end and then attacked: a signed root, a Merkle
 // path and a commitment opening, with no chain and no network anywhere.
 
 import { test } from "node:test";

@@ -1,6 +1,6 @@
-// stellar-horizon.ts: a real StellarMemoSubmitter against Horizon.
-// Loads the account's sequence, builds and signs a payment to self carrying
-// the commitment as MEMO_HASH, and submits it. No SDK, no dependencies.
+// stellar-horizon.ts: a real StellarMemoSubmitter against Horizon. Loads the account's
+// sequence, builds and signs a payment to self carrying the commitment as MEMO_HASH, and
+// submits it.
 
 import type { StellarMemoSubmitter } from "./stellar.ts";
 import {
@@ -28,9 +28,6 @@ export interface HorizonOptions {
   readonly timeoutMs?: number;
 }
 
-// Rejects rather than degrades: this is the submitter the adapter wraps, and
-// `createStellarMemoAnchor` is the layer that turns a failure into a typed
-// degradation. Two layers of swallowing would hide which one failed.
 export function createHorizonMemoSubmitter(seed: Uint8Array, options: HorizonOptions = {}): StellarMemoSubmitter {
   const horizonUrl = (options.horizonUrl ?? TESTNET_HORIZON).replace(/\/+$/, "");
   const passphrase = options.networkPassphrase ?? TESTNET_PASSPHRASE;
@@ -68,9 +65,6 @@ export function createHorizonMemoSubmitter(seed: Uint8Array, options: HorizonOpt
         memoHash32: hash32,
       });
 
-      // Stellar signs the SHA-256 of the signature base, not the base
-      // itself. Signing the base produces a well-formed envelope that the
-      // network rejects with tx_bad_auth.
       const signature = keypair.sign(Buffer.from(transactionHash(passphrase, transaction), "hex"));
       const envelope = encodeEnvelope(transaction, keypair.publicKey, signature);
 
@@ -92,8 +86,6 @@ export function createHorizonMemoSubmitter(seed: Uint8Array, options: HorizonOpt
   };
 }
 
-// The account id this seed controls, so a caller can fund it before the
-// first anchor without constructing a submitter.
 export function accountIdOf(seed: Uint8Array): string {
   return keypairFromSeed(seed).accountId;
 }

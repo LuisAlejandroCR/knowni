@@ -1,16 +1,6 @@
-// presentation.ts: the relying party's side of one answer.
-// Signs the request it sends, then refuses a disclosure that was not built
-// for this audience, this purpose, this challenge — or that already arrived.
-
-// Two failures this file exists to prevent, both of which leave a valid
-// proof looking valid:
-//
-//   moved      an agency takes the disclosure a subject gave them and
-//              presents it to a second landlord as their own applicant.
-//              Refused because the session id binds the audience.
-//   replayed   the same subject presents one attestation to fifty
-//              counterparties, or twice to the same one. Refused because the
-//              nullifier is spent, per session.
+// presentation.ts: the relying party's side of one answer. Signs the request it sends, then
+// refuses a disclosure that was not built for this audience, this purpose, this challenge — or
+// that already arrived.
 
 import type { Disclosure, FieldHash, SessionRequest } from "@knowni/core";
 import { isExpired, isPurpose, sessionId } from "@knowni/core";
@@ -24,9 +14,6 @@ const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 
 const REQUEST_DOMAIN = "knowni/presentation-request/v1";
 
-// A request the subject can check before answering. Unsigned, the wallet has
-// no way to tell an agency's question from anyone else's — and "who is
-// asking" is the first thing a person is entitled to know.
 export interface SignedRequest {
   readonly request: SessionRequest;
   readonly algorithm: "ed25519";
@@ -80,10 +67,6 @@ export function signRequest(seed: Uint8Array, request: SessionRequest): SignedRe
   };
 }
 
-// The wallet's check, before it answers anything. `expectedAudience` is who
-// the subject believes they are talking to: a request that says otherwise is
-// refused even when its signature is perfectly valid, because a valid
-// signature from the wrong party is the phishing case, not the safe one.
 export function verifyRequest(
   registry: IssuerRegistry,
   signed: SignedRequest,
@@ -108,9 +91,6 @@ export function verifyRequest(
   return ok ? { status: "accepted" } : { status: "refused", reason: "bad_signature" };
 }
 
-// The spent set. Held by whoever verifies, not by a chain: an anchor can
-// also guard replays, but a counterparty with no chain still has to be able
-// to refuse the same answer twice.
 export interface SpentNullifiers {
   has(nullifier: string): boolean;
   remember(nullifier: string): void;
@@ -132,18 +112,11 @@ export interface AcceptOptions {
   readonly audience: string;
   readonly spent: SpentNullifiers;
   readonly nowUnix: number;
-  // The answers the wallet presented, signed by the issuer. Optional only so
-  // that the session-binding checks can be exercised on their own: a
-  // counterparty that accepts without them is trusting the wallet's own
-  // word about what was proven.
   readonly results?: AttestedResults;
   readonly registry?: IssuerRegistry;
   readonly requiredPredicates?: readonly string[];
 }
 
-// Accepting is a side effect on purpose: a caller that checks and forgets to
-// record has no replay protection at all, so the recording happens here, at
-// the moment of acceptance, and only on acceptance.
 export function acceptPresentation(h: FieldHash, options: AcceptOptions): PresentationResult {
   const { disclosure, request, audience, spent, nowUnix } = options;
 

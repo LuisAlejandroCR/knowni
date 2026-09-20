@@ -1,7 +1,6 @@
-// sources/test/croma-adapters.test.ts
-// The four adapters of the vehicle-sale profile. Responses are built from
-// the shapes Croma's own OpenAPI declares (captured 2026-09-20), so what is
-// exercised is the contract and not a convenient invention.
+// croma-adapters.test.ts: The four adapters of the vehicle-sale profile. Responses are built
+// from the shapes Croma's own OpenAPI declares (captured 2026-09-20), so what is exercised is
+// the contract and not a convenient invention.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

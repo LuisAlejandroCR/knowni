@@ -1,22 +1,6 @@
-// acceptance.ts: everything a counterparty must check before an answer
-// counts — request, binding, evidence, revocation — and the atomic step that
-// consumes the nullifier exactly once.
-
-// The gap this closes: acceptPresentation checked who asked and whether the
-// nullifier was spent. That is the binding, not the evidence, and "verified"
-// meant "well addressed". Here the order is fixed and the cheap, private
-// checks come first:
-//
-//   1. the request is this counterparty's, signed, unexpired
-//   2. the answer is bound to that request — audience, purpose, challenge,
-//      parameters, all inside the session id
-//   3. the answers are authenticated by an issuer this counterparty accepts
-//   4. revocation is resolved under a stated policy, with "unknown" as its
-//      own outcome and never as a silent success
-//   5. and only then the nullifier is claimed, atomically
-//
-// Nothing before step 5 may consume anything: a subject whose presentation
-// was refused for a stale snapshot must still be able to answer afterwards.
+// acceptance.ts: everything a counterparty must check before an answer counts — request,
+// binding, evidence, revocation — and the atomic step that consumes the nullifier exactly
+// once.
 
 import type { Disclosure, FieldHash } from "@knowni/core";
 import { sessionId } from "@knowni/core";
@@ -26,9 +10,6 @@ import { verifyResults } from "./results.ts";
 import type { PresentationFailure, SignedRequest } from "./presentation.ts";
 import { verifyRequest } from "./presentation.ts";
 
-// Three states, not two. A registry that could not be reached does not know
-// whether a root is live, and a boolean forces that into a lie in one
-// direction or the other.
 export type RevocationState =
   | { readonly status: "live"; readonly checkedAt: number }
   | { readonly status: "revoked"; readonly checkedAt: number }
@@ -39,25 +20,13 @@ export interface RevocationOracle {
 }
 
 export interface RevocationPolicy {
-  // How old a revocation snapshot may be before it stops counting as an
-  // answer. Validating a signature offline proves the issuer signed; it
-  // proves nothing about today.
   readonly maxSnapshotAgeSeconds: number;
-  // What this counterparty does when the state is unknown or stale. A
-  // notary registering a transfer may refuse; a low-stakes check may accept
-  // and record that it did. Their call, made in the open.
   readonly onUnknown: "refuse" | "accept_with_note";
 }
 
-// Claiming is one step, so no caller can check and then forget to record.
-// An implementation backed by a database does this in a transaction; the
-// in-memory one below is for tests and single-process demos, and says so.
 export type ClaimOutcome = "claimed" | "idempotent" | "replayed";
 
 export interface NullifierLedger {
-  // Same presentation arriving twice — a retried request, a double tap — is
-  // `idempotent` and keeps its original acceptance. A DIFFERENT presentation
-  // under the same nullifier is `replayed`.
   claim(nullifier: string, presentationId: string): ClaimOutcome;
 }
 
@@ -81,9 +50,6 @@ export type AcceptanceFailure =
   | "revocation_stale"
   | "revoked";
 
-// An acceptance says what it accepted UNDER. `notes` is not decoration: a
-// counterparty that accepted without a fresh revocation answer needs that on
-// the record, and the subject is entitled to know the answer was qualified.
 export interface Acceptance {
   readonly status: "accepted";
   readonly idempotent: boolean;
@@ -99,9 +65,6 @@ export interface AcceptanceInput {
   readonly audience: string;
   readonly disclosure: Disclosure;
   readonly results: AttestedResults;
-  // A stable id for THIS presentation: the same envelope retried keeps it,
-  // a new answer gets a new one. It is what makes an acknowledgement
-  // idempotent without making a replay possible.
   readonly presentationId: string;
   readonly registry: IssuerRegistry;
   readonly ledger: NullifierLedger;

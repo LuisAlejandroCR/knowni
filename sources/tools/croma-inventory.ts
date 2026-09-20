@@ -1,7 +1,6 @@
-// croma-inventory.ts: regenerates the Colombian endpoint inventory from
-// Croma's public /catalog. Provider metadata only — it sends no subject data
-// and stores no response about a person. Run: node --experimental-strip-types
-// sources/tools/croma-inventory.ts
+// croma-inventory.ts: regenerates the Colombian endpoint inventory from Croma's public
+// /catalog. Provider metadata only — it sends no subject data and stores no response about a
+// person.
 
 import { writeFileSync } from "node:fs";
 

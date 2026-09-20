@@ -1,6 +1,5 @@
-// sources/test/croma-contract.test.ts
-// The client against envelopes captured from live Croma calls on 2026-09-20,
-// so a change in the real contract shows up here and not in production.
+// croma-contract.test.ts: The client against envelopes captured from live Croma calls on
+// 2026-09-20, so a change in the real contract shows up here and not in production.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

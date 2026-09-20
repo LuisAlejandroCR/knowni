@@ -1,5 +1,4 @@
-// retrieval/test/resolve.test.ts
-// The rule that keeps a common name from becoming a sanctions match.
+// resolve.test.ts: The rule that keeps a common name from becoming a sanctions match.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

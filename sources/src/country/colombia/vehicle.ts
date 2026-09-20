@@ -1,6 +1,6 @@
 // vehicle.ts: assetStanding for a vehicle, from RUNT and SIMIT.
-// RUNT says the plate exists and whether anything is registered against it;
-// SIMIT says whether fines are outstanding. The claim is about the CAR.
+// RUNT gives existence and encumbrances, SIMIT the paz y salvo. The claim is
+// about the car, filed under the plate's salted reference.
 
 import type { AssetStandingClaim } from "@knowni/core";
 import type { SourceResult } from "../../types.ts";
@@ -10,9 +10,6 @@ import type { CromaClient } from "../../providers/croma/client.ts";
 export const RUNT_VEHICLE_PATH = "/co/runt/vehicle-by-plate/v1";
 export const SIMIT_PATH = "/co/simit/account-status/v1";
 
-// An asset is not a SubjectLookup: it has a plate, not a document, and the
-// owner's document travels only because RUNT requires it to authorise the
-// query — it never reaches the claim.
 export interface VehicleLookup {
   readonly plate: string;
   readonly ownerDocumentNumber: string;
@@ -64,9 +61,6 @@ export function createVehicleStandingSource(client: CromaClient): VehicleStandin
       const limitations = asArray(vehicle, "ownership_limitations");
       if (pledges === undefined || limitations === undefined) return degraded("invalid_response");
 
-      // `clear` is SIMIT's own paz-y-salvo verdict. Counting fines
-      // ourselves would mean deciding which ones are payable, which is the
-      // source's job and not the adapter's.
       const clear = account.clear;
       if (typeof clear !== "boolean") return degraded("invalid_response");
 
@@ -75,9 +69,6 @@ export function createVehicleStandingSource(client: CromaClient): VehicleStandin
         jurisdiction: "CO",
         subjectRef: { hex: asset.assetRef },
         registered: true,
-        // Who the creditor is, what the lien is worth and when it was filed
-        // are all in the response. Only their existence answers the buyer's
-        // question, so only their existence survives.
         encumbered: pledges.length > 0 || limitations.length > 0,
         finesOutstanding: !clear,
         attestedAt: nowUnix,

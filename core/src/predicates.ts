@@ -1,15 +1,6 @@
-// core/src/predicates.ts
-// The predicates, as pure functions over a claim and PUBLIC parameters.
-//
-// This module is the off-circuit reference implementation: the circuit in
-// circuits/ evaluates the same comparisons over the same encodings, and
-// core/test/predicates.test.ts is the shared spec both sides are checked
-// against. Keeping it pure and dependency-free is what makes that possible
-// — there is no clock, no I/O and no randomness in here, so a test can pin
-// "now" and a circuit can be handed the same value as a public input.
-//
-// Every function returns an outcome and NOTHING else. No function in this
-// file returns, logs or embeds the claim it read.
+// predicates.ts: the predicates, as pure functions over a claim and public parameters.
+// The off-circuit reference implementation: no clock, no I/O, no randomness, so a
+// test can pin `now` and a circuit can be handed the same values.
 
 import type {
   AssetStandingClaim,
@@ -20,17 +11,6 @@ import type {
   StandingClaim,
 } from "./claims.ts";
 
-// What a solvency proof discloses. A band, never an amount: a landlord
-// needs to know the rent is covered, and "COP 4,812,300/month" is a fact
-// about someone's life that answers a question nobody asked.
-//
-// The bands are multiples of the rent, not absolute salaries, which is what
-// makes the same enum work in Bogotá and in Lima without a table of
-// country-specific thresholds.
-// A const object rather than a TypeScript `enum`: enums are the one piece of
-// TS syntax that emits runtime code, so they are rejected by Node's
-// type-stripping loader — and this repository runs its tests with no build
-// step at all. The companion type gives the same compile-time safety.
 export const SolvencyTier = {
   NONE: 0, // below the requested rent
   BASIC: 1, // >= 1x
@@ -41,9 +21,6 @@ export const SolvencyTier = {
 export type SolvencyTier = (typeof SolvencyTier)[keyof typeof SolvencyTier];
 
 export interface PersonhoodParams {
-  // The ref the relying party was given at the start of the session. The
-  // predicate checks the claim is about THIS subject, which is what stops a
-  // valid attestation issued for someone else being replayed.
   readonly expectedSubjectRef: string;
   readonly jurisdiction: string;
   readonly nowUnix: number;
@@ -70,9 +47,6 @@ export interface SolvencyParams {
   readonly currency: string;
   readonly nowUnix: number;
   readonly maxAgeSeconds: number;
-  // Which bases the relying party will accept. A landlord may insist on
-  // contributions data and refuse a self-declared figure; that is their call
-  // to make in public, not ours to make silently.
   readonly acceptedBases: readonly IncomeClaim["basis"][];
 }
 
@@ -90,9 +64,6 @@ export function proveSolvency(claim: IncomeClaim, params: SolvencyParams): Solve
   // an unusable parameter rather than silently flattering the subject.
   if (!Number.isSafeInteger(rent) || rent <= 0) return SolvencyTier.NONE;
 
-  // Multiplication, not division: integer division would round a subject who
-  // earns 2.99x the rent up or down depending on the operand order, and the
-  // circuit has no floats to fall back on either.
   if (claim.monthlyMinor >= rent * 3) return SolvencyTier.STRONG;
   if (claim.monthlyMinor >= rent * 2) return SolvencyTier.COMFORTABLE;
   if (claim.monthlyMinor >= rent) return SolvencyTier.BASIC;
@@ -136,10 +107,6 @@ export function proveStanding(claim: StandingClaim, params: StandingParams): boo
 export interface CapacityParams {
   readonly expectedSubjectRef: string;
   readonly jurisdiction: string;
-  // Which registers the relying party accepts as answering capacity. A
-  // notary in a conveyance asks about insolvency; someone else may need
-  // more, and pretending one register answered the other is the failure
-  // this parameter exists to prevent.
   readonly acceptedBases: readonly CapacityClaim["basis"][];
   readonly nowUnix: number;
   readonly maxAgeSeconds: number;
@@ -156,9 +123,6 @@ export function proveCapacity(claim: CapacityClaim, params: CapacityParams): boo
 }
 
 export interface AssetStandingParams {
-  // The asset the relying party is buying, as the same salted reference the
-  // claim carries. An attestation about a different car is the exact swap
-  // this check exists to catch.
   readonly expectedAssetRef: string;
   readonly jurisdiction: string;
   readonly nowUnix: number;
@@ -179,9 +143,6 @@ export function proveAssetStanding(claim: AssetStandingClaim, params: AssetStand
   );
 }
 
-// Converts two YYYYMM integers into a month distance. Written out rather
-// than done with Date, because a circuit has no calendar: this is exactly
-// the arithmetic the Compact/Circom version performs on the same integers.
 export function monthsBetween(fromYyyymm: number, toYyyymm: number): number {
   const [fy, fm] = splitYyyymm(fromYyyymm);
   const [ty, tm] = splitYyyymm(toYyyymm);

@@ -1,28 +1,10 @@
-// pila.ts: turns a PILA contribution record into an income claim and a
-// formality claim. Colombia's social-security contribution register.
-// Rationale and sources: docs/COLOMBIA.md and docs/memoria.md D-06, D-15.
-
-// Two limits the adapter must not paper over, both from the primary source
-// (ABECE de PILA, MinSalud, June 2018):
-//
-//   floor     an independent always reports 30 days absent an entry event,
-//             and the proportional IBC cannot fall below the proportion of
-//             one SMLMV. The IBC is a FLOOR on income, never a measurement.
-//   coverage  an informal worker contributes nothing and is indistinguishable
-//             from someone with no income, so absence degrades and never
-//             reports zero.
-//
-// Access is unresolved, and it is sharper than "a commercial agreement": the
-// primary source covers how a contributor PAYS, not how anyone QUERIES a
-// history. See docs/verificacion.md.
+// pila.ts: turns a PILA contribution record into an income claim and a formality claim.
+// Colombia's social-security contribution register.
 
 import type { FormalityClaim, IncomeClaim } from "@knowni/core";
 import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
 import { degraded } from "../../types.ts";
 
-// One month's contribution as an operator reports it. Deliberately not the
-// full record: the employer's NIT, the ARL, the fund and the contributor's
-// address are all in the real response and none of them answer a predicate.
 export interface PilaContribution {
   readonly month: number; // YYYYMM
   readonly ibcMinor: number; // ingreso base de cotización, in COP cents
@@ -38,14 +20,6 @@ export interface PilaOptions {
   readonly logError?: (error: unknown) => void;
 }
 
-// Income claim: the MEDIAN of the last 12 months, not the mean and not the
-// latest.
-//
-// The mean is wrong because a single bonus month or a severance payment
-// drags it up, and a landlord underwriting a 12-month lease against a
-// one-off is the exact error this is meant to prevent. The latest month is
-// wrong because contributions are filed late and a missing month would read
-// as zero income. The median survives both.
 export function createPilaIncomeSource(client: PilaClient, options: PilaOptions = {}): SourcePort {
   const logError = options.logError ?? (() => {});
   return {
@@ -79,10 +53,6 @@ export function createPilaIncomeSource(client: PilaClient, options: PilaOptions 
   };
 }
 
-// Formality claim: how recent and how continuous. Same client, separate
-// port, because a landlord may want one and not the other — and because a
-// subject who declines to prove income can still prove they are formally
-// employed.
 export function createPilaFormalitySource(client: PilaClient, options: PilaOptions = {}): SourcePort {
   const logError = options.logError ?? (() => {});
   return {

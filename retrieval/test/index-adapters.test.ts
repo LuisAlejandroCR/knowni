@@ -1,7 +1,6 @@
-// retrieval/test/index-adapters.test.ts
-// Both adapters against the same corpus and the same questions, because the
-// port's whole claim is that the resolution policy means the same thing
-// whichever index is underneath.
+// index-adapters.test.ts: Both adapters against the same corpus and the same questions,
+// because the port's whole claim is that the resolution policy means the same thing whichever
+// index is underneath.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

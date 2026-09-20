@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { sha256Hash } from "../src/hash.ts";
-import { deriveNullifier, isExpired, sessionId, type SessionRequest } from "../src/session.ts";
+import { deriveNullifier, isExpired, isPurpose, sessionId, type SessionRequest } from "../src/session.ts";
 
 const h = sha256Hash;
 const secret = { hex: "9".repeat(64) };
@@ -69,4 +69,39 @@ test("a nullifier cannot be precomputed from public request data alone", () => {
 test("expiry is evaluated against the caller's clock, not an internal one", () => {
   assert.equal(isExpired(request, request.expiresAt), false);
   assert.equal(isExpired(request, request.expiresAt + 1), true);
+});
+
+test("any contract type is a purpose, because the product is not about leases", () => {
+  // The product is "prove you qualify to sign", whatever is being signed.
+  // A closed union here would make adding a contract type a change to the
+  // domain layer — the coupling ChainId is open to avoid.
+  for (const purpose of [
+    "lease",
+    "vehicle-sale",
+    "property-sale",
+    "guarantee",
+    "supply-contract",
+    "employment-offer",
+    "power-of-attorney",
+  ]) {
+    assert.equal(isPurpose(purpose), true, purpose);
+    assert.doesNotThrow(() => sessionId(h, { ...request, purpose }));
+  }
+});
+
+test("two contract types never share a session id", () => {
+  // Which is what stops a proof obtained to rent being presented to buy.
+  const ids = ["lease", "vehicle-sale", "guarantee"].map((purpose) =>
+    sessionId(h, { ...request, purpose }),
+  );
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test("a purpose the subject could not read is refused", () => {
+  // The purpose is shown before they answer; a value they cannot read is a
+  // question they cannot refuse.
+  for (const bad of ["", "Lease", "vehicle sale", "vehicle_sale", "-lease", "lease-", "a".repeat(65)]) {
+    assert.equal(isPurpose(bad), false, JSON.stringify(bad));
+    assert.throws(() => sessionId(h, { ...request, purpose: bad }), TypeError);
+  }
 });

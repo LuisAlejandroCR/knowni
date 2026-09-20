@@ -183,3 +183,23 @@ test("a bundle mixing two subjects is refused rather than partly scored", () => 
   assert.equal(result.status, "refused");
   assert.equal(result.status === "refused" ? result.reason : undefined, "subject_mismatch");
 });
+
+test("a malformed purpose is refused, not thrown", () => {
+  // The purpose is caller-supplied and reaches a hash. A throw here would
+  // take the whole verification down over a field the relying party typed.
+  const result = verify(h, { ...request, session: { ...request.session, purpose: "Vehicle Sale" } }, held, NOW);
+  assert.equal(result.status, "refused");
+  assert.equal(result.status === "refused" ? result.reason : undefined, "invalid_purpose");
+});
+
+test("the same claims answer any contract type", () => {
+  // The contract is an application of the product, not a branch in it: the
+  // held credentials do not change when the purpose does.
+  for (const purpose of ["lease", "vehicle-sale", "guarantee"]) {
+    const result = verify(h, { ...request, session: { ...request.session, purpose } }, held, NOW);
+    assert.equal(result.status, "disclosed");
+    const d = result.status === "disclosed" ? result.disclosure : undefined!;
+    assert.equal(d.purpose, purpose);
+    assert.equal(meetsAll(d, SolvencyTier.COMFORTABLE), true);
+  }
+});

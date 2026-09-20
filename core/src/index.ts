@@ -44,7 +44,7 @@ export type { Blinding, BlindedCommitment, Outcome, Salt } from "./commitment.ts
 export { commitClaim, commitOutcome, randomSalt, verifyOutcomeCommitment } from "./commitment.ts";
 
 export type { Purpose, SessionRequest, SubjectSecret } from "./session.ts";
-export { deriveNullifier, isExpired, sessionId } from "./session.ts";
+export { deriveNullifier, isExpired, isPurpose, sessionId } from "./session.ts";
 
 export type { Disclosure, PredicateResult } from "./disclosure.ts";
 export { meetsAll, outcomeOf } from "./disclosure.ts";

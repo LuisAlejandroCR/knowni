@@ -1,3 +1,8 @@
+<!-- anchoring/README.md
+     Qué vive en @knowni/anchoring: el puerto agnóstico de cadena y sus
+     adaptadores. Se distingue de contracts/knowni-verifier/, que es el contrato
+     on-chain al que apunta uno de ellos. -->
+
 # `@knowni/anchoring`
 
 El puerto de anclaje y sus adaptadores. Stellar es uno de ellos.

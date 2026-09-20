@@ -1,3 +1,8 @@
+<!-- sources/README.md
+     Qué vive en @knowni/sources: adaptadores de fuentes oficiales y el emisor de
+     conjuntos de reclamos. Se distingue de docs/CROMA.md, que documenta el
+     contrato del proveedor y sus endpoints. -->
+
 # `@knowni/sources`
 
 Adaptadores de fuentes y el emisor de conjuntos de reclamos.

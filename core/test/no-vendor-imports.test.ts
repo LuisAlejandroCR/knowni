@@ -10,8 +10,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const SRC = new URL("../src/", import.meta.url).pathname;
+const SRC = fileURLToPath(new URL("../src/", import.meta.url));
 
 // node: builtins are fine — crypto and its randomness are the one thing a
 // commitment scheme cannot provide for itself. Everything else must be a
@@ -41,7 +42,7 @@ test("core imports nothing but node: builtins and its own modules", () => {
 
 test("core declares no runtime dependencies", () => {
   const manifest = JSON.parse(
-    readFileSync(new URL("../package.json", import.meta.url).pathname, "utf8"),
+    readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"),
   ) as { dependencies?: Record<string, string> };
   assert.deepEqual(manifest.dependencies ?? {}, {});
 });

@@ -1,3 +1,8 @@
+<!-- circuits/README.md
+     Estado real de los circuitos, el hueco de toolchain que decide el cronograma
+     y cómo se construyen. Se distingue de docs/ROADMAP.md, que ordena todo el
+     trabajo pendiente y no solo el de circuitos. -->
+
 # `circuits/`
 
 The predicate as a Circom circuit, and an honest account of what has been run.
@@ -29,7 +34,7 @@ exists — but the gadget libraries do not follow automatically:
   needs Poseidon parameters generated for *that* field.
 - The embedded curve for BLS12-381 is **Jubjub**, not BabyJubjub. This is
   the same pairing Midnight uses — which is why the Schnorr-over-Jubjub
-  attestation primitive in [`creva-zk`](https://github.com/LuisAlejandroCR/creva-zk)
+  attestation primitive from our own prior ZK project
   ports here and a BabyJubjub gadget does not. See
   `docs/ARCHITECTURE.md`, "Two ways to trust an issuer".
 - **Do not compile with the default `bn128`.** A BN254 proof cannot be

@@ -27,9 +27,30 @@ const SESSION_DOMAIN = "knowni:session:v1";
 const NULLIFIER_DOMAIN = "knowni:nullifier:v1";
 
 // Why the proof is being asked for. It travels in the sessionId, so a proof
-// obtained to sign a lease cannot be re-presented to open a credit line —
-// the purpose is part of what was proven.
-export type Purpose = "lease" | "purchase" | "guarantor" | "employment" | "other";
+// obtained for one contract cannot be re-presented for another — the purpose
+// is part of what was proven.
+//
+// An open validated string, not a union of the contract types that happened
+// to exist when this was written. The product is "prove you qualify to sign",
+// whatever is being signed: a lease, a sale, a guarantee, a supply contract,
+// an employment offer. A closed union would make adding a contract type a
+// change to the domain layer — the same coupling ChainId is open to avoid.
+// A contract type is a PROFILE of the request, composed by the caller; core
+// never learns what any of them mean.
+//
+// The cost of not pinning the union is that the value has to be checked
+// somewhere, so isPurpose is that somewhere.
+export type Purpose = string;
+
+// Lowercase, dash-separated alphanumerics: "lease", "vehicle-sale",
+// "supply-contract". Constrained because the purpose is hashed into the
+// session id and shown to the subject before they answer — a value they
+// cannot read is a question they cannot refuse.
+const PURPOSE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function isPurpose(value: string): boolean {
+  return value.length <= 64 && PURPOSE.test(value);
+}
 
 export interface SessionRequest {
   // Who is asking. A stable public identifier for the relying party — an
@@ -47,6 +68,12 @@ export interface SessionRequest {
 }
 
 export function sessionId(h: FieldHash, request: SessionRequest): string {
+  // Throws rather than degrades: this is a pure helper at the hashing
+  // boundary, like fromHex, and a malformed purpose here is a caller bug.
+  // The orchestrator checks it first and refuses — see verify().
+  if (!isPurpose(request.purpose)) {
+    throw new TypeError(`not a purpose: ${JSON.stringify(request.purpose)}`);
+  }
   return h.hash(SESSION_DOMAIN, [
     utf8(request.relyingPartyId),
     utf8(request.purpose),

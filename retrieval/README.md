@@ -1,29 +1,49 @@
+<!-- retrieval/README.md
+     Estado del workspace tras la corrección de Croma: qué se retira, qué se
+     conserva y por qué. Se distingue de docs/CROMA.md, que documenta la fuente
+     real y el contrato del proveedor. -->
+
 # `@knowni/retrieval`
 
-Resolución de entidades sobre registros públicos, detrás de un puerto neutral.
+> **Este workspace está marcado para retirarse en parte. Léelo antes de construir sobre él.**
+>
+> Se escribió leyendo "croma" como **Chroma**, la base de datos vectorial. Es
+> [**Croma**](https://docs.usecroma.com): una API de datos de gobierno de Latinoamérica que
+> devuelve **JSON tipado indexado por número de documento**. Para `personhood` y `standing` no hay
+> nada que desambiguar — se consulta la cédula y el registro responde. La búsqueda semántica
+> resolvía un problema que la fuente ya resolvió.
+>
+> El desmontaje es el bloque **B3** de [`../docs/plan.md`](../docs/plan.md).
 
-> **Lee [`src/types.ts`](src/types.ts) antes de añadir un llamador.** La
-> regla sobre *quién* puede llamar este puerto es la frontera de privacidad
-> principal del producto, y es una regla sobre sitios de llamada, no sobre
-> tipos: se consulta en **emisión**, con consentimiento; **nunca** en
-> verificación.
+## Qué se retira
 
-## Las dos reglas del screening
+| Pieza | Por qué |
+|---|---|
+| `src/adapters/chroma.ts` | No hay corpus que indexar cuando la fuente es una API tipada |
+| `src/types.ts` → `RecordIndexPort`, `PublicRecord` | El puerto correcto es `SourcePort`, en `sources/` |
+| `src/adapters/memory.ts` | Existía para probar el puerto anterior |
 
-`MARIA RODRIGUEZ` coincide con miles de registros. Un resolvedor que
-devuelve el mejor resultado produce una coincidencia de sanciones contra un
-desconocido que comparte nombre, y a alguien le niegan un arriendo por eso.
-Por eso hay dos reglas y no un umbral:
+## Qué se conserva, y por qué sigue haciendo falta
 
-- **piso** — el mejor candidato tiene que ser realmente bueno.
-- **margen** — tiene que ganarle al segundo por suficiente.
+Dos endpoints de Croma consultan **por nombre** y devuelven varios candidatos:
 
-Si no pasa el margen, la respuesta es `ambiguous`, va a revisión humana, y
-nunca se degrada silenciosamente a "limpio".
+- `POST /co/rama-judicial/cases-by-entity/v1` — `{name, entity_type}`
+- `POST /co/rues/entities-by-name/v1`
 
-## Por qué el índice en memoria no es un stub
+Ahí *"MARIA RODRIGUEZ coincide con miles"* sigue siendo el problema real, y sigue sin resolverse con
+un umbral.
 
-En listas de sanciones — cadenas cortas de nombres — el solapamiento de
-tokens compite con embeddings y además es **determinista**, que es lo que
-permite reproducir y apelar una decisión de screening. El índice vectorial se
-gana el puesto en las fuentes difíciles: RUES, escrituras, boletines en PDF.
+| Pieza | Destino |
+|---|---|
+| [`src/normalize.ts`](src/normalize.ts) | Se queda. La consulta por nombre se arma desde texto, y los registros colombianos traen tildes inconsistentes, `apellidos, nombres` y segundo apellido opcional |
+| [`src/resolve.ts`](src/resolve.ts) | Se queda. **Dos reglas, no un umbral**: el mejor candidato tiene que ser bueno *y* ganarle al segundo por margen. Si no, es `ambiguous`, va a revisión humana, y nunca se degrada a "limpio" |
+
+Esa última regla es la que impide que un homónimo produzca una coincidencia judicial contra un
+desconocido y alguien se quede sin arriendo por eso. Un sistema optimizado para conveniencia
+devolvería "no hay procesos" ahí.
+
+## La frontera, que no cambia
+
+Se consulta en **emisión**, con consentimiento del sujeto. La contraparte **nunca** consulta —
+recibe un sobre. Vale igual con Chroma, con Croma o con un PDF: una consulta lleva en claro lo que
+busca, y quién la corre decide si el producto es una prueba o un buscador de personas.

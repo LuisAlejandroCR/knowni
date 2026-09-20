@@ -1,0 +1,289 @@
+<!-- docs/plan.md
+     Plan ejecutable de Knowni: alcance, fuentes, arquitectura agnóstica a cadena,
+     fases y criterios de aceptación. Se distingue de memoria.md, que conserva
+     decisiones, y de ROADMAP.md, que resume el orden y los riesgos principales. -->
+
+# Plan
+
+## Norte del producto
+
+> **Demuestra que calificas para firmar, sin decir quién eres.**
+
+Knowni no es un buscador de personas ni una central de riesgo. Es una infraestructura de
+credenciales de predicados:
+
+1. la persona autoriza una consulta para una finalidad concreta;
+2. un emisor transforma evidencia en el reclamo mínimo necesario;
+3. la persona conserva la credencial;
+4. presenta solo una respuesta verificable a la contraparte; y
+5. ninguna contraparte obtiene acceso a la fuente ni al expediente original.
+
+El producto debe servir para arriendos, compraventas, poderes, garantías y contratos B2B sin que
+el dominio conozca esos nombres. Un **perfil de verificación** compone predicados y fija umbrales;
+no introduce lógica nueva en `core/`.
+
+## Decisión de arquitectura: chain-agnostic de verdad
+
+La credencial y su verificación deben funcionar aunque no exista una blockchain disponible.
+Una cadena puede publicar raíces de emisores, estados de revocación o recibos de auditoría, pero
+no es la autoridad sobre el dato ni el lugar donde vive la identidad.
+
+```text
+fuente ─► adaptador ─► emisor ─► credencial mínima ─► wallet
+                                                    │
+verificador ◄─ presentación ◄─ prueba/presentación ◄┘
+     │
+     └─► RegistryPort / AnchorPort ─► web · Stellar · EVM · otra VDR
+```
+
+Puertos que deben quedar separados:
+
+| Puerto | Responsabilidad | No debe saber |
+|---|---|---|
+| `EvidenceSourcePort` | Obtener evidencia autorizada y reducirla a un reclamo | Cadena, UI, política de la contraparte |
+| `CredentialIssuerPort` | Firmar una credencial mínima, versionada y revocable | Proveedor de datos concreto |
+| `PresentationPort` | Crear/verificar una presentación vinculada a reto, audiencia y finalidad | Cadena de anclaje |
+| `ProofPort` | Probar predicados o verificar una atestación | Fuente y transporte HTTP |
+| `RegistryPort` | Resolver claves, esquemas y estado de revocación | Datos personales |
+| `AnchorPort` | Publicar una raíz o recibo opcional | Reclamos crudos y documento del sujeto |
+
+Reglas:
+
+- `core/` no importa SDK de cadena, proveedor, wallet ni formato de credencial.
+- `ChainId` y `RegistryId` son identificadores abiertos de red, no uniones cerradas.
+- una presentación siempre se vincula a `challenge`, `audience`, `purpose` y expiración;
+- no se ancla PII, hashes simples de cédula, salarios, empleadores ni resultados individualizables;
+- una caída de la cadena no impide verificar una credencial con material público cacheado;
+- Stellar es el primer `AnchorPort`, no el formato de la credencial ni el sistema de identidad.
+
+### Estándares objetivo
+
+- **W3C Verifiable Credentials Data Model 2.0** para el sobre interoperable.
+- **OpenID4VCI / OpenID4VP** para emisión y presentación entre wallet y contraparte.
+- **AnonCreds** como candidato principal para predicados numéricos y presentaciones no enlazables;
+  es agnóstico al registro verificable y soporta pruebas de predicado sin revelar el atributo.
+- **SD-JWT** solo para divulgación selectiva donde revelar un atributo sea aceptable; por sí solo
+  no prueba `ingreso >= umbral` sin revelar el ingreso.
+
+La selección final se hace con un spike medido en Android e iOS. Hasta entonces `ProofPort`
+mantiene dos implementaciones: `attested` para el recorrido construible y `zk` experimental.
+
+## Catálogo de predicados
+
+| Predicado | Respuesta mínima | Evidencia aceptable | Lo que no afirma |
+|---|---|---|---|
+| `personhood` | documento vigente y sujeto vivo/mayor de edad | registro civil o validación gubernamental | domicilio, historial o reputación |
+| `authority` | puede representar a una organización o activo | registro mercantil, poder o certificado | solvencia |
+| `capacity` | no existe una restricción jurídica relevante al acto | insolvencia, interdicción o estado societario aplicable | “buena persona” o riesgo crediticio |
+| `sanctions` | no aparece en el conjunto de inhabilidades declarado | listas oficiales y snapshot identificable | antecedentes penales generales |
+| `solvency` | banda o booleano respecto de una obligación pública | PILA, open finance, nómina o documento tributario consentido | probabilidad de impago |
+| `continuity` | evidencia reciente y continua durante una ventana | aportes, nómina o flujos bancarios consentidos | confiabilidad personal |
+| `assetStanding` | activo existente y sin alertas definidas | RUNT/SIMIT, SNR/VUR u otro registro del activo | identidad del propietario salvo necesidad legal |
+
+Cada resultado incluye procedencia (`observed | documentary | self_declared`), fuente lógica,
+fecha de corte, vigencia, jurisdicción y una declaración `does_not_estimate`.
+
+## Fuentes investigadas
+
+Fecha de revisión documental: **2026-09-20**. “Público” significa que existe una consulta o dataset
+oficial accesible al ciudadano; **no** significa que esté permitido automatizarlo. No se usa
+scraping, evasión de CAPTCHA ni un portal humano como API de producción.
+
+### Acceso comercial
+
+| Proveedor | Cobertura útil | Uso propuesto | Condición antes de depender |
+|---|---|---|---|
+| [Croma](https://docs.usecroma.com) | Registros gubernamentales de Colombia, Perú y México | Primera integración para identidad, capacidad, sanciones y activos | Exportar catálogo contratado, esquema y SLA; una llamada real por endpoint |
+| [Truora](https://dev.truora.com/docs/) | Identidad y checks de personas, empresas y vehículos en LATAM | Respaldo de Croma y onboarding con consentimiento | Configurar checks sin antecedentes penales ni web/media; revisar fuentes por país |
+| [Incode](https://developer.incode.com/general-reference/government-verification-sources/) | Documento, biometría y validación contra registros gubernamentales | Prueba de posesión del documento y liveness | Evaluación biométrica, residencia de datos, retención y costo |
+| DataCrédito Experian / TransUnion | Información financiera y crediticia regulada | Solo cuando el perfil requiera información crediticia explícita | Consentimiento de Ley 1266, contrato y revisión legal; nunca convertir score en identidad |
+| [Belvo](https://developers.belvo.com/es/apis/belvoopenapispec/incomes/listincomes) | Movimientos e ingresos bancarios consentidos, según institución y país | Alternativa para solvencia de personas sin PILA representativa | Confirmar cobertura bancaria colombiana en contrato; devolver banda, no transacciones |
+| Prometeo / Finerio Connect | Conectividad bancaria y validación de cuentas | Alternativa futura de open finance | Confirmar instituciones colombianas, acceso a movimientos y términos del caso de uso |
+| Operadores PILA: SOI, Aportes en Línea, MiPlanilla, Simple, SuAporte | Liquidación y certificados del operador | Evidencia directa de aportes e IBC | Acuerdo B2B, autorización del titular y estrategia multioperador |
+| [SuAporte APIs](https://www.suaporte.com.co/aportantes/) | APIs documentadas para aportantes y autorizaciones | Spike prioritario de integración PILA | Comprobar si expone aportes históricos del cotizante, no solo gestión del aportante |
+
+Ningún agregador se declara sustituto universal de otro. El adapter registra `provider`,
+`authority`, `dataset`, `retrievedAt` y `coverage`; la credencial declara la autoridad que originó
+la evidencia, no solamente el intermediario que la transportó.
+
+### Acceso público u oficial
+
+| Fuente | Aporta | Estrategia permitida |
+|---|---|---|
+| Registraduría | estado del documento/estado vital en los servicios habilitados | convenio, interoperabilidad o proveedor autorizado; consulta manual solo para prueba |
+| ADRES/BDUA | afiliación actual a salud y régimen | `continuity` solo con semántica conservadora; nunca solvencia |
+| RUAF/SISPRO | afiliaciones a subsistemas de protección social | afiliación, no historia de pagos ni IBC |
+| UGPP Estado Único de Cuenta | últimos aportes e IBC mostrados al titular | investigar canal institucional; no automatizar el portal sin autorización |
+| Procuraduría y Contraloría | inhabilidades disciplinarias/fiscales y certificados verificables | consulta oficial o proveedor; snapshot y código de verificación |
+| Contaduría | boletín de deudores morosos del Estado | solo si la inhabilidad es pertinente al acto |
+| RUES / cámaras de comercio | existencia, estado y representación de persona jurídica | API/convenio o certificado aportado por el titular |
+| Supersociedades | estados financieros y procesos de insolvencia | datasets/servicios oficiales con fecha de corte |
+| Rama Judicial / SAMAI | procesos por radicado o nombre | solo para una regla jurídica concreta; coincidencia por nombre exige revisión humana |
+| RUNT y SIMIT | estado e historial vehicular, garantías y comparendos | servicios oficiales/comerciales; separar persona de activo |
+| SNR / VUR | tradición, titularidad y gravámenes inmobiliarios | certificado pagado o convenio; no scraping |
+| DIAN | RUT, estado tributario y factura electrónica consentida | validación o documento firmado; minimizar información económica |
+| SECOP / Datos Abiertos | contratos y proveedores del Estado | datasets con API pública para hechos empresariales, nunca perfilado personal |
+| OFAC y Naciones Unidas | sanciones internacionales | descarga oficial versionada, hash y fecha; resolución conservadora de identidad |
+
+### Lo que queda fuera
+
+- antecedentes penales generales, búsquedas web y redes sociales;
+- Sisbén, clasificación de pobreza o régimen subsidiado como señal negativa;
+- inferir ingreso desde afiliación ADRES/RUAF;
+- puntaje agregado de “confianza” o “riesgo humano”;
+- scraping de portales, CAPTCHA solving o reuso de credenciales del ciudadano;
+- consultar desde la contraparte: toda fuente se usa durante emisión y con autorización.
+
+## Estrategia construible
+
+### Producto mínimo posthackathon
+
+El recorrido de hackathon es **compraventa de vehículo**: `personhood`, `capacity`, `sanctions` y
+`assetStanding`, porque el catálogo comprobado contiene Registraduría, SICAAC, listas, RUNT y
+SIMIT. El primer recorrido posthackathon conserva cuatro predicados para un solo perfil y añade
+una segunda fuente comercial solo cuando su cobertura esté comprobada.
+
+1. La contraparte crea una solicitud firmada con finalidad, predicados, umbrales, audiencia y TTL.
+2. El wallet muestra exactamente qué se consultará y obtiene consentimiento granular y revocable.
+3. El servicio emisor consulta Croma y una fuente de solvencia; reduce y descarta la respuesta.
+4. Emite credenciales mínimas firmadas con expiración corta y estado de revocación.
+5. El wallet crea una presentación ligada al reto. El verificador la valida sin llamar a la fuente.
+6. `AnchorPort` publica solo una raíz/recibo; si la red falla, la validación criptográfica sigue.
+
+### Modelo comercial inicial
+
+- **B2B por verificación emitida**, no venta de expedientes ni de datos.
+- La organización paga fuentes, emisión, verificación y soporte; el titular no paga por ejercer su
+  derecho a demostrar un dato propio.
+- Paquetes por perfil (`lease`, `vehicle-sale`, `supplier-onboarding`) comparten el mismo motor.
+- Costos de fuente se registran por adaptador para poder sustituir proveedores y proteger margen.
+- El contrato comercial prohíbe reconstruir identidad, reutilizar la presentación o solicitar
+  predicados no necesarios para la finalidad.
+
+### Requisitos operativos antes de producción
+
+- concepto jurídico sobre roles de responsable/encargado, Ley 1581 y Ley 1266;
+- autorización trazable por fuente, dato, finalidad, destinatario y vigencia;
+- política de retención: respuesta cruda en memoria y eliminación inmediata después de emitir;
+- llaves de emisor en KMS/HSM, rotación y plan de compromiso;
+- métricas sin PII, auditoría de consentimiento y respuesta a incidentes;
+- matriz de cobertura y falsos negativos por fuente antes de usarla en decisiones;
+- SLA, timeout, reintentos, circuit breaker y proveedor alterno por predicado crítico.
+
+## Criterios de aceptación
+
+| # | Criterio | Verificación |
+|---|---|---|
+| A1 | Ningún valor crudo del reclamo aparece en la presentación | prueba de invariante sobre serialización |
+| A2 | No existe ruta de verificación hacia una fuente | prueba de arquitectura/importaciones y recorrido E2E |
+| A3 | La misma presentación se verifica con `RegistryPort` web y con un adapter de cadena | contract test compartido |
+| A4 | Cambiar Stellar por memoria/EVM no cambia `core`, claims ni perfiles | diff de dependencias + suite de registro |
+| A5 | Una presentación no sirve para otra audiencia, finalidad, reto o fecha | tests de replay y domain separation |
+| A6 | Cada respuesta declara procedencia, vigencia y qué no estima | schema + snapshot de UX |
+| A7 | `degraded`, `not_found` y `failed` son estados distintos | tests unitarios y recorrido UI |
+| A8 | Cada respuesta externa se valida y se reduce dentro del adaptador | unit + fuzz por adapter |
+| A9 | Existe una llamada real y fechada por fuente habilitada | bitácora sanitizada en `verificacion.md` |
+| A10 | El recorrido principal funciona con una transacción Stellar testnet verificable | enlace Explorer y test E2E |
+| A11 | El mismo recorrido funciona con el anclaje desactivado | E2E offline/cadena caída |
+| A12 | Wallet emite una presentación sin red después de recibir credenciales | dispositivo físico en modo avión |
+| A13 | Ningún log contiene documento, nombre, salario, cuenta o payload de proveedor | test de redacción + revisión de logs |
+| A14 | La suite, lint, typecheck y build parten de cero en CI | workflow público en verde |
+
+## Fases
+
+### F0 — Cerrar la entrega de hackathon
+
+- corregir suite y cifras documentadas;
+- hacer público el repositorio y añadir `LICENSE`;
+- integrar una llamada Croma real con respuesta sanitizada;
+- cerrar el perfil `vehicle-sale` con Registraduría, capacidad, sanciones y RUNT/SIMIT;
+- enviar una raíz/commitment real a Stellar testnet y documentar el hash;
+- grabar un recorrido funcional; lo no real aparece explícitamente como demo.
+
+**Salida:** A9, A10 y A14; cuatro entregables exigidos por las bases.
+
+### F1 — Vertical construible
+
+- renombrar `SourcePort` a `EvidenceSourcePort` sin cambiar su contrato observable;
+- implementar consentimiento y `EvidenceReceipt` sin PII;
+- emitir una credencial firmada `attested` verificable sin cadena;
+- implementar Croma para `personhood`, `capacity`, `sanctions` y un activo;
+- seleccionar por spike una fuente real de solvencia: Croma/PILA, SuAporte u open finance;
+- eliminar respuestas crudas inmediatamente después de reducirlas.
+
+**Salida:** una contraparte verifica cuatro respuestas sin acceso a Croma ni al documento.
+
+### F2 — Interoperabilidad y privacidad
+
+- spike comparativo AnonCreds vs circuito propio en Android/iOS: tamaño, tiempo, RAM, revocación,
+  mantenimiento y auditoría;
+- introducir `CredentialIssuerPort`, `PresentationPort`, `ProofPort` y `RegistryPort`;
+- envolver credenciales/presentaciones en W3C VC 2.0 y flujos OpenID4VCI/OpenID4VP;
+- reemplazar identificadores correlacionables por binding de holder y nonces por presentación;
+- prueba de no correlación entre dos contrapartes.
+
+**Salida:** A3–A6 y A12 en dos plataformas móviles.
+
+### F3 — Registro y cadenas sustituibles
+
+- hacer que `RegistryPort` resuelva claves, schemas y revocación desde HTTPS firmado;
+- mantener Stellar como primer `AnchorPort` con raíz y recibo testnet;
+- crear un segundo adapter mínimo —EVM o transparencia web— contra la misma suite contractual;
+- simulación de caída/reorganización de cadena y operación sin anclaje.
+
+**Salida:** A3, A4, A10 y A11 demostrados, no solo declarados.
+
+### F4 — Piloto comercial
+
+- un perfil, una jurisdicción, una contraparte piloto y un volumen acotado;
+- DPIA/análisis de riesgos, concepto legal y contratos con proveedores;
+- tablero de costo, latencia, cobertura, degradación y abandono por fuente;
+- soporte de corrección y disputa para el titular;
+- revisión humana solo cuando el resultado sea ambiguo, nunca como decisión secreta.
+
+**Salida:** 100 verificaciones consentidas con métricas agregadas y cero expedientes entregados.
+
+### F5 — Expansión
+
+- segundo perfil solo después de que F4 cumpla SLA y privacidad;
+- segundo proveedor por predicado crítico;
+- segunda jurisdicción como adapters y perfiles, sin modificar `core/`;
+- evaluación externa de seguridad y privacidad antes de producción abierta.
+
+## Próximos 10 días
+
+| Día | Entregable comprobable |
+|---|---|
+| 1 | suite verde desde clon limpio, licencia y estado real del README |
+| 2 | inventario exportado de endpoints Croma contratados y schemas guardados como fixtures sanitizadas |
+| 3 | cliente Croma robusto y primer adapter real |
+| 4 | cuatro adapters del perfil de demo con degradación tipada |
+| 5 | transacción Stellar testnet real y enlace en README |
+| 6 | emisión y verificación `attested` sin depender de cadena |
+| 7 | solicitud ligada a audiencia/finalidad/reto y prueba anti-replay |
+| 8 | interfaz móvil mínima del recorrido principal |
+| 9 | ensayo en modo avión, logs sanitizados y prueba desde cero |
+| 10 | videos demo/pitch, auditoría de afirmaciones y entrega final |
+
+## Puertas de decisión
+
+1. **Croma/PILA:** no prometer solvencia por aportes hasta comprobar que el endpoint devuelve IBC,
+   periodos y estado de pago, no solo afiliación.
+2. **Prueba:** si ZK móvil no cumple presupuesto medido, se entrega `attested`; no se simula ZK.
+3. **Cadena:** si Soroban no está desplegado, se usa `MEMO_HASH` como recibo y se declara que el
+   control de replay es del verificador.
+4. **Proveedor:** si la cobertura contractual no alcanza el perfil, se cambia el perfil o se añade
+   un adapter; nunca se rellena con datos sintéticos en producción.
+5. **Go-live:** sin concepto legal, eliminación de payloads, gestión de llaves y respuesta a
+   incidentes, el sistema sigue siendo piloto cerrado.
+
+## Referencias primarias
+
+- [W3C Verifiable Credentials Data Model 2.0](https://www.w3.org/TR/vc-data-model-2.0/)
+- [Hyperledger AnonCreds specification](https://hyperledger.github.io/anoncreds-spec/)
+- [RFC 9901 — Selective Disclosure for JWTs](https://www.rfc-editor.org/rfc/rfc9901)
+- [RUAF — SISPRO](https://www.sispro.gov.co/central-prestadores-de-servicios/Pages/RUAF-Registro-Unico-de-Afiliados.aspx)
+- [Estado Único de Cuenta — UGPP](https://www.ugpp.gov.co/estado-unico-de-cuentas/)
+- [Operadores PILA autorizados — MinSalud](https://www2.minsalud.gov.co/proteccionsocial/Paginas/contacto-operadores-pila.aspx)
+- [Finanzas Abiertas — Superfinanciera](https://www.superfinanciera.gov.co/publicaciones/10116081/finanzas-abiertas-obligatorias-impulsaran-el-desarrollo-del-sistema-y-la-inclusion-financiera-en-el-pais/)
+- [Ley 1581 de 2012 — SIC](https://sedeelectronica.sic.gov.co/sites/default/files/normatividad/Ley_1581_2012.pdf)

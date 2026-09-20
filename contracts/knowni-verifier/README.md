@@ -1,3 +1,8 @@
+<!-- contracts/knowni-verifier/README.md
+     Qué hace el contrato Soroban, sus tres reglas de política y la lista previa a
+     cualquier despliegue. Se distingue de circuits/README.md, que cubre el lado
+     de la prueba y no el de la verificación on-chain. -->
+
 # `knowni-verifier`
 
 The on-chain half: verify a Groth16 proof over BLS12-381, apply the policy,

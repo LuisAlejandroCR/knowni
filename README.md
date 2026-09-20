@@ -13,27 +13,76 @@ something that runs and which do not.
 
 ## Español
 
-Hoy, para arrendar un apartamento en Bogotá, entregas: copia de la cédula,
-certificación laboral, certificación bancaria, desprendibles de nómina y a
-veces el puntaje de DataCrédito. El arrendador recibe un expediente completo
+Firmar cualquier contrato en Colombia cuesta un expediente. Para arrendar: cédula, certificación
+laboral, certificación bancaria, desprendibles y a veces el puntaje de DataCrédito. Para comprar un
+vehículo ante notario: cédula, declaración de origen de fondos, certificado de tradición, paz y
+salvo de comparendos. Para ser codeudor, otra vez todo. La contraparte recibe un dossier completo
 sobre tu vida — y no tiene ni la obligación ni la capacidad de protegerlo.
 
-Pero el arrendador no necesita ese expediente. Necesita cuatro respuestas:
+No necesita el dossier. Necesita respuestas:
 
 | Pregunta | Lo que hoy entregas | Lo que Knowni entrega |
 |---|---|---|
 | ¿Existe y es quien dice ser? | Cédula escaneada | `true` |
-| ¿Le alcanza para el canon? | Certificación bancaria, nómina | `STRONG` (≥3× el canon) |
-| ¿Tiene ingresos estables? | Certificación laboral | `true` |
-| ¿Está en listas restrictivas? | Nada, o una consulta a tu nombre | `true` (limpio) |
+| ¿Tiene capacidad legal para contratar? | Nada, o una consulta a tu nombre | `true` |
+| ¿Hay una inhabilidad vigente? | Antecedentes de todo tipo | `true` |
+| ¿Le alcanza? | Certificación bancaria, nómina | `STRONG` (≥3× la obligación) |
+| ¿El activo está limpio? | Certificado de tradición, paz y salvo | `true` |
 
-Cuatro respuestas. Ni el nombre, ni el número de cédula, ni el salario, ni el
-empleador, ni la fecha de nacimiento. El expediente completo de la solicitud
-cabe en diez campos, y ninguno dice nada de ti más allá de lo que te
-preguntaron — eso está verificado, no prometido:
+Respuestas. Ni el nombre, ni el número de cédula, ni el salario, ni el empleador, ni la fecha de
+nacimiento. El expediente completo de la solicitud cabe en diez campos, y ninguno dice nada de ti
+más allá de lo que te preguntaron — eso está verificado, no prometido:
 [`journey/test/journey.test.ts`](journey/test/journey.test.ts).
 
+### El contrato es un perfil, no el producto
+
+El arrendamiento es **una aplicación**. Lo que cambia entre un arriendo, una compraventa, una
+garantía o un contrato de suministro es **cuáles** predicados se piden y **con qué umbrales** —
+nunca qué significa un predicado, y nunca nada dentro de `core/`.
+
+| Perfil | Pide |
+|---|---|
+| Arrendamiento | `personhood` · `solvency` · `formality` · `sanctions` |
+| Compraventa de vehículo | `personhood` · `capacity` · `sanctions` · `assetStanding` |
+| Codeudor o garantía | `personhood` · `solvency` · `capacity` |
+| Suministro con persona jurídica | `capacity` · `solvency` · `sanctions` |
+| Poder o representación | `personhood` · `capacity` |
+
+`Purpose` es una cadena abierta validada, no una unión de los contratos que existían el día que se
+escribió el tipo. Añadir un contrato es componer un perfil, no tocar el dominio. Ver
+[`docs/memoria.md`](docs/memoria.md) D-14.
+
+**Es una app de iOS y Android, y eso no es un detalle de entrega.** La promesa no es "no
+compartimos tus datos": es que **el dato nunca sale del teléfono**. La prueba se genera ahí, sin
+servidor en el medio, y una vez emitidas las credenciales funciona sin red. Ver
+[`docs/MOBILE.md`](docs/MOBILE.md).
+
 ### De dónde salen las respuestas
+
+Los registros oficiales se consultan por [**Croma**](https://docs.usecroma.com),
+una API de datos de gobierno de Latinoamérica: Registraduría, Procuraduría,
+Contraloría, Contaduría, SICAAC, Rama Judicial y RUES con una sola integración,
+y la misma para Colombia, Perú y México. Detalle en
+[`docs/CROMA.md`](docs/CROMA.md).
+
+**Lo que no se consulta: antecedentes penales, de nadie — ni Sisbén.** El
+catálogo de Croma incluye la clasificación socioeconómica del DNP, y usarla
+aquí le entregaría a una contraparte un filtro de pobreza con sello oficial.
+Tampoco se consulta.
+
+**Antecedentes penales, de nadie.** No dicen si alguien
+puede pagar un arriendo; dicen que cumplió una condena. Como filtro de vivienda
+le cierra la puerta a quien ya pagó. La pregunta que sí se responde es si hay una
+**inhabilidad legal vigente** para contratar, que es otra cosa y es la que una
+contraparte regulada tiene obligación de mirar.
+
+Croma **no** cubre PILA ni el certificado de tradición — confirmado contra el
+catálogo, no pendiente. Por eso la demo del hackathon es una **compraventa de
+vehículo ante notario**: es el único recorrido que cierra con fuentes reales de
+punta a punta, sujeto y activo. El arrendamiento espera a PILA, declarado y no
+disimulado.
+
+La pregunta que sigue sin fuente, y que es la que decide un arriendo:
 
 **PILA** — la Planilla Integrada de Liquidación de Aportes. Cuando un
 arrendador pide certificación laboral *y* certificación bancaria, está
@@ -64,8 +113,9 @@ verificación ancla en Stellar, en EVM o en memoria sin que nada por encima
 del registro sepa en cuál — ejercitado, no afirmado:
 [`anchoring/test/registry.test.ts`](anchoring/test/registry.test.ts).
 
-Lo mismo con Chroma: es **un** adaptador de `RecordIndexPort`, y la política
-de resolución significa lo mismo con Chroma, Qdrant o pgvector debajo.
+Lo mismo con Croma: es **un** adaptador de `SourcePort`. Detrás de él están la
+Registraduría, la Procuraduría y el SICAAC; si mañana hay acceso directo a una,
+entra como otro adaptador sin tocar un solo predicado.
 
 ### Workspaces
 
@@ -74,11 +124,11 @@ de resolución significa lo mismo con Chroma, Qdrant o pgvector debajo.
   está verificado en `core/test/no-vendor-imports.test.ts`.
 - [`sources/`](sources/) — adaptadores de fuentes y el emisor de conjuntos de
   reclamos. Colombia primero.
-- [`retrieval/`](retrieval/) — resolución de entidades sobre registros
-  públicos. **Lee `retrieval/src/types.ts` antes de añadir un llamador**: la
-  regla sobre quién puede llamar este puerto es la frontera de privacidad
-  principal del producto.
+- [`retrieval/`](retrieval/) — resolución de entidades para las consultas **por
+  nombre** de Croma. **Parcialmente marcado para retirarse** — ver su README.
 - [`anchoring/`](anchoring/) — el puerto de anclaje y sus adaptadores.
+- `app/` — iOS y Android. ⏳ pendiente; el diseño está en
+  [`docs/MOBILE.md`](docs/MOBILE.md).
 - [`circuits/`](circuits/) — los circuitos Circom. Código fuente; ver estado.
 - [`contracts/knowni-verifier/`](contracts/knowni-verifier/) — el verificador
   Soroban. Código fuente; ver estado.
@@ -102,10 +152,12 @@ es el recorrido completo, sin red y sin mocks.
 | Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 111 pruebas |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Contra submitters de prueba |
-| Adaptador de Chroma | **Escrito**, probado contra una colección de prueba; no contra un servidor Chroma |
+| Adaptador de Croma | **No escrito.** Las rutas vienen verificadas de trabajo propio anterior (2026-08-11), no de aquí |
+| App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
-| Integración con PILA, Registraduría o DataCrédito reales | **No.** Ninguna |
+| Llamada en vivo a Croma, PILA o cualquier registro | **No.** Ninguna |
+| Ejecución en un teléfono físico | **No.** Ninguna |
 
 Ningún número de este repositorio viene de una medición que no se haya
 corrido aquí.
@@ -115,47 +167,54 @@ corrido aquí.
 - [`docs/BRAINSTORM.md`](docs/BRAINSTORM.md) — el razonamiento del producto:
   qué se construye, qué no, y por qué.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — las decisiones técnicas y
-  lo que se reutiliza de `creva-zk`.
+  lo que se reutiliza del proyecto ZK anterior.
 - [`docs/COLOMBIA.md`](docs/COLOMBIA.md) — el panorama de fuentes y el marco
   legal (Ley 1581, Habeas Data).
+- [`docs/CROMA.md`](docs/CROMA.md) — la fuente: endpoints, contrato HTTP y la
+  corrección de diseño que obligó a hacer.
+- [`docs/MOBILE.md`](docs/MOBILE.md) — la app: por qué nativo, el stack y dónde
+  vive cada secreto.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — qué sigue, en orden de riesgo.
+- [`docs/plan.md`](docs/plan.md) · [`docs/memoria.md`](docs/memoria.md) ·
+  [`docs/verificacion.md`](docs/verificacion.md) — bloques y criterios,
+  decisiones fechadas, y qué está comprobado y qué no.
+- [`AGENTS.md`](AGENTS.md) — la constitución, incluido el reparto entre varios
+  agentes en paralelo.
 
 ---
 
 ## English
 
-To rent an apartment in Bogotá today you hand over a scanned ID, an
-employment letter, a bank certification, payslips and sometimes a credit
-score. The landlord receives a complete dossier about your life, and has
-neither the obligation nor the capacity to protect it.
+**Prove you qualify to sign, without saying who you are.**
 
-The landlord does not need the dossier. They need four answers: does this
-person exist, can they cover the rent, is their income steady, are they on a
-restrictive list. Knowni delivers those four answers and nothing else — no
-name, no ID number, no salary, no employer, no date of birth.
+Signing anything in Colombia costs a dossier — a lease, a vehicle sale before a notary, a
+guarantee. The counterparty receives a complete file about your life and has neither the
+obligation nor the capacity to protect it. They do not need the file. They need answers: does this
+person exist, do they have legal capacity, is there a standing disqualification, can they cover
+the obligation, is the asset clean.
 
-The answers come from **social-security contribution records** (PILA in
-Colombia), which already answer what the employment letter and the bank
-certification are really asking, monthly, for employees and independent
-workers alike.
+**The contract type is a profile, not the product.** A lease is one application. What changes
+between a lease, a sale, a guarantee or a supply contract is *which* predicates are asked and with
+*what* thresholds — never what a predicate means, and never anything inside `core/`. `Purpose` is
+an open validated string, not a union of the contract types that existed the day it was written.
 
-Colombia is the first jurisdiction, not the design: nothing in `core/` knows
-Colombia exists. Stellar is the first chain, behind a port with a chain
-registry — the same verification anchors on Stellar, on EVM or in memory
-with no change above the registry. Chroma is one adapter of an index port,
-for the same reason.
+**It is an iOS and Android app, and that is not a delivery detail.** The promise is not "we don't
+share your data" — it is that the data never leaves the phone. The proof is generated there, and
+once credentials are issued it works offline.
 
-See the Spanish section above for the workspace map, how to run it, and the
-table of what is built and what is not. All documentation is in `docs/`.
+Official records are read through [Croma](https://docs.usecroma.com), a Latin American
+government-data API covering Colombia, Peru and Mexico through one integration. Croma does not
+cover social-security contributions or the property registry, which is why the hackathon profile is
+a **vehicle sale**: the only one the catalogue covers end to end with real sources, subject and
+asset alike.
+
+Colombia is the first jurisdiction, not the design: nothing in `core/` knows Colombia exists.
+Stellar is the first chain, behind a port with a chain registry. Croma is one adapter of a source
+port, for the same reason.
+
+See the Spanish section above for the workspace map, how to run it, and the table of what is built
+and what is not. All documentation is in `docs/`.
 
 ---
-
-## Origin
-
-Built on the primitive proven in
-[`creva-zk`](https://github.com/LuisAlejandroCR/creva-zk) (Midnight
-Hackathon, August 2026): verify a signed attestation, evaluate a public
-predicate, disclose only the outcome. What carries over, what changed and
-why is in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 Licensed Apache-2.0.

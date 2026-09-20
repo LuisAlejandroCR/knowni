@@ -148,6 +148,16 @@ export function createMemoryRegistry(
 export type { AttestationFailure, AttestationResult, AttestedCredential, AttestedRoot, IssuerRegistry } from "./types.ts";
 
 export type {
+  AttestResultsRequest,
+  AttestedAnswer,
+  AttestedResults,
+  ResultsCheck,
+  ResultsFailure,
+  ResultsVerification,
+} from "./results.ts";
+export { attestResults, containsHeldSecrets, resultsBytes, verifyResults } from "./results.ts";
+
+export type {
   AcceptOptions,
   PresentationFailure,
   PresentationResult,

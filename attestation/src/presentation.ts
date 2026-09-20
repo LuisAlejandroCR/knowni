@@ -16,6 +16,8 @@ import type { Disclosure, FieldHash, SessionRequest } from "@knowni/core";
 import { isExpired, isPurpose, sessionId } from "@knowni/core";
 import { createPublicKey, sign, verify } from "node:crypto";
 import type { IssuerRegistry } from "./types.ts";
+import type { AttestedResults } from "./results.ts";
+import { verifyResults } from "./results.ts";
 
 const PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
 const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
@@ -38,6 +40,7 @@ export type PresentationFailure =
   | "invalid_purpose"
   | "session_expired"
   | "session_mismatch"
+  | "results_unauthenticated"
   | "replayed";
 
 export type PresentationResult =
@@ -129,6 +132,13 @@ export interface AcceptOptions {
   readonly audience: string;
   readonly spent: SpentNullifiers;
   readonly nowUnix: number;
+  // The answers the wallet presented, signed by the issuer. Optional only so
+  // that the session-binding checks can be exercised on their own: a
+  // counterparty that accepts without them is trusting the wallet's own
+  // word about what was proven.
+  readonly results?: AttestedResults;
+  readonly registry?: IssuerRegistry;
+  readonly requiredPredicates?: readonly string[];
 }
 
 // Accepting is a side effect on purpose: a caller that checks and forgets to
@@ -150,6 +160,19 @@ export function acceptPresentation(h: FieldHash, options: AcceptOptions): Presen
   }
   if (disclosure.purpose !== request.purpose) {
     return { status: "refused", reason: "session_mismatch" };
+  }
+
+  // Evidence before spending: an envelope whose answers are not
+  // authenticated must not consume the subject's nullifier.
+  if (options.results !== undefined) {
+    if (options.registry === undefined) return { status: "refused", reason: "results_unauthenticated" };
+    const verified = verifyResults(h, options.results, {
+      registry: options.registry,
+      request,
+      nowUnix,
+      required: options.requiredPredicates,
+    });
+    if (verified.status === "invalid") return { status: "refused", reason: "results_unauthenticated" };
   }
 
   if (spent.has(disclosure.nullifier)) return { status: "refused", reason: "replayed" };

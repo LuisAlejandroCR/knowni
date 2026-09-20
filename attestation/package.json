@@ -1,0 +1,16 @@
+{
+  "name": "@knowni/attestation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Signing and checking an attested credential offline: issuer root signature, Merkle inclusion and commitment opening. No chain.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test --experimental-strip-types \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@knowni/core": "*"
+  }
+}

@@ -7,6 +7,9 @@
 // core/test/no-vendor-imports.test.ts.
 
 export type {
+  AssetStandingClaim,
+  CapacityBasis,
+  CapacityClaim,
   Claim,
   ClaimKind,
   DocumentKind,
@@ -25,12 +28,16 @@ export { fromHex, sha256Hash, u32be, u64be, utf8 } from "./hash.ts";
 export {
   SolvencyTier,
   monthsBetween,
+  proveAssetStanding,
+  proveCapacity,
   proveFormality,
   provePersonhood,
   proveSolvency,
   proveStanding,
 } from "./predicates.ts";
 export type {
+  AssetStandingParams,
+  CapacityParams,
   FormalityParams,
   PersonhoodParams,
   SolvencyParams,

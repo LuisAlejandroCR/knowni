@@ -146,4 +146,18 @@ export function createMemoryRegistry(
 }
 
 export type { AttestationFailure, AttestationResult, AttestedCredential, AttestedRoot, IssuerRegistry } from "./types.ts";
+
+export type {
+  AcceptOptions,
+  PresentationFailure,
+  PresentationResult,
+  SignedRequest,
+  SpentNullifiers,
+} from "./presentation.ts";
+export {
+  acceptPresentation,
+  createMemorySpentSet,
+  signRequest,
+  verifyRequest,
+} from "./presentation.ts";
 export type { Claim, Salt };

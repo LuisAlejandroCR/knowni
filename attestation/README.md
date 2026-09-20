@@ -21,3 +21,15 @@ esta verificación sigue funcionando igual — que es justo el criterio A11 del 
 
 Una revocación es una respuesta del registro. **La ausencia de respuesta no es una revocación**: un
 registro inalcanzable no puede invalidar en silencio cada credencial emitida.
+
+## La otra mitad: una respuesta, a una contraparte, una vez
+
+`presentation.ts` es el lado de quien verifica:
+
+- la contraparte **firma su solicitud**, así que el titular puede leer quién pregunta antes de
+  responder — y una firma válida de quien no es la audiencia esperada se rechaza igual;
+- la respuesta se comprueba contra la solicitud que esta contraparte envió de verdad, recalculando
+  el `sessionId`: audiencia, finalidad, reto y parámetros entran ahí, así que una respuesta no se
+  mueve a otra contraparte ni a una pregunta más barata;
+- el nullifier se gasta **solo al aceptar**. Una presentación rechazada no lo quema: si lo hiciera,
+  un intento fallido dejaría al titular sin poder usar su propia credencial.

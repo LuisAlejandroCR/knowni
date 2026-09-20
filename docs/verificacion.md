@@ -78,6 +78,29 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | `IncomeBasis` no tiene el eje de procedencia `observed \| documentary \| self_declared` del proyecto GovTech anterior | `core/src/claims.ts` | B4b |
 | Los dos commits iniciales llevan cuerpo y trailer `Co-Authored-By:`, contra la regla de una línea | historia de git | no se reescribe historia; la regla aplica desde el tercero |
 
+## Auditoría de afirmaciones — 2026-09-20
+
+Cada afirmación del `README.md` contra lo que realmente corre. Comprobado en esta fecha, con el
+repositorio en `main` y la suite en 236 pruebas.
+
+| Afirmación | Cómo se comprobó | Veredicto |
+|---|---|---|
+| "no hay dependencias externas" | `dependencies` de los seis `package.json`: solo enlaces `@knowni/*` entre workspaces | ✅ exacta |
+| "236 pruebas" | `npm test` desde un clon limpio, y CI en verde en Node 22 y 24 | ✅ exacta |
+| "el expediente cabe en diez campos" | `Disclosure` tiene diez campos de primer nivel; `anchor` es opcional y añadiría un onceavo | ⚠️ exacta con matiz: diez **sin** anclaje, once con él |
+| "ancló de verdad" en Stellar testnet | `GET /transactions/0dc0fdf4…` en Horizon: `successful: true`, ledger 4783364, memo igual al compromiso | ✅ exacta |
+| "21 pruebas" del cliente de Croma | 17 en `croma.test.ts` + 4 en `croma-contract.test.ts` | ✅ exacta |
+| "llamada en vivo a Croma, acotada" | Catálogo, sondeo de 16 rutas con cuerpo vacío y un `200` sobre una empresa pública | ✅ exacta |
+| "ningún log lleva documento, nombre, salario ni cuenta" | `journey/test/redaction.test.ts` captura telemetría, sumidero y los cinco métodos de consola | ✅ exacta, con una excepción declarada: el `logError` inyectado sí recibe el error crudo |
+| "circuitos escritos, sin compilar" | No existe `circuits/build/`; nada en el repositorio los ejecuta | ✅ exacta |
+| "contrato Soroban escrito, sin desplegar" | `contracts/knowni-verifier` sin artefactos ni dirección | ✅ exacta |
+| "app iOS / Android no escrita" | No existe `app/`. Pero desde el día 8 sí hay diseño aprobado en `design/day-08/` | ⚠️ **corregida en el README**: se añade el diseño |
+| Enlaces de archivo del README | 100 % resuelven a un archivo existente | ✅ exacta |
+| "ninguna llamada sobre una persona real" | Ningún fixture ni bitácora contiene una consulta con documento real | ✅ exacta |
+
+**Lo que la auditoría no puede cerrar:** A12 —ejecución en un teléfono físico— y la verificación de
+una prueba ZK. Siguen abiertos y el README lo dice.
+
 ## Afirmaciones que este repositorio **no** hace
 
 - Ningún tiempo de prueba, conteo de restricciones ni fee medido.

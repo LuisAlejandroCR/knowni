@@ -59,6 +59,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Deuda | Dónde | Bloque |
 |---|---|---|
 | `retrieval/` está construido sobre la lectura de Chroma. El adaptador, el puerto y el índice sobran; la normalización y la política de resolución se quedan | `retrieval/` | B3 |
+| El sobre `Disclosure` todavía tiene cinco campos del perfil de arrendamiento; `capacity` y `assetStanding` existen como reclamo y como predicado, pero no como respuesta entregable | `core/src/disclosure.ts` | día 6–7, con emisión y presentación |
+| `ofAge` se deriva de que la cédula de ciudadanía solo se expide a mayores de edad. Es una regla jurídica, no un dato que devuelva la fuente | `sources/src/croma/registraduria.ts` | confirmar con el concepto legal |
+| Ningún adaptador se ha ejercido contra una respuesta real sobre una persona: los esquemas vienen del OpenAPI de Croma, no de una llamada | `sources/src/croma/` | requiere un titular que autorice |
 | Los tests están planos (`*/test/*.test.ts`); la constitución pide `test/unit · fuzz · invariant` con sufijo `.spec.ts` | todos los workspaces | ⏳ sin bloque |
 | Las cabeceras de código tienen 10–30 líneas con narrativa; la constitución pide 2–3 líneas sin justificaciones. El razonamiento va a `memoria.md` | todos los `.ts` | ⏳ sin bloque |
 | `sources/src/colombia/pila.ts` habla de un operador que todavía no existe como integración | `sources/` | B4 |

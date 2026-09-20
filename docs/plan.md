@@ -250,6 +250,28 @@ una segunda fuente comercial solo cuando su cobertura esté comprobada.
 - segunda jurisdicción como adapters y perfiles, sin modificar `core/`;
 - evaluación externa de seguridad y privacidad antes de producción abierta.
 
+### Notas para `formality`, cuando le toque
+
+0. **¿Hay RUAF? Sí.** Comprobado en vivo contra el catálogo el 2026-09-20:
+   `/co/ruaf/affiliations/v1` (`document_number` + `issue_date`), en vivo. Así que `formality` se
+   apoya en la afiliación a ARL —que no tiene versión subsidiada— y la regla asimétrica deja de
+   hacer falta por esa vía. ADRES queda como respaldo, con su regla. En ninguno de los dos casos
+   hay historial: los dos son registros de estado, así que `monthsContributedLast12` no es
+   respondible sin PILA.
+1. **`formality` por ADRES Health Affiliation Status**, con la regla asimétrica de D-12: cotizante
+   activo en régimen contributivo → `true`; todo lo demás → `unavailable`, **nunca `false`**.
+   Del `SourceResult` solo sobrevive el booleano: la EPS, el régimen y la fecha se descartan dentro
+   del adaptador.
+2. **El tipo de cotizante entra en `FormalityClaim`.** La fuente primaria (D-15) distingue `3`
+   por cuenta propia, `59` con contrato de prestación de servicios superior a 1 mes, y `57`
+   voluntario a riesgos. Separa *"trabaja por su cuenta"* de *"tiene contrato vigente"* sin revelar
+   con quién — forma de predicado, no de dato. Solo aplica si se confirma la vía de consulta.
+3. **Las fechas de novedades son opcionales en la fuente**, así que `monthsContributedLast12` debe
+   tolerar meses sin fecha sin contarlos como ausencia.
+4. **`solvency` de persona natural no tiene fuente.** No se simula y no se disimula. Dos caminos
+   documentales, ambos aportados por el sujeto y ninguno obligatorio: DIAN Electronic Document (el
+   sujeto da el CUFE) y SECOP Contracts by Provider si es contratista del Estado.
+
 ## Próximos 10 días
 
 | Día | Entregable comprobable |

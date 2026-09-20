@@ -139,7 +139,7 @@ Node 22.18+. No hay paso de compilación y no hay dependencias externas.
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 133 pruebas
+npm test      # 137 pruebas
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
@@ -149,15 +149,16 @@ es el recorrido completo, sin red y sin mocks.
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 133 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 137 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Contra submitters de prueba |
-| Cliente HTTP de Croma | **Corre.** 17 pruebas sin red: 202 con polling, 502 con backoff, `Retry-After`, tope de polls. **Nunca llamado en vivo** |
+| Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
+| Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas y un `200` sobre una empresa pública. **Ninguna sobre una persona** |
 | Adaptador de Croma | **No escrito.** Las rutas vienen verificadas de trabajo propio anterior (2026-08-11), no de aquí |
 | App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
-| Llamada en vivo a Croma, PILA o cualquier registro | **No.** Ninguna |
+| Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |
 | Ejecución en un teléfono físico | **No.** Ninguna |
 
 Ningún número de este repositorio viene de una medición que no se haya

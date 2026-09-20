@@ -12,3 +12,5 @@ circuits/build/
 *.zkey
 *.r1cs
 *.wtns
+
+/docs

@@ -463,6 +463,7 @@ producción, `NullifierLedger` se implementa contra una transacción de base de 
 | 2026-09-20 | Segundo P0: orquestación de aceptación en cinco pasos, con la revocación en tres estados y el consumo del nullifier al final y en un solo paso. Una presentación repetida es idempotente; otra distinta bajo el mismo nullifier es replay — D-22 |
 | 2026-09-20 | Regla dura del usuario, aplicada a todo el repositorio: cabecera de nombre de archivo y 2–3 líneas en **cada** archivo, y comentarios solo donde el bloque no se explique solo. 65 archivos, 146 bloques narrativos fuera. Salda la deuda de cabeceras |
 | 2026-09-20 | Día 9: recorrido con `fetch` reemplazado por algo que lanza —cualquier ruta que busque red falla la prueba— y con la cadena caída. Y una prueba de redacción contra fuentes que devuelven el documento en su propio error. 236 pruebas |
+| 2026-09-20 | Día 10: auditoría de afirmaciones del README contra lo que corre —doce afirmaciones, dos con matiz y una corregida— y guion de los dos videos en `design/demo/guion.md`. Queda pendiente hacer público el repositorio, que las bases exigen |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

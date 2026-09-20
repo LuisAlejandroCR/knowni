@@ -175,7 +175,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Modo avión y logs sanitizados | **Corre.** El recorrido se completa con `fetch` desactivado y la cadena caída; ningún log lleva documento, nombre, salario ni cuenta |
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
-| App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
+| App iOS / Android | **No escrita.** Stack decidido y ocho pantallas de diseño aprobadas — [`design/day-08/`](design/day-08/README.md) |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |

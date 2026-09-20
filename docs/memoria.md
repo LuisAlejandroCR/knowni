@@ -348,6 +348,52 @@ AnonCreds se evalúa como prueba agnóstica con predicados y presentaciones no e
 *Consecuencia:* Stellar sigue siendo la primera integración y la evidencia exigida por la
 hackathon, pero verificar una credencial emitida debe seguir funcionando sin anclaje.
 
+### D-19 — RUAF y ADRES no reemplazan PILA, pero RUAF mejora D-12 · 2026-09-20
+
+La pregunta era si RUAF y ADRES bastan para no depender de PILA. La respuesta se parte en dos, y
+una mitad corrige una decisión anterior.
+
+*Lo que sí está verificado en fuente primaria* (el ABECÉ de MinSalud, jun 2018, respuesta 20): los
+operadores de PILA **validan la EPS contra la BDUA** —administrada por ADRES— y **la
+administradora de pensiones contra el RUAF**. Son registros de **afiliación**, y existen
+precisamente para decir *a qué administradora pertenece* alguien.
+
+*Lo que eso implica, y es categórico:* **ninguno de los dos lleva el IBC.** El IBC solo existe en
+la planilla de PILA, porque es el valor sobre el que se liquidó un aporte. Un registro de afiliación
+dice *dónde estás*, no *cuánto declaraste*. Para `solvency` no hay sustituto, y no es cuestión de
+acceso: el dato no está ahí.
+
+*Lo que sí mejora, y corrige D-12:* para `formality`, **la afiliación a ARL o a AFP es mejor señal
+que el régimen de salud** — y por la razón exacta que hacía peligrosa a ADRES.
+
+| Fuente | Señal | ¿Marcador de pobreza? |
+|---|---|---|
+| ADRES — régimen de salud | contributivo vs **subsidiado** | **Sí.** De ahí la regla asimétrica de D-12 |
+| RUAF — afiliación a **ARL** | afiliado o no | **No.** No existe una ARL subsidiada |
+| RUAF — afiliación a AFP / Colpensiones | afiliado o no | **No.** La afiliación a pensiones va atada a cotizar |
+
+No hay versión subsidiada de riesgos laborales: se está afiliado a una ARL por una relación de
+trabajo —dependiente, cotizante `59` con contrato de prestación de servicios, o `57` voluntario— o
+no se está. **La puerta de atrás que obligó a la regla asimétrica no existe en esta señal.** Si se
+consigue RUAF, `formality` sale de ADRES y deja de necesitar la asimetría por esta vía.
+
+*Lo que se pierde de todas formas:* los dos son registros de **estado**, no libros de **historial**.
+Dicen si alguien está afiliado y activo hoy; no dicen cuántos de los últimos doce meses cotizó. Así
+que `monthsContributedLast12` **no es respondible** por esta vía, y `formality` se degrada de
+*"cotiza, y con qué continuidad"* a *"está activo hoy"*. Es menos, y hay que decirlo en pantalla.
+
+*Y el obstáculo práctico, que resultó no serlo:* el análisis dio RUAF por ausente del catálogo de
+Croma. **Está**: `/co/ruaf/affiliations/v1`, comprobado en vivo el 2026-09-20 y guardado en el
+inventario. La mejor de las dos señales también está disponible.
+
+*Decisión:* D-12 se mantiene tal cual mientras la fuente sea ADRES. Como RUAF sí está, `formality`
+se apoyará en la afiliación a ARL, la regla asimétrica deja de hacer falta **por esa vía**, y la
+exclusión de Sisbén no cambia.
+
+*Nivel de evidencia:* que BDUA y RUAF existen y para qué los usan los operadores está **verificado
+en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de afiliado, ARL— es
+**supuesto propio** hasta ver una respuesta real.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -369,6 +415,7 @@ hackathon, pero verificar una credencial emitida debe seguir funcionando sin anc
 | 2026-09-20 | Jev (`typesafe-ai/jev`, vía Vercel AI Gateway) entra solo como herramienta de desarrollo, con medidor de gasto versionado. Precio verificado: $0,042 por millón de tokens de entrada, salida $0. No responde en `/v1/chat/completions`: es modelo de evaluación |
 | 2026-09-20 | Día 5: primer anclaje real en Stellar testnet, con XDR, StrKey y firma ed25519 escritos a mano para no romper la regla de cero dependencias. La firma va sobre el **hash** de la base, no sobre la base — firmarla al revés da `tx_bad_auth` con un sobre bien formado |
 | 2026-09-20 | Día 6: workspace `attestation/`. El emisor firma la raíz una vez y la contraparte verifica firma, inclusión y apertura sin red ni cadena. Regla nueva: la ausencia de respuesta del registro **no** es una revocación — D-18 |
+| 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real
 

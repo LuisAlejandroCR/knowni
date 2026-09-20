@@ -366,6 +366,7 @@ hackathon, pero verificar una credencial emitida debe seguir funcionando sin anc
 | 2026-09-20 | Día 2 cerrado con llave real: `/catalog` es público y da 87 endpoints de Colombia con esquema y límite. Corrige la ruta de ADRES y la del historial RUNT, y aparece RUAF, que el análisis daba por ausente. 137 pruebas |
 | 2026-09-20 | Días 3–4: los cuatro adaptadores del perfil de compraventa, contra los esquemas que publica el propio OpenAPI de Croma. Obliga a dos predicados nuevos en `core` — `capacity` y `assetStanding` — D-17. 165 pruebas |
 | 2026-09-20 | `sources/src` se reordena por jurisdicción: `country/colombia/` para los adaptadores y `providers/croma/` para el transporte. Añadir un país es una carpeta, no un cambio en el dominio |
+| 2026-09-20 | Jev (`typesafe-ai/jev`, vía Vercel AI Gateway) entra solo como herramienta de desarrollo, con medidor de gasto versionado. Precio verificado: $0,042 por millón de tokens de entrada, salida $0. No responde en `/v1/chat/completions`: es modelo de evaluación |
 
 ## Límites de proceso — estado del ejercicio real
 

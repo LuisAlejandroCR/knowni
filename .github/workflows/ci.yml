@@ -1,0 +1,23 @@
+# ci.yml: CI de Knowni — instala desde cero y corre la suite en Node 22 y 24.
+# Es la evidencia del criterio A14 del plan: la suite parte de un clon limpio.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22.18.0', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+      - run: npm test

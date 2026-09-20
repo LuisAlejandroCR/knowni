@@ -1,0 +1,90 @@
+{
+  "retrievedAt": "2026-09-20",
+  "path": "/co/rues/entities-by-name/v1",
+  "httpStatus": 200,
+  "note": "Types only. Captured from a live call about a public company; no personal data.",
+  "shape": {
+    "data": {
+      "query": "string",
+      "capped": "boolean",
+      "entities": [
+        {
+          "registry_id": "string",
+          "nit": null,
+          "verification_digit": null,
+          "name": "string",
+          "acronym": null,
+          "chamber_code": "string",
+          "chamber_name": "string",
+          "registration_number": "string",
+          "registration_status": "string",
+          "legal_organization": "string",
+          "last_renewed_year": "string",
+          "category": "string",
+          "document_type": null,
+          "detail": {
+            "registry_id": "string",
+            "nit": null,
+            "verification_digit": null,
+            "identification_class": null,
+            "secondary_identification": null,
+            "name": "string",
+            "acronym": null,
+            "chamber_code": "string",
+            "chamber_name": "string",
+            "registration_number": "string",
+            "registration_status": "string",
+            "registration_category": "string",
+            "legal_organization": "string",
+            "society_type": "string",
+            "society_type_code": "string",
+            "registration_date": "string",
+            "last_renewal_date": "string",
+            "last_renewed_year": "string",
+            "expiration_date": null,
+            "cancellation_date": null,
+            "cancellation_reason": null,
+            "updated_date": "string",
+            "primary_activity": {
+              "code": "string",
+              "description": "string"
+            },
+            "secondary_activity": {
+              "code": "string",
+              "description": "string"
+            },
+            "ciiu_3": {
+              "code": "string",
+              "description": "string"
+            },
+            "ciiu_4": {
+              "code": "string",
+              "description": "string"
+            },
+            "commercial_address": null,
+            "commercial_municipality": null,
+            "commercial_phones": [],
+            "commercial_email": null,
+            "fiscal_address": null,
+            "fiscal_municipality": null,
+            "fiscal_phones": [],
+            "fiscal_email": null,
+            "is_bic": null,
+            "is_social_enterprise": null,
+            "is_law_1780": null,
+            "is_transport": null,
+            "domain_forfeiture": null,
+            "sipref_inactivation_control": null,
+            "certificates_sale_url": "string"
+          }
+        }
+      ],
+      "pagination": {
+        "total": "number",
+        "page_size": "number",
+        "total_pages": "number",
+        "page": "number"
+      }
+    }
+  }
+}

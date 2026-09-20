@@ -96,7 +96,7 @@ dispositivo. Un proof server remoto ve el testigo entero.
 proving en el dispositivo es la tesis del proyecto".
 
 *Elección:* React Native + Expo con núcleo Rust sobre UniFFI. El dominio ya es TypeScript sin
-dependencias y corre en el teléfono sin puerto. Descartes y razones en [`MOBILE.md`](MOBILE.md).
+dependencias y corre en el teléfono sin puerto. Descartes y razones en `MOBILE.md`.
 
 ### D-06 — La mediana, no la media, para el ingreso · 2026-09-20
 
@@ -361,6 +361,9 @@ hackathon, pero verificar una credencial emitida debe seguir funcionando sin anc
 | 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
 | 2026-09-20 | PILA contra fuente primaria (ABECÉ MinSalud, jun 2018). Confirma el piso de 1 SMLMV y el conteo por meses; rompe el supuesto de que existe vía de consulta — D-15 |
 | 2026-09-20 | Investigación de fuentes y continuidad: credencial, prueba, registro y anclaje quedan separados — D-16 y plan posthackathon |
+| 2026-09-20 | F0 día 1 del plan: `LICENSE` Apache-2.0, workflow de CI en Node 22 y 24, y el README corregido a 116 pruebas. Suite verde desde un clon limpio |
+| 2026-09-20 | Cliente HTTP de Croma contra el contrato documentado, probado sin red con `fetch` y `sleep` inyectados. El día 2 del plan (inventario de endpoints contratados) sigue bloqueado: no hay `CROMA_API_KEY`. 133 pruebas |
+| 2026-09-20 | Día 2 cerrado con llave real: `/catalog` es público y da 87 endpoints de Colombia con esquema y límite. Corrige la ruta de ADRES y la del historial RUNT, y aparece RUAF, que el análisis daba por ausente. 137 pruebas |
 
 ## Límites de proceso — estado del ejercicio real
 
@@ -369,7 +372,7 @@ menos una vez.
 
 | Límite | Estado |
 |---|---|
-| Croma REST | ⏳ nunca llamado en vivo desde este repositorio |
+| Croma REST | ✅ **ejercido el 2026-09-20**: `/catalog` (200), 16 rutas sondeadas con cuerpo vacío (400/404) y `/co/rues/entities-by-name/v1` (200) sobre una empresa pública. Ninguna llamada sobre una persona |
 | Stellar Horizon / RPC | ⏳ nunca llamado |
 | Contrato Soroban | ⏳ nunca compilado ni desplegado |
 | Circom / snarkjs | ⏳ nunca compilado |

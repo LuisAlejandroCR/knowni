@@ -71,12 +71,34 @@ coincidencia.
 | Contaduría State Delinquent Debtor | **sanctions** — moroso del Estado | ✅ `/co/contaduria/state-delinquent-debtors/v1` |
 | SICAAC Insolvency Cases | **capacity** — sin proceso de insolvencia | ✅ `/co/sicaac/insolvency-cases/v1` |
 | Rama Judicial Cases by Entity | **capacity** — procesos por parte | ✅ `/co/rama-judicial/cases-by-entity/v1` |
-| **ADRES Health Affiliation Status** | **formality** — cotizante activo | ⏳ ruta sin verificar |
+| **ADRES Affiliation Status** | **formality** — cotizante activo | ✅ `/co/adres/affiliation-status/v1` — la ruta del catálogo viejo (`health-affiliation-status`) devuelve 404 |
 | RUES Entity by NIT · Entities by Name | **capacity** de la persona jurídica | ✅ `/co/rues/entity-by-nit/v1` · `/co/rues/entities-by-name/v1` |
-| Supersociedades Financial Statements · Shareholders | **solvency** de la persona jurídica | ✅ financial-statements · ⏳ shareholders |
-| RUNT Vehicle by Plate · History · SIMIT | **assetStanding** del vehículo | ✅ `/co/runt/*` · `/co/simit/account-status/v1` |
+| Supersociedades Financial Statements · Shareholders | **solvency** de la persona jurídica | ✅ ambos: `/co/supersociedades/financial-statements/v1` · `/co/supersociedades/shareholders/v1` |
+| RUNT Vehicle by Plate · History · SIMIT | **assetStanding** del vehículo | ✅ `/co/runt/vehicle-by-plate/v1` (`plate` + `document_number`) · `/co/runt/vehicle-history-by-plate/v1` (`plate`) · `/co/simit/account-status/v1` |
 | DIAN Electronic Document | **solvency** documental (el sujeto aporta el CUFE) | ✅ `/co/dian/electronic-document/v1` |
-| SECOP Contracts by Provider | **solvency** documental si es contratista del Estado | ⏳ y **deprecado** en el catálogo |
+| SECOP Contracts by Provider · Sanctions by Provider | **solvency** documental y **sanctions** de un contratista | ✅ `/co/secop/contracts-by-provider/v1` · `/co/secop/sanctions-by-provider/v1` |
+
+### Lo que la verificación en vivo corrigió
+
+Llamadas reales del **2026-09-20** contra `api.croma.run` con la llave del proyecto. El inventario
+completo, generado desde la propia API, está en
+[`sources/test/fixtures/croma/catalog-co.json`](../sources/test/fixtures/croma/catalog-co.json) y se
+regenera con `sources/tools/croma-inventory.ts`.
+
+| Hecho | Valor verificado |
+|---|---|
+| Catálogo | `GET /catalog` y `GET /openapi` son **públicos y sin autenticación**. 170 endpoints, **87 de Colombia** |
+| Descubrimiento del contrato | Un `POST` con cuerpo vacío devuelve `400` con `error.details.issues[].path`: la lista de parámetros requeridos, sin enviar un solo dato del sujeto |
+| Límite por endpoint | **100 solicitudes / 24 h**, declarado por el catálogo endpoint por endpoint |
+| Presupuesto de cuenta | Cabeceras `X-RateLimit-Limit: 5000`, `-Remaining` y `-Reset` en ISO-8601 |
+| Envolvente de error | `{ error: { type, code, message, param, details.issues[] } }` — captura literal en `error-invalid-param.json` |
+| **RUAF sí está** | `/co/ruaf/affiliations/v1` (`document_number` + `issue_date`), en vivo. Es afiliación, no IBC: alimenta `continuity`, nunca `solvency` |
+| Registro civil | `/co/registro-civil/birth-record/v1`, por nombre y fecha de nacimiento |
+| `served_from` | Cada endpoint declara `live` o `dataset`. Un `dataset` tiene fecha de corte y no es una consulta en vivo |
+
+Lo único con respuesta `200` real hasta hoy es `/co/rues/entities-by-name/v1` sobre **una empresa
+pública**. Ninguna ruta sobre una persona se ha llamado con un documento real: hacerlo sin
+autorización del titular es exactamente lo que este producto existe para impedir.
 
 ### Lo que existe y no se usa
 
@@ -166,7 +188,7 @@ La regla no es técnica, es sobre **quién llama**, y es la misma con Croma que 
 | **Verificación**, por la contraparte | **Nunca.** Recibe un sobre. No hay camino de código de una sesión a una consulta |
 
 Una `CROMA_API_KEY` en el dispositivo del arrendador convertiría el producto en un buscador de
-personas con un paso extra. Ver [`ARCHITECTURE.md`](ARCHITECTURE.md) → *Dónde se consulta*.
+personas con un paso extra. Ver `ARCHITECTURE.md` → *Dónde se consulta*.
 
 ## Regional, sin tocar el dominio
 

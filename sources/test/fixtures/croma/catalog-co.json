@@ -1,0 +1,899 @@
+{
+  "retrievedAt": "2026-09-20",
+  "source": "https://api.croma.run/catalog",
+  "endpoints": [
+    {
+      "id": "adres-affiliation-status",
+      "path": "/co/adres/affiliation-status/v1",
+      "source": "ADRES",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/adres"
+    },
+    {
+      "id": "ancp-cce-concepto",
+      "path": "/co/ancp-cce/concepto/v1",
+      "source": "Relatoría de la ANCP-CCE",
+      "required": [
+        "identifier"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/ancp-cce"
+    },
+    {
+      "id": "ancp-cce-conceptos-search",
+      "path": "/co/ancp-cce/conceptos-search/v1",
+      "source": "Relatoría de la ANCP-CCE",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/ancp-cce"
+    },
+    {
+      "id": "anm-notice",
+      "path": "/co/anm/notice/v1",
+      "source": "Agencia Nacional de Minería (ANM)",
+      "required": [
+        "notice_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/anm"
+    },
+    {
+      "id": "anm-notices-search",
+      "path": "/co/anm/notices-search/v1",
+      "source": "Agencia Nacional de Minería (ANM)",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/anm"
+    },
+    {
+      "id": "cndj-ruling",
+      "path": "/co/cndj/ruling/v1",
+      "source": "Relatoría de la CNDJ",
+      "required": [
+        "registration_number",
+        "ficha_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/cndj"
+    },
+    {
+      "id": "cndj-rulings-search",
+      "path": "/co/cndj/rulings-search/v1",
+      "source": "Relatoría de la CNDJ",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/cndj"
+    },
+    {
+      "id": "consejo-estado-providencia",
+      "path": "/co/consejo-estado/providencia/v1",
+      "source": "Consejo de Estado",
+      "required": [
+        "url"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/consejo-estado"
+    },
+    {
+      "id": "consejo-estado-search",
+      "path": "/co/consejo-estado/search/v1",
+      "source": "Consejo de Estado",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/consejo-estado"
+    },
+    {
+      "id": "contaduria-state-delinquent-debtors",
+      "path": "/co/contaduria/state-delinquent-debtors/v1",
+      "source": "Contaduría",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/contaduria"
+    },
+    {
+      "id": "contraloria-fiscal-records",
+      "path": "/co/contraloria/fiscal-records/v1",
+      "source": "Contraloría",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/contraloria"
+    },
+    {
+      "id": "corte-constitucional-ruling",
+      "path": "/co/corte-constitucional/ruling/v1",
+      "source": "Corte Constitucional",
+      "required": [
+        "ruling_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/corte-constitucional"
+    },
+    {
+      "id": "corte-constitucional-rulings-search",
+      "path": "/co/corte-constitucional/rulings-search/v1",
+      "source": "Corte Constitucional",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/corte-constitucional"
+    },
+    {
+      "id": "corte-suprema-ruling",
+      "path": "/co/corte-suprema/ruling/v1",
+      "source": "Corte Suprema de Justicia",
+      "required": [
+        "ruling_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/corte-suprema"
+    },
+    {
+      "id": "corte-suprema-rulings-search",
+      "path": "/co/corte-suprema/rulings-search/v1",
+      "source": "Corte Suprema de Justicia",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/corte-suprema"
+    },
+    {
+      "id": "dian-trade-directory-search",
+      "path": "/co/dian-trade/directory-search/v1",
+      "source": "DIAN Importers and Exporters",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dian-trade"
+    },
+    {
+      "id": "dian-trade-profile",
+      "path": "/co/dian-trade/profile/v1",
+      "source": "DIAN Importers and Exporters",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dian-trade"
+    },
+    {
+      "id": "dian-doctrina-search",
+      "path": "/co/dian/doctrina-search/v1",
+      "source": "DIAN",
+      "required": [
+        "query"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dian"
+    },
+    {
+      "id": "dian-doctrina-document",
+      "path": "/co/dian/doctrina/v1",
+      "source": "DIAN",
+      "required": [
+        "document_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dian"
+    },
+    {
+      "id": "dian-electronic-document",
+      "path": "/co/dian/electronic-document/v1",
+      "source": "DIAN",
+      "required": [
+        "cufe",
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dian"
+    },
+    {
+      "id": "dnp-sisben-offices",
+      "path": "/co/dnp/sisben-offices/v1",
+      "source": "Departamento Nacional de Planeación (DNP)",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dnp"
+    },
+    {
+      "id": "dnp-social-classification",
+      "path": "/co/dnp/social-classification/v1",
+      "source": "Departamento Nacional de Planeación (DNP)",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/dnp"
+    },
+    {
+      "id": "fiscalia-case",
+      "path": "/co/fiscalia/case/v1",
+      "source": "Fiscalía General de la Nación",
+      "required": [
+        "registration_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/fiscalia"
+    },
+    {
+      "id": "funcion-publica-norm",
+      "path": "/co/funcion-publica/norm/v1",
+      "source": "Función Pública",
+      "required": [
+        "norm_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/funcion-publica"
+    },
+    {
+      "id": "funcion-publica-norms-search",
+      "path": "/co/funcion-publica/norms-search/v1",
+      "source": "Función Pública",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/funcion-publica"
+    },
+    {
+      "id": "imprenta-diarios-search",
+      "path": "/co/imprenta/diarios-search/v1",
+      "source": "Imprenta Nacional",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/imprenta"
+    },
+    {
+      "id": "imprenta-gaceta-document",
+      "path": "/co/imprenta/gaceta-document/v1",
+      "source": "Imprenta Nacional",
+      "required": [
+        "document_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/imprenta"
+    },
+    {
+      "id": "imprenta-gaceta-documents-search",
+      "path": "/co/imprenta/gaceta-documents-search/v1",
+      "source": "Imprenta Nacional",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/imprenta"
+    },
+    {
+      "id": "imprenta-gacetas-search",
+      "path": "/co/imprenta/gacetas-search/v1",
+      "source": "Imprenta Nacional",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/imprenta"
+    },
+    {
+      "id": "legalize-law-detail",
+      "path": "/co/legalize/law/v1",
+      "source": "Legalize",
+      "required": [
+        "law_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/legalize"
+    },
+    {
+      "id": "legalize-laws-search",
+      "path": "/co/legalize/laws/v1",
+      "source": "Legalize",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/legalize"
+    },
+    {
+      "id": "policia-criminal-records",
+      "path": "/co/policia/criminal-records/v1",
+      "source": "Policía Nacional",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/policia"
+    },
+    {
+      "id": "procuraduria-disciplinary-records",
+      "path": "/co/procuraduria/disciplinary-records/v1",
+      "source": "Procuraduría",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/procuraduria"
+    },
+    {
+      "id": "rama-judicial-cases-by-entity",
+      "path": "/co/rama-judicial/cases-by-entity/v1",
+      "source": "Rama Judicial",
+      "required": [
+        "name"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rama-judicial"
+    },
+    {
+      "id": "rama-judicial-cases-by-radicado",
+      "path": "/co/rama-judicial/cases-by-radicado/v1",
+      "source": "Rama Judicial",
+      "required": [
+        "registration_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rama-judicial"
+    },
+    {
+      "id": "rama-judicial-cases-by-radicado-batch",
+      "path": "/co/rama-judicial/cases-by-radicado/v1/batch",
+      "source": "Rama Judicial",
+      "required": [
+        "items"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rama-judicial"
+    },
+    {
+      "id": "rama-judicial-emails-by-court",
+      "path": "/co/rama-judicial/emails-by-court/v1",
+      "source": "Rama Judicial",
+      "required": [
+        "court_code"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rama-judicial"
+    },
+    {
+      "id": "rama-judicial-emails-search",
+      "path": "/co/rama-judicial/emails-search/v1",
+      "source": "Rama Judicial",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rama-judicial"
+    },
+    {
+      "id": "registraduria-vital-status",
+      "path": "/co/registraduria/vital-status/v1",
+      "source": "Registraduría",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/registraduria"
+    },
+    {
+      "id": "registro-civil-birth-record",
+      "path": "/co/registro-civil/birth-record/v1",
+      "source": "Registraduría Nacional del Estado Civil",
+      "required": [
+        "first_surname",
+        "first_name",
+        "sex",
+        "birth_date"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/registro-civil"
+    },
+    {
+      "id": "ruaf-affiliations",
+      "path": "/co/ruaf/affiliations/v1",
+      "source": "RUAF",
+      "required": [
+        "document_number",
+        "issue_date"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/ruaf"
+    },
+    {
+      "id": "rues-entities-by-name",
+      "path": "/co/rues/entities-by-name/v1",
+      "source": "RUES",
+      "required": [
+        "name"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rues"
+    },
+    {
+      "id": "rues-entity-by-nit",
+      "path": "/co/rues/entity-by-nit/v1",
+      "source": "RUES",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/rues"
+    },
+    {
+      "id": "runt-vehicle-by-plate",
+      "path": "/co/runt/vehicle-by-plate/v1",
+      "source": "RUNT",
+      "required": [
+        "plate",
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/runt"
+    },
+    {
+      "id": "runt-vehicle-history-by-plate",
+      "path": "/co/runt/vehicle-history-by-plate/v1",
+      "source": "RUNT",
+      "required": [
+        "plate"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/runt"
+    },
+    {
+      "id": "samai-rulings-ruling",
+      "path": "/co/samai-rulings/ruling/v1",
+      "source": "SAMAI / Consejo de Estado",
+      "required": [
+        "ruling_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/samai-rulings"
+    },
+    {
+      "id": "samai-rulings-search",
+      "path": "/co/samai-rulings/search/v1",
+      "source": "SAMAI / Consejo de Estado",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/samai-rulings"
+    },
+    {
+      "id": "samai-corporaciones",
+      "path": "/co/samai/corporaciones/v1",
+      "source": "SAMAI / Consejo de Estado",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/samai"
+    },
+    {
+      "id": "samai-processes",
+      "path": "/co/samai/processes/v1",
+      "source": "SAMAI / Consejo de Estado",
+      "required": [
+        "query"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/samai"
+    },
+    {
+      "id": "samai-secciones",
+      "path": "/co/samai/secciones/v1",
+      "source": "SAMAI / Consejo de Estado",
+      "required": [
+        "corporacion"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/samai"
+    },
+    {
+      "id": "secop-awards-search",
+      "path": "/co/secop/awards-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-bidders-search",
+      "path": "/co/secop/bidders-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-contract-record",
+      "path": "/co/secop/contract-record/v1",
+      "source": "SECOP",
+      "required": [
+        "record_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-contract",
+      "path": "/co/secop/contract/v1",
+      "source": "SECOP",
+      "required": [
+        "contract_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-contracts-by-provider",
+      "path": "/co/secop/contracts-by-provider/v1",
+      "source": "SECOP",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-contracts-search",
+      "path": "/co/secop/contracts-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-modifications-search",
+      "path": "/co/secop/modifications-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-plans-search",
+      "path": "/co/secop/plans-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-process-record",
+      "path": "/co/secop/process-record/v1",
+      "source": "SECOP",
+      "required": [
+        "record_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-process",
+      "path": "/co/secop/process/v1",
+      "source": "SECOP",
+      "required": [
+        "notice_uid"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-processes-by-entity",
+      "path": "/co/secop/processes-by-entity/v1",
+      "source": "SECOP",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-processes-search",
+      "path": "/co/secop/processes-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-profile",
+      "path": "/co/secop/profile/v1",
+      "source": "SECOP",
+      "required": [
+        "document"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-sanctions-by-provider",
+      "path": "/co/secop/sanctions-by-provider/v1",
+      "source": "SECOP",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-sanctions-search",
+      "path": "/co/secop/sanctions-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "secop-suppliers-search",
+      "path": "/co/secop/suppliers-search/v1",
+      "source": "SECOP",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/secop"
+    },
+    {
+      "id": "siata-geoportal-air-quality",
+      "path": "/co/siata-geoportal/air-quality/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-alerts",
+      "path": "/co/siata-geoportal/alerts/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-cameras",
+      "path": "/co/siata-geoportal/cameras/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-citizen-sensors",
+      "path": "/co/siata-geoportal/citizen-sensors/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-forecast",
+      "path": "/co/siata-geoportal/forecast/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-rainfall",
+      "path": "/co/siata-geoportal/rainfall/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-river-levels",
+      "path": "/co/siata-geoportal/river-levels/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-seismic-events",
+      "path": "/co/siata-geoportal/seismic-events/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-weather-series",
+      "path": "/co/siata-geoportal/weather-series/v1",
+      "source": "SIATA",
+      "required": [
+        "station_code"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-geoportal-weather",
+      "path": "/co/siata-geoportal/weather/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata-geoportal"
+    },
+    {
+      "id": "siata-conditions",
+      "path": "/co/siata/v1",
+      "source": "SIATA",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/siata"
+    },
+    {
+      "id": "sicaac-insolvency-cases",
+      "path": "/co/sicaac/insolvency-cases/v1",
+      "source": "SICAAC",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/sicaac"
+    },
+    {
+      "id": "simev-shareholders",
+      "path": "/co/simev/shareholders/v1",
+      "source": "SIMEV",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/simev"
+    },
+    {
+      "id": "simit-account-status",
+      "path": "/co/simit/account-status/v1",
+      "source": "SIMIT",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/simit"
+    },
+    {
+      "id": "superfinanciera-doctrine-entry",
+      "path": "/co/superfinanciera-doctrine/entry/v1",
+      "source": "Superfinanciera Doctrina",
+      "required": [
+        "entry_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/superfinanciera-doctrine"
+    },
+    {
+      "id": "superfinanciera-doctrine-search",
+      "path": "/co/superfinanciera-doctrine/search/v1",
+      "source": "Superfinanciera Doctrina",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/superfinanciera-doctrine"
+    },
+    {
+      "id": "superfinanciera-complaints",
+      "path": "/co/superfinanciera/complaints/v1",
+      "source": "Superfinanciera",
+      "required": [
+        "document_number",
+        "filing_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/superfinanciera"
+    },
+    {
+      "id": "superfinanciera-regulation",
+      "path": "/co/superfinanciera/regulation/v1",
+      "source": "Superfinanciera",
+      "required": [
+        "regulation_id"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/superfinanciera"
+    },
+    {
+      "id": "superfinanciera-regulations-search",
+      "path": "/co/superfinanciera/regulations-search/v1",
+      "source": "Superfinanciera",
+      "required": [],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "dataset",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/superfinanciera"
+    },
+    {
+      "id": "supersociedades-financial-statements",
+      "path": "/co/supersociedades/financial-statements/v1",
+      "source": "Supersociedades",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/supersociedades"
+    },
+    {
+      "id": "supersociedades-shareholders",
+      "path": "/co/supersociedades/shareholders/v1",
+      "source": "Supersociedades",
+      "required": [
+        "document_number"
+      ],
+      "rateLimit": "100 requests / 24h",
+      "servedFrom": "live",
+      "docsUrl": "https://docs.usecroma.com/guides/colombia/supersociedades"
+    }
+  ]
+}

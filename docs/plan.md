@@ -94,7 +94,13 @@ Croma **no** cubre PILA — confirmado contra el catálogo el 2026-09-20, no pen
    activo en régimen contributivo → `true`; todo lo demás → `unavailable`, **nunca `false`**.
    Del `SourceResult` solo sobrevive el booleano: la EPS, el régimen y la fecha se descartan dentro
    del adaptador.
-2. **`solvency` de persona natural no tiene fuente.** No se simula y no se disimula. Dos caminos
+2. **El tipo de cotizante entra en `FormalityClaim`.** La fuente primaria (D-15) distingue `3`
+   por cuenta propia, `59` con contrato de prestación de servicios superior a 1 mes, y `57`
+   voluntario a riesgos. Separa *"trabaja por su cuenta"* de *"tiene contrato vigente"* sin revelar
+   con quién — forma de predicado, no de dato. Solo aplica si se confirma la vía de consulta.
+3. **Las fechas de novedades son opcionales en la fuente**, así que `monthsContributedLast12` debe
+   tolerar meses sin fecha sin contarlos como ausencia.
+4. **`solvency` de persona natural no tiene fuente.** No se simula y no se disimula. Dos caminos
    documentales, ambos aportados por el sujeto y ninguno obligatorio: DIAN Electronic Document (el
    sujeto da el CUFE) y SECOP Contracts by Provider si es contratista del Estado.
 

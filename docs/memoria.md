@@ -290,6 +290,49 @@ alcance del hackathon (D-13) es una elección de perfil, no un recorte del produ
 *Verificado:* `core/test/session.test.ts` prueba siete tipos de contrato distintos, que dos de ellos
 nunca comparten `sessionId`, y que un propósito ilegible se rechaza.
 
+### D-15 — PILA, contra la fuente primaria · 2026-09-20
+
+Hasta hoy todo lo que este repositorio decía de PILA era conocimiento general bien intencionado.
+Ahora hay fuente: el **ABECÉ de PILA del Ministerio de Salud, junio de 2018**. Confirma tres cosas,
+refina dos y rompe una suposición.
+
+*Confirma:*
+
+- **El IBC es un piso, no una medición** — y ahora por norma, no por intuición: un independiente
+  reporta siempre 30 días salvo novedad de ingreso, y el IBC proporcional no puede bajar de la
+  proporción de **1 SMLMV**. D-06 se sostiene con mejor respaldo.
+- **Contar meses distintos y no filas** — existe la planilla `N — Correcciones`, que añade
+  subsistemas o novedades después del pago inicial, así que un mes puede aparecer dos veces.
+- **El acceso es un operador de información autorizado**, con listado publicado por MinSalud. No
+  hay otra puerta.
+
+*Refina:*
+
+- **El IBC agrega todos los contratos.** Un independiente con varios contratos de prestación de
+  servicios calcula el IBC sobre los honorarios de todos. Es mejor señal de ingreso total de lo que
+  yo suponía.
+- **El tipo de cotizante es información real sobre la forma de trabajo:** `3` por cuenta propia
+  (salud y pensiones), `59` con contrato de prestación de servicios superior a 1 mes (añade
+  riesgos), `57` voluntario a riesgos (aporta vencido). Distingue *"trabaja por su cuenta"* de
+  *"tiene contrato vigente"* sin revelar con quién — es exactamente la forma de un predicado, y es
+  mejor señal de `formality` que la afiliación a salud de D-12. Entra en el modelo con B4.
+
+*Rompe:*
+
+**El ABECÉ es sobre pagar, no sobre consultar.** Describe cómo un aportante liquida y paga por un
+operador; **no establece ningún servicio por el que un tercero, ni el propio titular, consulte su
+historial de aportes** — ni con qué consentimiento ni con qué retención. Yo venía escribiendo "PILA
+vía operador" como si fuera una integración pendiente de acuerdo comercial. Puede que ni siquiera
+sea eso: la vía de consulta **hay que confirmar que existe** antes de planear contra ella.
+
+*Caveat de calidad del dato:* las fechas de las novedades laborales y las horas laboradas son
+**campos opcionales** según la propia fuente. La señal de continuidad es más ruidosa de lo que
+asumí, y `formality` tiene que tolerar meses sin fecha sin leerlos como ausencia.
+
+*Vigencia:* la fuente es de junio de 2018. El umbral de $5.859.315 para pago electrónico
+obligatorio es de ese año, y los decretos citados pueden haberse modificado. Nada de esto se da por
+vigente sin re-confirmar.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -301,6 +344,7 @@ nunca comparten `sessionId`, y que un propósito ilegible se rechaza.
 | 2026-09-20 | Corregida la atribución del trabajo previo de Croma. De ahí salen D-09, D-10 y D-11 |
 | 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
 | 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
+| 2026-09-20 | PILA contra fuente primaria (ABECÉ MinSalud, jun 2018). Confirma el piso de 1 SMLMV y el conteo por meses; rompe el supuesto de que existe vía de consulta — D-15 |
 
 ## Límites de proceso — estado del ejercicio real
 

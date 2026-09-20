@@ -320,8 +320,9 @@ cobra a la persona por demostrar que es quien dice.
 **El acceso a las fuentes ya no es un riesgo: es una ausencia conocida.**
 Croma cubre identidad, inhabilidades, insolvencia, registro mercantil, salud y
 vehículos con una sola key. PILA y SNR **no están**, y eso está confirmado
-contra el catálogo, no pendiente. Conseguirlos es acuerdo comercial, no
-programación. Lo que cambió es que ya no hay que planear a ciegas: el alcance
+contra el catálogo. Con SNR es pago por consulta. Con PILA es peor de lo que
+yo decía: la fuente primaria describe cómo se *paga*, no cómo se *consulta*, así
+que antes de negociar acceso hay que confirmar que la vía de consulta existe. Lo que cambió es que ya no hay que planear a ciegas: el alcance
 del hackathon se fijó contra lo que existe.
 
 **El sesgo de pobreza, que es el riesgo nuevo y el más serio.** El catálogo

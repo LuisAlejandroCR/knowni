@@ -32,9 +32,15 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | El catálogo de Colombia de Croma: qué fuentes existen y cuáles no | El propio catálogo de Croma, aportado por el usuario | 2026-09-20 | **Verificado.** PILA y SNR no están; ADRES, RUNT, SIMIT y Sisbén sí |
 
+| PILA: cuatro subsistemas; IBC con piso de 1 SMLMV proporcional; IBC agrega todos los contratos; tres tipos de cotizante independiente (`3`, `59`, `57`); planilla `N` de correcciones; fechas de novedades y horas laboradas **opcionales**; acceso por operador de información | **Fuente primaria**: ABECÉ de PILA, Ministerio de Salud y Protección Social | jun 2018 | **Verificado en fuente primaria**, pero la fuente tiene siete años: umbrales y decretos citados pueden haber cambiado |
+
 ## Pendiente de verificar
 
-1. **`CROMA_API_KEY`** — sin key no hay ninguna llamada en vivo. Bloquea B2 y el criterio A10.
+1. **¿Existe una vía por la que el titular consulte su historial de aportes PILA?** El ABECÉ de
+   MinSalud describe cómo se *paga*, no cómo se *consulta*. Antes se daba por hecho que era un
+   acuerdo comercial con un operador; ahora hay que confirmar que el servicio existe. Es la
+   pregunta que decide si `solvency` y `formality` son alcanzables. Ver D-15.
+8. **`CROMA_API_KEY`** — sin key no hay ninguna llamada en vivo. Bloquea B2 y el criterio A10.
 2. **Ruta y forma de respuesta de ADRES Health Affiliation Status.** Está en el catálogo; su ruta
    no aparece en el prototipo notarial anterior ni en el proyecto GovTech anterior, así que no se supone. De ella depende si
    `formality` distingue cotizante de beneficiario, que es lo que hace funcionar la regla de D-12.

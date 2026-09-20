@@ -31,34 +31,78 @@ con fuentes reales. Ver D-13.
 
 ## Por qué PILA es la pieza
 
-Un arrendamiento colombiano pide certificación laboral y certificación
-bancaria. Las dos son preguntas que el registro de aportes ya responde:
+Un arrendamiento colombiano pide certificación laboral y certificación bancaria. Las dos son
+preguntas que el registro de aportes ya responde:
 
-- El **IBC** (ingreso base de cotización) es el ingreso declarado sobre el
-  que se liquidó el aporte.
+- El **IBC** (ingreso base de cotización) es el ingreso declarado sobre el que se liquidó el aporte.
 - La **continuidad** de los aportes dice si es estable.
 
-Tres ventajas sobre un certificado bancario:
+Tres ventajas sobre un certificado bancario: es **mensual** en vez de una foto de un día, es **caro
+de fabricar** porque alguien pagó plata real contra ese IBC, y **cubre independientes**, que es
+justo a quien una carta de nómina no puede cubrir.
 
-1. **Es mensual**, no una foto de un día.
-2. **Es caro de fabricar**: alguien pagó plata real contra ese IBC.
-3. **Cubre independientes**, que es justo a quien una carta de nómina no
-   puede cubrir — y son la mayoría de quienes hoy quedan por fuera.
+### Lo que la fuente primaria establece
 
-Dos límites, escritos también en el código:
+Todo lo de esta sección sale del **ABECÉ de PILA del Ministerio de Salud y Protección Social,
+fechado en junio de 2018** — no de conocimiento general. Es un documento sobre **cómo se liquida y
+se paga**, y eso importa para lo que viene después.
 
-- **Cobertura**: un informal no cotiza y se ve idéntico a alguien sin
-  ingresos. Por eso `formality` es un predicado aparte, que el arrendador
-  tiene que pedir explícitamente, y no un ingrediente escondido de un
-  puntaje.
-- **Piso, no medición**: muchos independientes cotizan sobre el mínimo legal
-  sin importar lo que ganen. El reclamo dice `basis: "social_security"` para
-  que el arrendador sepa qué aceptó.
+**PILA cubre cuatro subsistemas, no uno.** Salud y pensiones son obligatorios; riesgos laborales
+lo es para algunos y voluntario para otros; la caja de compensación es opcional para cualquier
+independiente. Las administradoras son EPS, AFP y Colpensiones, ARL, y CCF.
 
-El cálculo: **mediana** de los últimos 12 meses. No la media, porque una
-prima o una liquidación la arrastra hacia arriba y el arrendador termina
-suscribiendo un año contra un evento único. No el último mes, porque los
-aportes se radican tarde y un mes faltante se leería como ingreso cero.
+**Hay tres tipos de cotizante independiente**, y la distinción es información real sobre la forma
+de trabajo (Resolución 2388 de 2016 y sus modificaciones):
+
+| Tipo | Quién es | A qué aporta |
+|---|---|---|
+| `3` | Independiente por cuenta propia | Salud y pensiones, anticipado |
+| `59` | Independiente **con contrato de prestación de servicios superior a 1 mes** | Salud, pensiones y riesgos, anticipado |
+| `57` | Independiente voluntario a riesgos laborales | Salud, pensiones y riesgos, **vencido** |
+
+Hay además el `43`, que aporta a pensiones a través de un tercero y está obligado a pagar salud
+sobre el mismo IBC.
+
+**El IBC tiene piso legal.** Un independiente reporta siempre 30 días salvo novedad de ingreso, y
+el IBC proporcional **no puede ser inferior a la proporción de 1 SMLMV**. Esto es lo que convierte
+el IBC en un **piso del ingreso**, no en una medición — y ahora está sostenido por la norma, no por
+una suposición nuestra.
+
+**El IBC agrega todos los contratos.** Si un independiente tiene varios contratos de prestación de
+servicios, debe calcular el IBC a partir de los honorarios de todos los que esté ejecutando. Eso lo
+hace mejor señal de ingreso total de lo que yo suponía.
+
+**El acceso es un operador de información.** El listado de operadores autorizados está publicado
+por MinSalud (Protección Social → Aseguramiento → PILA → Contacto Operadores). No hay otra puerta.
+
+### Dos caveats que la fuente obliga a escribir
+
+**Las fechas de las novedades son opcionales.** El ABECÉ dice literalmente que *"por ahora los
+datos de las fechas de las diferentes novedades laborales no son obligatorios"*, y lo mismo con las
+horas laboradas. Es decir: la señal de continuidad es **más ruidosa** de lo que yo asumí, y
+`formality` tiene que tolerar meses sin fecha sin leerlos como ausencia.
+
+**Existe la mora, y la corrección posterior.** La planilla `N — Correcciones` permite añadir
+subsistemas o novedades omitidas después del pago inicial, y las fechas límite dependen de los dos
+últimos dígitos del documento (del 2.º al 16.º día hábil). Un mes puede aparecer tarde, o aparecer
+dos veces. Eso justifica dos decisiones que ya estaban en el código: contar **meses distintos** y
+no filas, y usar la **mediana** en vez del último mes.
+
+### El hallazgo incómodo
+
+**Este documento es sobre pagar, no sobre consultar.** Describe cómo un aportante liquida y paga a
+través de un operador; **no establece en ninguna parte un servicio por el que un tercero —ni
+siquiera el propio sujeto— consulte su historial de aportes**, ni con qué consentimiento, ni con
+qué retención.
+
+Eso afina el bloqueo de `solvency` y `formality`: el problema no es "conseguir acceso a PILA", es
+que **la vía de consulta hay que confirmarla que existe** antes de planear contra ella. El operador
+tiene el dato porque lo procesó; que lo exponga a consulta del titular es otra cosa, y no está en
+esta fuente.
+
+**Y la fuente tiene siete años.** Junio de 2018. El umbral de $5.859.315 para pago electrónico
+obligatorio es de ese año y hoy es otro; los decretos citados pueden haberse modificado. Nada de
+esta sección debe darse por vigente sin re-confirmar.
 
 ## Marco legal
 

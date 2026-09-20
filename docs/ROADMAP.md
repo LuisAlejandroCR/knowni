@@ -11,18 +11,27 @@ trabajo.
 
 ## Los dos riesgos que pueden cambiar la arquitectura
 
-### 1 — ¿Croma cubre PILA y SNR?
+### 1 — ¿Existe una vía de consulta de PILA?
 
-Es una pregunta, no una integración, y se responde en una tarde con la key. Decide el alcance:
+Ya no es *"¿Croma cubre PILA?"*: el catálogo lo respondió, y **no la cubre**. Tampoco SNR. Lo que
+queda abierto es peor, y es una pregunta antes que una negociación.
 
-- **Si cubre aportes a seguridad social:** `solvency` y `formality` son reales, el producto está
-  completo, y el hackathon muestra los cinco predicados.
-- **Si no:** son sintéticos, **declarados como sintéticos en pantalla** —nunca disimulados— y la
-  demo se apoya en `personhood`, `standing` y `capacity`, que sí son reales. PILA queda como
-  acuerdo con un operador, fuera del fin de semana.
-- **SNR** decide lo mismo para `propertyStanding`, el predicado sobre el inmueble.
+La fuente primaria —el ABECÉ de PILA del Ministerio de Salud, junio de 2018— describe cómo un
+aportante **liquida y paga** a través de un operador de información. **No establece ningún servicio
+por el que un tercero, ni el propio titular, consulte su historial de aportes**, ni con qué
+consentimiento ni con qué retención. Hasta hoy este repositorio planeaba "PILA vía operador" como
+un acuerdo comercial pendiente; puede que ni siquiera sea eso. Ver `memoria.md` D-15.
 
-Va primero porque es barato y porque todo lo demás se planifica distinto según la respuesta.
+Así que el orden es: **confirmar que la vía existe** → si existe, negociar acceso → si no,
+`solvency` y `formality` se quedan sintéticos, **declarados como sintéticos en pantalla** y nunca
+disimulados, y el perfil de la demo se apoya en `personhood`, `sanctions`, `capacity` y
+`assetStanding`, que sí son reales.
+
+**SNR** es más simple: no está en Croma, es pago por consulta y sin convenio. Decide si
+`propertyStanding` sobre inmueble entra en alcance.
+
+Va primero porque es barato de responder y porque todo lo demás se planifica distinto según la
+respuesta.
 
 ### 2 — Poseidon sobre BLS12-381
 

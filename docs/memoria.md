@@ -362,6 +362,7 @@ hackathon, pero verificar una credencial emitida debe seguir funcionando sin anc
 | 2026-09-20 | PILA contra fuente primaria (ABECÉ MinSalud, jun 2018). Confirma el piso de 1 SMLMV y el conteo por meses; rompe el supuesto de que existe vía de consulta — D-15 |
 | 2026-09-20 | Investigación de fuentes y continuidad: credencial, prueba, registro y anclaje quedan separados — D-16 y plan posthackathon |
 | 2026-09-20 | F0 día 1 del plan: `LICENSE` Apache-2.0, workflow de CI en Node 22 y 24, y el README corregido a 116 pruebas. Suite verde desde un clon limpio |
+| 2026-09-20 | Cliente HTTP de Croma contra el contrato documentado, probado sin red con `fetch` y `sleep` inyectados. El día 2 del plan (inventario de endpoints contratados) sigue bloqueado: no hay `CROMA_API_KEY`. 133 pruebas |
 
 ## Límites de proceso — estado del ejercicio real
 

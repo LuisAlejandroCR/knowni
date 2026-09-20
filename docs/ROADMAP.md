@@ -9,6 +9,11 @@ Los bloques y sus criterios de aceptación viven en [`plan.md`](plan.md). Este a
 orden** y **por qué ese orden**: primero lo que puede resultar imposible, después lo que solo es
 trabajo.
 
+> Actualización 2026-09-20: el recorrido de hackathon conserva Groth16/BLS12-381 y Stellar, pero
+> el producto posthackathon ya no depende de que ese camino sea universal. `ProofPort`,
+> `RegistryPort` y `AnchorPort` separan prueba, resolución y cadena. El plan completo, las fuentes
+> comerciales/públicas y las puertas de decisión están en [`plan.md`](plan.md).
+
 ## Los dos riesgos que pueden cambiar la arquitectura
 
 ### 1 — ¿Existe una vía de consulta de PILA?

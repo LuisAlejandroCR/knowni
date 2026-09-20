@@ -333,6 +333,21 @@ asumí, y `formality` tiene que tolerar meses sin fecha sin leerlos como ausenci
 obligatorio es de ese año, y los decretos citados pueden haberse modificado. Nada de esto se da por
 vigente sin re-confirmar.
 
+### D-16 — La credencial funciona sin cadena; la cadena es un registro sustituible · 2026-09-20
+
+`chain-agnostic` no significa recompilar el mismo circuito para cada red. Significa que emisión,
+custodia, presentación y verificación no dependen de una blockchain. Una red publica raíces,
+revocaciones o recibos mediante `RegistryPort`/`AnchorPort`; no define el formato de identidad.
+
+*Razón:* Groth16 sobre BLS12-381 es una buena integración con Stellar, pero convertir esa curva en
+el formato del producto haría costoso portar Knowni y dejaría la verificación atada a la
+disponibilidad de una red. El dominio conserva predicados y perfiles; `ProofPort` permite una vía
+atestada construible y una vía ZK. W3C VC 2.0 y OpenID4VCI/VP serán el sobre y los flujos objetivo;
+AnonCreds se evalúa como prueba agnóstica con predicados y presentaciones no enlazables.
+
+*Consecuencia:* Stellar sigue siendo la primera integración y la evidencia exigida por la
+hackathon, pero verificar una credencial emitida debe seguir funcionando sin anclaje.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -345,6 +360,7 @@ vigente sin re-confirmar.
 | 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
 | 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
 | 2026-09-20 | PILA contra fuente primaria (ABECÉ MinSalud, jun 2018). Confirma el piso de 1 SMLMV y el conteo por meses; rompe el supuesto de que existe vía de consulta — D-15 |
+| 2026-09-20 | Investigación de fuentes y continuidad: credencial, prueba, registro y anclaje quedan separados — D-16 y plan posthackathon |
 
 ## Límites de proceso — estado del ejercicio real
 

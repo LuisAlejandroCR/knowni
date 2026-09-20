@@ -12,7 +12,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | Qué | Cómo | Fecha |
 |---|---|---|
-| 116 pruebas pasan | `npm test` con Node 22.22.2 | 2026-09-20 |
+| 116 pruebas pasan | `npm test` con Node 24.15.0 en Windows; rutas de fixtures con `fileURLToPath` | 2026-09-20 |
 | Nada en `core/` conoce un tipo de contrato; siete perfiles distintos responden con las mismas credenciales | `core/test/session.test.ts` · `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | El sobre no filtra ningún valor de los reclamos | `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | `core/` no importa ningún SDK ni declara dependencias | `core/test/no-vendor-imports.test.ts` | 2026-09-20 |
@@ -68,6 +68,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 - Ningún tiempo de prueba, conteo de restricciones ni fee medido.
 - Ninguna prueba verificada on-chain.
 - Ninguna integración real con Croma, Registraduría, PILA o DataCrédito.
+- Investigación documental 2026-09-20: Croma, Truora, Incode, Belvo, operadores PILA, RUAF,
+  ADRES/BDUA, UGPP y Finanzas Abiertas se clasificaron en `plan.md`. Esto no sustituye una llamada
+  real, un contrato comercial ni la comprobación de cobertura por endpoint.
 - Ninguna ejecución en un dispositivo físico.
 - Ninguna afirmación de cumplimiento normativo. `COLOMBIA.md` describe el marco; no es asesoría
   legal ni un concepto.

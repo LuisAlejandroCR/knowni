@@ -97,6 +97,11 @@ test/invariant/  <name>.invariant.spec.ts  propiedades que deben cumplirse para 
   una consulta colapsa el producto — ver `docs/ARCHITECTURE.md`.
 * **Nunca antecedentes penales**, de nadie, por ninguna vía. No es una preferencia configurable:
   el endpoint no se llama y el predicado no existe. Ver `docs/memoria.md` D-09.
+* **Nunca Sisbén ni ninguna clasificación de pobreza del Estado**, y nunca una respuesta negativa
+  derivada del régimen de salud. Una fuente que ordena personas por nivel de pobreza convierte el
+  producto en un filtro socioeconómico con sello oficial. Ver D-12.
+* **Una inferencia sobre la situación económica de alguien que nadie preguntó es una fuga**, aunque
+  el dato venga de una fuente oficial y aunque quepa en un booleano.
 * **Medir la cobertura antes de dejar que una fuente influya en un resultado.** Una fuente que
   cubre desigual y además puntúa es un sesgo con respaldo oficial. Ver D-11.
 * **Un resultado declara qué es y qué no estima.** Una banda descriptiva que no dice que es

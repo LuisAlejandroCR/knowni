@@ -49,6 +49,15 @@ nativo y prohíbe cualquier atajo de servidor.
   grado y decide si un producto de vivienda es justo. La primera es una restricción actual sobre la
   capacidad de contratar; la segunda es un castigo adicional que nadie impuso.
 
+- `2026-09-20` — Un catálogo de fuentes oficiales no es neutral. El de Croma para Colombia trae
+  `DNP Social Classification (Sisbén IV)` junto a Registraduría y RUNT, con el mismo aspecto y la
+  misma facilidad de llamada. Lo que decide si un producto discrimina no es qué puede consultar,
+  sino qué decide no consultar — y eso hay que escribirlo antes de tener la key, no después.
+- `2026-09-20` — Un predicado puede filtrar por la puerta de atrás. ADRES responde formalidad, pero
+  distingue régimen contributivo de subsidiado; devolver `false` ahí es publicar una inferencia de
+  pobreza en un booleano. La regla asimétrica —`true` o `unavailable`, nunca `false`— es lo que lo
+  evita, y solo se ve si uno se pregunta *qué se lee* en el `false`, no solo qué significa.
+
 ## 2. ¿Qué costó más de lo esperado, y por qué?
 
 - `2026-09-20` — Un workspace entero (`retrieval/`) construido sobre la lectura equivocada de
@@ -77,6 +86,8 @@ nativo y prohíbe cualquier atajo de servidor.
 | `2026-09-20` | Mediana de 12 meses para el ingreso | Media, o último mes | La media la arrastra una prima; el último mes se lee como cero si se radicó tarde |
 | `2026-09-20` | Sin número agregado **en este producto**, y cada respuesta declara qué no estima | Un score sin declaración | Un resultado que no dice qué es se lee como predicción. `creva_score` emite puntaje y hace bien: son productos distintos |
 | `2026-09-20` | Sin antecedentes penales, de nadie | Incluirlos en `standing` | No dicen si alguien puede pagar un arriendo; como filtro de vivienda castigan a quien ya cumplió. Decisión firme heredada de `creva_score` |
+| `2026-09-20` | Sisbén nunca, y ADRES solo en la dirección positiva | Usar la clasificación socioeconómica, o devolver `false` por régimen subsidiado | Sería un filtro de pobreza con sello oficial, entregado listo |
+| `2026-09-20` | La demo es compraventa de vehículo, no arrendamiento | Arrendamiento con `solvency` sintética | Sin PILA, `solvency` no tiene fuente; vehículo cierra con fuentes reales de punta a punta |
 | `2026-09-20` | Medir la cobertura de una fuente antes de dejarla influir en un resultado | Suponer que una fuente oficial es neutral | Una fuente de cobertura desigual que puntúa es un sesgo con respaldo oficial |
 
 ## 4. ¿Qué se volvería a hacer igual?
@@ -109,6 +120,10 @@ nativo y prohíbe cualquier atajo de servidor.
       → tema propuesto: `results-declare-themselves`
 - [ ] `Medir a quién cubre una fuente antes de dejarla influir en un resultado`
       → tema propuesto: `measure-coverage-before-scoring`
+- [ ] `Lo que decide si un producto discrimina no es qué puede consultar, sino qué decide no
+      consultar — escrito antes de tener la credencial` → tema propuesto: `catalogues-are-not-neutral`
+- [ ] `Preguntarse qué se LEE en un false, no solo qué significa: un negativo puede publicar una
+      inferencia que nadie pidió` → tema propuesto: `what-a-false-reads-as`
 
 ## Verify
 

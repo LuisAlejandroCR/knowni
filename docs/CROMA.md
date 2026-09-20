@@ -51,59 +51,76 @@ que este repositorio ya usa.
 que este proyecto tiene que respetar o contradecir a la cara. Están en
 [`memoria.md`](memoria.md) → D-09 y D-10.
 
-## Endpoints y a qué predicado sirven
+## El catálogo de Colombia, completo
 
-Rutas tomadas de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia), verificadas en vivo
-allí el **2026-08-11**. **No re-verificadas en esta sesión** — el proxy de red bloquea
-`docs.usecroma.com`. Antes de implementar, confirmar contra la documentación y anotar la fecha en
-[`verificacion.md`](verificacion.md).
+Lista tomada del catálogo real de Croma el **2026-09-20**. Las **rutas** de nueve de ellos están
+verificadas en vivo en `Digentia` (2026-08-11); las del resto están en el catálogo pero su ruta y su
+forma de respuesta siguen sin verificar, y aquí se marcan como tales.
 
-Dos cosas suben la confianza en esa lista sin haberla llamado:
+La URL base `https://api.croma.run` y la convención `/{país}/{fuente}/{recurso}/v1` aparecen en dos
+repositorios independientes con países distintos, así que son convención documentada y no
+coincidencia.
 
-- **La URL base `https://api.croma.run` aparece en dos repositorios independientes** — `Digentia` y
-  [`creva_score`](https://github.com/LuisAlejandroCR/creva_score).
-- **La convención de rutas es `/{país}/{fuente}/{recurso}/v1`** en los dos, con países distintos:
-  `/co/registraduria/vital-status/v1` y `/mx/siem/establishments/v1`. Una convención que se sostiene
-  entre países es una convención documentada, no una coincidencia.
+### Lo que responde un predicado
 
-### Personas naturales
-
-| Endpoint | Devuelve | Predicado |
+| Fuente | Predicado | Ruta |
 |---|---|---|
-| `POST /co/registraduria/vital-status/v1` | `{found, status: ALIVE\|DECEASED\|UNKNOWN}` | **personhood** — existe y está vivo |
-| ~~`POST /co/policia/criminal-records/v1`~~ | antecedentes penales | **excluido** — ver [`memoria.md`](memoria.md) D-09 |
-| `POST /co/procuraduria/disciplinary-records/v1` | `{found, has_records}` | **sanctions** (inhabilidad disciplinaria) |
-| `POST /co/contraloria/fiscal-records/v1` | `{is_fiscal_responsible, verification_code}` | **sanctions** (inhabilidad fiscal) |
-| `POST /co/contaduria/state-delinquent-debtors/v1` | deudores morosos del Estado | **sanctions** (inhabilidad) |
-| `POST /co/sicaac/insolvency-cases/v1` | `{cases: [{entity_name, party_type, request_date}]}` | **capacity** — sin proceso de insolvencia |
-| `POST /co/rama-judicial/cases-by-entity/v1` | procesos por nombre y tipo de parte | **capacity** (consulta por nombre → resolución) |
-| `POST /co/rama-judicial/cases-by-radicado/v1` | un proceso por radicado | detalle |
-| `POST /co/samai/processes/v1` · `/co/samai/corporaciones/v1` | procesos de altas cortes | detalle |
+| Registraduría Vital Status | **personhood** — existe y está vivo | ✅ `/co/registraduria/vital-status/v1` |
+| Procuraduría Disciplinary Records | **sanctions** — inhabilidad disciplinaria | ✅ `/co/procuraduria/disciplinary-records/v1` |
+| Contraloría Fiscal Records | **sanctions** — responsabilidad fiscal | ✅ `/co/contraloria/fiscal-records/v1` |
+| Contaduría State Delinquent Debtor | **sanctions** — moroso del Estado | ✅ `/co/contaduria/state-delinquent-debtors/v1` |
+| SICAAC Insolvency Cases | **capacity** — sin proceso de insolvencia | ✅ `/co/sicaac/insolvency-cases/v1` |
+| Rama Judicial Cases by Entity | **capacity** — procesos por parte | ✅ `/co/rama-judicial/cases-by-entity/v1` |
+| **ADRES Health Affiliation Status** | **formality** — cotizante activo | ⏳ ruta sin verificar |
+| RUES Entity by NIT · Entities by Name | **capacity** de la persona jurídica | ✅ `/co/rues/entity-by-nit/v1` · `/co/rues/entities-by-name/v1` |
+| Supersociedades Financial Statements · Shareholders | **solvency** de la persona jurídica | ✅ financial-statements · ⏳ shareholders |
+| RUNT Vehicle by Plate · History · SIMIT | **assetStanding** del vehículo | ✅ `/co/runt/*` · `/co/simit/account-status/v1` |
+| DIAN Electronic Document | **solvency** documental (el sujeto aporta el CUFE) | ✅ `/co/dian/electronic-document/v1` |
+| SECOP Contracts by Provider | **solvency** documental si es contratista del Estado | ⏳ y **deprecado** en el catálogo |
 
-### Personas jurídicas
+### Lo que existe y no se usa
 
-| Endpoint | Devuelve | Predicado |
-|---|---|---|
-| `POST /co/rues/entity-by-nit/v1` | matrícula mercantil, estado, actividad, representación | **capacity** de la persona jurídica |
-| `POST /co/rues/entities-by-name/v1` | varias entidades por nombre | (consulta por nombre → resolución) |
-| `POST /co/supersociedades/financial-statements/v1` | estados financieros | **solvency** de la persona jurídica |
+| Fuente | Por qué no |
+|---|---|
+| **DNP Social Classification (Sisbén IV y RUI)** | Es una clasificación de pobreza. Ver D-12: es el endpoint más peligroso del catálogo para este producto |
+| **DNP Sisbén Offices** | Solo tiene sentido junto al anterior |
+| **Policía Criminal Records** | Antecedentes penales — D-09 |
+| **Fiscalía Criminal Case by Number** | Misma regla que D-09 |
+| **Superfinanciera Complaints** | Quejas contra entidades financieras, no sobre la persona |
+| Consejo de Estado · CNDJ · SAMAI · DIAN Doctrina · ANCP-CCE | Jurisprudencia y doctrina. Material de consulta, no hechos sobre un sujeto |
+| SIATA (clima, aire, sismos, cámaras) | Valle de Aburrá. Nada que ver con este producto |
+| **Global: Web Search · Research · Extract · Generate JSON** | Aplicados a una persona rompen la exclusión de "registro público es lo publicado por una autoridad". No se llaman sobre un sujeto |
 
-### Otros activos
+## Las dos preguntas que bloqueaban el alcance, respondidas
 
-| Endpoint | Devuelve | Predicado |
-|---|---|---|
-| `POST /co/runt/vehicle-by-plate/v1` · `/co/runt/vehicle-history-by-plate/v1` | vehículo por placa e historial | **assetStanding** (vehículo) |
-| `POST /co/simit/account-status/v1` | comparendos | **assetStanding** (vehículo) |
-| `POST /co/dian/electronic-document/v1` | factura electrónica por CUFE | **solvency** documental |
+### PILA no está — y el sustituto tiene una trampa
 
-### Lo que Croma no cubre, y sigue siendo el bloqueo
+No hay endpoint de aportes a seguridad social. La pregunta *"¿cuánto gana?"* **no tiene fuente
+directa en Croma**, y eso es firme, no pendiente.
 
-- **PILA / aportes a seguridad social.** Es la fuente de `solvency` y `formality` para persona
-  natural, y no está en esta lista. Sigue siendo acuerdo con un operador de información.
-- **SNR / certificado de tradición.** Es la fuente de `propertyStanding` — el predicado sobre el
-  inmueble. Pendiente de confirmar si Croma lo expone.
+Lo más cerca es **ADRES Health Affiliation Status**. La afiliación a salud distingue régimen
+contributivo de subsidiado y afiliado cotizante de beneficiario: un **cotizante activo en régimen
+contributivo** está aportando a seguridad social. Eso responde `formality` —hay aporte y es
+reciente— pero **no da el IBC**, así que no responde `solvency`.
 
-Confirmar ambos es la primera tarea de integración, porque cambian el alcance del hackathon.
+Y trae la misma trampa que Sisbén por la puerta de atrás: *régimen subsidiado* es un marcador de
+pobreza. Por eso ADRES entra con una regla estricta, no como una fuente más — ver
+[`memoria.md`](memoria.md) **D-12**.
+
+### SNR no está — pero los vehículos sí
+
+No hay Superintendencia de Notariado y Registro, ni matrícula inmobiliaria, ni certificado de
+tradición. `propertyStanding` **sobre un inmueble no se puede construir con Croma**.
+
+Sobre un **vehículo sí, y completo**: RUNT por placa, historial del vehículo y estado de comparendos
+en SIMIT. Una compraventa de vehículo se cubre de punta a punta hoy; una de inmueble, no.
+
+### Lo que eso cambia
+
+Cuatro predicados reales sin PILA: `personhood`, `sanctions`, `capacity` y `formality` (vía ADRES).
+El que falta es `solvency`, que es justo el que decide un **arrendamiento** — y no el que decide una
+**compraventa ante notario**, donde las preguntas son identidad, capacidad e inhabilidades. Ver
+[`memoria.md`](memoria.md) **D-13**.
 
 ## El contrato HTTP
 

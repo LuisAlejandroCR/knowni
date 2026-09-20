@@ -29,6 +29,7 @@ Cosas que tienen que ser ciertas:
 | Entrega / deadline | Hackathon Stellar — fecha ⏳ pendiente |
 | Jurado / cliente | ⏳ pendiente |
 | Criterio de evaluación | ⏳ pendiente |
+| Caso de uso de la demo | **Compraventa de vehículo ante notario** — el único recorrido con fuentes reales de punta a punta. Ver `docs/memoria.md` D-13 |
 | Plataformas | iOS y Android — ver [`docs/MOBILE.md`](docs/MOBILE.md) |
 | Fuente de datos | Croma — ver [`docs/CROMA.md`](docs/CROMA.md) |
 | Cadena (primera) | Stellar, detrás de un puerto agnóstico |
@@ -79,10 +80,13 @@ No asumir el estado de un archivo sin leerlo.
 
 | Excluido | Razón |
 |---|---|
+| **Sisbén, y cualquier clasificación de pobreza del Estado** | Entregaría a un arrendador un filtro socioeconómico con sello oficial. No hay bandera de configuración ni modo avanzado: el endpoint no existe para este código. Ver `docs/memoria.md` D-12 |
+| **Régimen subsidiado como respuesta negativa** | ADRES solo produce `formality: true` para cotizante activo; todo lo demás es `unavailable`, nunca `false`. Un `false` se lee como "es pobre". Ver D-12 |
 | **Antecedentes penales, de nadie** | No dicen si alguien puede pagar un arriendo ni si puede contratar; dicen que cumplió una condena. Como filtro de vivienda le cierra la puerta a quien ya pagó, a escala y en silencio. Decisión firme heredada de `creva_score`. Ver `docs/memoria.md` D-09 |
 | Un número agregado de 0 a 1000 **en este producto** | No es un principio universal —`creva_score` emite un puntaje y hace bien— sino que aquí devolvería a la contraparte a decidir sobre una cifra opaca, que es justo lo que se le está quitando. Ver D-10 |
 | Que una fuente de cobertura desigual alimente una decisión agregada | Premiaría el código postal o la formalidad laboral en vez de la capacidad de pagar. Se mide la cobertura antes de decidir. Ver D-11 |
 | Datos no públicos y no consentidos | Registro público es lo publicado por una autoridad, no lo que se puede encontrar. Sin scraping, sin redes sociales, sin "señales de comportamiento" |
+| Los endpoints globales de Croma (Web Search, Research, Extract) aplicados a una persona | Rompen la exclusión anterior por la puerta de atrás: buscar en la web sobre un sujeto no es consultar un registro público |
 | Formalidad escondida dentro de otro predicado | Si "cotiza a seguridad social" se vuelve requisito de facto e invisible, el producto excluye a la mitad informal del país |
 | Foto de la cédula en cualquier punto del flujo | Es exactamente el artefacto que el producto existe para eliminar |
 | PWA como camino principal | No hay proving en el dispositivo, ni enclave seguro, ni passkey. Ver [`docs/MOBILE.md`](docs/MOBILE.md) → *Lo que se descartó* |

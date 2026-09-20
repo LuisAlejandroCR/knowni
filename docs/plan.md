@@ -8,8 +8,12 @@
 
 ## Specify
 
-**Para quién:** una persona que quiere arrendar o comprar un inmueble en Colombia y hoy entrega
-cédula, certificación laboral, certificación bancaria y desprendibles de nómina para lograrlo.
+**Para quién:** una persona que quiere comprar o arrendar en Colombia y hoy entrega cédula,
+certificación laboral, certificación bancaria y desprendibles de nómina para lograrlo.
+
+**Alcance del hackathon:** una **compraventa de vehículo ante notario** — el único recorrido que
+el catálogo de Croma cubre de punta a punta con fuentes reales, sujeto y activo. El arrendamiento
+queda a la espera de PILA, declarado y no disimulado. Ver [`memoria.md`](memoria.md) D-13.
 
 **Qué cambia:** entrega cuatro respuestas desde su teléfono. La contraparte recibe `true`,
 `STRONG`, `true`, `true` — y nada más.
@@ -75,15 +79,28 @@ de Croma (`rama-judicial/cases-by-entity`, `rues/entities-by-name`).
 
 *Criterio:* la suite pasa sin el workspace, y `sources/` no importa nada que ya no exista.
 
-### B4 — Solvencia y formalidad ⏳
+### B4 — Formalidad por ADRES, y solvencia declarada como ausente ✅ decidido, ⏳ por codear
 
-Croma no cubre PILA. Antes de codear:
+Croma **no** cubre PILA — confirmado contra el catálogo el 2026-09-20, no pendiente.
 
-1. Confirmar si Croma expone aportes a seguridad social. *Si sí*, es un bloque más de B2.
-2. *Si no*, el camino es un operador de información — acuerdo comercial, fuera del hackathon. El
-   adaptador sintético se queda y se **declara como sintético en pantalla**, nunca disimulado.
+1. **`formality` por ADRES Health Affiliation Status**, con la regla asimétrica de D-12: cotizante
+   activo en régimen contributivo → `true`; todo lo demás → `unavailable`, **nunca `false`**.
+   Del `SourceResult` solo sobrevive el booleano: la EPS, el régimen y la fecha se descartan dentro
+   del adaptador.
+2. **`solvency` de persona natural no tiene fuente.** No se simula y no se disimula. Dos caminos
+   documentales, ambos aportados por el sujeto y ninguno obligatorio: DIAN Electronic Document (el
+   sujeto da el CUFE) y SECOP Contracts by Provider si es contratista del Estado.
 
-*Criterio:* la decisión escrita en `memoria.md` con su razón, no un adaptador a medio hacer.
+*Criterio:* un test que verifique que ningún camino de ADRES produce `false`, y que el adaptador no
+deja salir el régimen.
+
+### B4c — Activo: vehículo ⏳
+
+RUNT Vehicle by Plate, Vehicle History by Plate y SIMIT Account Status → `assetStanding`.
+Es el predicado sobre el **activo**, no sobre la persona, y es el que le da la vuelta al producto:
+hoy el comprador prueba todo y el vendedor nada.
+
+*Criterio:* una compraventa de vehículo responde sujeto **y** activo con fuentes reales.
 
 ### B4b — Declaración del resultado ⏳
 

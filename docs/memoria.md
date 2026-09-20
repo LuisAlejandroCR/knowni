@@ -187,6 +187,69 @@ que **pedir a la vista**.
 un resultado, se mide a quién cubre. Una fuente con cobertura desigual que puntúa es un sesgo con
 respaldo oficial.
 
+### D-12 — Sisbén nunca, y ADRES solo en la dirección positiva · 2026-09-20
+
+El catálogo de Croma para Colombia incluye **DNP Social Classification (Sisbén IV y RUI)**. Es el
+endpoint más peligroso de la lista para este producto, y no por poco.
+
+*Qué es:* una clasificación socioeconómica del Estado que ordena a las personas en grupos de
+pobreza para asignarles programas sociales.
+
+*Qué pasaría si entrara:* un arrendador podría filtrar solicitantes por grupo de pobreza **con un
+sello oficial encima**. No es un sesgo emergente que haya que medir; es un filtro de pobreza
+entregado listo. Un producto que promete quitarle expedientes a la gente no puede ser el que
+entrega ese.
+
+*Decisión:* Sisbén y Sisbén Offices no se llaman. No hay bandera de configuración, no hay modo
+avanzado, no hay cliente que lo pida. El endpoint no existe para este código.
+
+**Y la misma trampa entra por la puerta de atrás.** `ADRES Health Affiliation Status` es el
+sustituto de PILA para `formality`, y la afiliación a salud distingue **régimen contributivo** de
+**régimen subsidiado** — que es, otra vez, un marcador de pobreza. Así que ADRES entra con una
+regla asimétrica, no como una fuente más:
+
+| Lo que devuelve ADRES | Lo que produce Knowni |
+|---|---|
+| Cotizante activo, régimen contributivo | `formality: true` |
+| Régimen subsidiado, o beneficiario, o inactivo | **`unavailable`**, nunca `false` |
+
+*Por qué asimétrica:* `false` le dice a un arrendador "esta persona no cotiza", y en Colombia eso
+se lee como "es pobre". `unavailable` le dice la verdad — que este predicado no se pudo responder
+por esta vía — y lo deja donde debe estar: sin información, en vez de con una inferencia sobre la
+situación económica de alguien que nadie preguntó.
+
+*Coste aceptado:* `formality` va a salir `unavailable` para mucha gente. Es correcto. La
+alternativa es un filtro de pobreza con fuente oficial.
+
+*También queda fuera:* la afiliación revela la EPS y el régimen. Del `SourceResult` de ADRES solo
+sobrevive un booleano; la EPS, el régimen y la fecha se descartan dentro del adaptador.
+
+### D-13 — El hackathon apunta a compraventa ante notario, no a arrendamiento · 2026-09-20
+
+El catálogo decide el alcance, y lo decide contra lo que yo había asumido.
+
+*Lo que hay, real y directo:* `personhood` (Registraduría), `sanctions` (Procuraduría, Contraloría,
+Contaduría), `capacity` (SICAAC + Rama Judicial), `formality` (ADRES, con D-12), y
+`assetStanding` **de vehículo** completo (RUNT por placa + historial + SIMIT).
+
+*Lo que no hay:* PILA, así que `solvency` de persona natural no tiene fuente. Y SNR, así que
+`propertyStanding` de inmueble tampoco.
+
+*La consecuencia:* un **arrendamiento** se decide por *¿le alcanza?*, que es justo el predicado sin
+fuente. Una **compraventa ante notario** se decide por identidad, capacidad e inhabilidades — los
+tres que sí están, y que además son los que un notario tiene **obligación legal** de verificar.
+
+*Decisión:* la demo del hackathon es una compraventa. El arrendamiento se mantiene como el caso de
+uso de mayor volumen y queda a la espera de PILA, declarado como tal y no disimulado con una fuente
+sintética presentada como real.
+
+*Efecto secundario que conviene:* una compraventa **de vehículo** se cubre de punta a punta hoy —
+sujeto y activo, los dos con fuentes reales. Es el único recorrido del catálogo que cierra sin un
+solo dato sintético, y por eso es el que se demuestra.
+
+*Lo que no cambia:* los predicados, el sobre, el anclaje y la frontera de privacidad son los
+mismos. Cambia `sources/` y cambia qué se enseña.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -196,6 +259,7 @@ respaldo oficial.
 | 2026-09-20 | Decisión de móvil: nativo iOS + Android sobre React Native |
 | 2026-09-20 | Adoptada la constitución de `procedures/templates/AGENTS.md`: commits de una línea sin trailers, cabeceras en `.md`, reparto por agente |
 | 2026-09-20 | Corregida la atribución: `creva_score` fue la hackathon de Croma, `Digentia` es un producto sin terminar. De ahí salen D-09, D-10 y D-11 |
+| 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
 
 ## Límites de proceso — estado del ejercicio real
 

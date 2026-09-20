@@ -7,23 +7,27 @@
 
 ## Las fuentes, y qué puede salir de cada una
 
-| Fuente | Autoridad | Responde | Acceso |
-|---|---|---|---|
-| **Registraduría** | Registraduría Nacional del Estado Civil | Estado vital | ✅ por [Croma](CROMA.md) |
-| **Procuraduría · Contraloría · Contaduría** | Cada autoridad | Inhabilidad disciplinaria, responsabilidad fiscal, morosidad con el Estado | ✅ por Croma |
-| ~~**Policía**~~ | — | Antecedentes penales | **Excluido por decisión de producto**, no por acceso. Ver [`memoria.md`](memoria.md) D-09 |
-| **SICAAC** | Supersociedades | Procesos de insolvencia | ✅ por Croma |
-| **Rama Judicial · SAMAI** | Rama Judicial | Procesos por parte o radicado | ✅ por Croma (consulta por nombre) |
-| **RUES** | Confecámaras | Matrícula mercantil, representación legal | ✅ por Croma |
-| **Supersociedades** | Supersociedades | Estados financieros de personas jurídicas | ✅ por Croma |
-| **PILA** | Operadores de información (autorizados por MinSalud) | IBC mensual, continuidad de aportes | ⏳ **no confirmado en Croma.** Si no está: operador, con autorización del sujeto |
-| **SNR** | Superintendencia de Notariado y Registro | Matrícula inmobiliaria, gravámenes | ⏳ **no confirmado en Croma.** Si no está: certificado de tradición, pago por consulta |
-| **DataCrédito / TransUnion** | Central de información crediticia | Historial, ingreso modelado | Comercial; Ley 1266 aplica |
+Contra el catálogo real de Croma, revisado el **2026-09-20**.
 
-La única columna que importa para el cronograma es la última, y Croma la cambió
-de sitio: seis de las nueve filas pasaron de "convenio" a "una key". Las dos que
-siguen abiertas —PILA y SNR— son justo las que alimentan *¿le alcanza?* y el
-predicado sobre el inmueble. Confirmarlas es la primera tarea de integración.
+| Fuente | Responde | Acceso |
+|---|---|---|
+| **Registraduría** | Estado vital | ✅ por [Croma](CROMA.md) |
+| **Procuraduría · Contraloría · Contaduría** | Inhabilidad disciplinaria, responsabilidad fiscal, morosidad con el Estado | ✅ por Croma |
+| **SICAAC** | Procesos de insolvencia | ✅ por Croma |
+| **Rama Judicial · SAMAI** | Procesos por parte o radicado | ✅ por Croma (consulta por nombre) |
+| **ADRES** | Afiliación a salud → cotizante activo | ✅ por Croma, **con la regla asimétrica de D-12** |
+| **RUES · Supersociedades** | Matrícula mercantil, representación, estados financieros | ✅ por Croma |
+| **RUNT · SIMIT** | Vehículo por placa, historial, comparendos | ✅ por Croma |
+| **DIAN** | Factura electrónica por CUFE | ✅ por Croma (el sujeto aporta el CUFE) |
+| ~~**PILA**~~ | IBC mensual, continuidad de aportes | ❌ **No está en Croma.** Operador de información — acuerdo comercial |
+| ~~**SNR**~~ | Matrícula inmobiliaria, gravámenes | ❌ **No está en Croma.** Certificado de tradición, pago por consulta |
+| ~~**Policía · Fiscalía**~~ | Antecedentes penales | **Excluido por decisión de producto**, no por acceso — [`memoria.md`](memoria.md) D-09 |
+| ~~**DNP Sisbén IV / RUI**~~ | Clasificación socioeconómica | **Excluido.** Es un filtro de pobreza con sello oficial — D-12 |
+
+Las dos ausencias son justamente las que deciden dos casos de uso distintos: sin PILA no hay
+*¿le alcanza?*, que es lo que decide un **arrendamiento**; sin SNR no hay predicado sobre el
+**inmueble**. Lo que sí queda completo es una **compraventa de vehículo**: sujeto y activo, los dos
+con fuentes reales. Ver D-13.
 
 ## Por qué PILA es la pieza
 
@@ -85,11 +89,11 @@ nunca un puntaje.
 
 ## Lo que sigue, en orden de dificultad
 
-1. **Confirmar el catálogo de Croma** — ¿aportes a seguridad social? ¿certificado de tradición?
-   Decide el alcance del hackathon, y es una pregunta, no una integración.
-2. **Bloques de Croma** — identidad, antecedentes, insolvencia. Una llamada en vivo por endpoint,
-   anotada con fecha en [`verificacion.md`](verificacion.md).
-3. **SNR / certificado de tradición**, si no está en Croma. Pago por consulta, sin convenio.
-   Habilita `propertyStanding`, que es el predicado que le da la vuelta al producto.
-4. **PILA vía operador**, si no está en Croma. Acuerdo comercial. Es el que desbloquea el producto
-   real, y el único que no se resuelve programando.
+1. **Bloques de Croma** — Registraduría, las tres de inhabilidades, SICAAC, ADRES, RUNT y SIMIT.
+   Una llamada en vivo por endpoint, anotada con fecha en [`verificacion.md`](verificacion.md).
+2. **Ruta y forma de ADRES** — está en el catálogo pero no en ningún repositorio previo, así que no
+   se supone. De ella depende que `formality` distinga cotizante de beneficiario.
+3. **SNR / certificado de tradición** — fuera de Croma. Pago por consulta, sin convenio. Habilita
+   `propertyStanding` sobre inmueble, que es lo que abre la compraventa inmobiliaria.
+4. **PILA vía operador** — fuera de Croma. Acuerdo comercial, no programación. Es el que desbloquea
+   el arrendamiento, que es el caso de mayor volumen.

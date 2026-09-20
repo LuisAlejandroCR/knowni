@@ -29,12 +29,15 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Stellar verifica Groth16 sobre BLS12-381 nativamente (CAP-0059, Protocolo 22+); BN254 bloqueado en CAP-0074 | `Stellar-dev-skill/skill/zk-proofs.md` en [`Gabrululu/Stellar-Build-PE`](https://github.com/Gabrululu/Stellar-Build-PE) | 2026-09 | **Repetido.** Confirmar contra el CAP antes de comprometer la curva |
 | ~23,7 s por prueba de *backing* sobre Midnight, en escritorio | `creva-zk`, `tools/PROOF-LATENCY.md` | 2026-08 | **Medido en otro proyecto.** No comparable con móvil; citado solo como referencia de que esto se mide |
 
+| El catálogo de Colombia de Croma: qué fuentes existen y cuáles no | El propio catálogo de Croma, aportado por el usuario | 2026-09-20 | **Verificado.** PILA y SNR no están; ADRES, RUNT, SIMIT y Sisbén sí |
+
 ## Pendiente de verificar
 
 1. **`CROMA_API_KEY`** — sin key no hay ninguna llamada en vivo. Bloquea B2 y el criterio A10.
-2. **¿Croma expone aportes a seguridad social (PILA)?** Decide si `solvency` y `formality` son
-   reales o sintéticos en el hackathon. Bloquea B4.
-3. **¿Croma expone SNR / certificado de tradición?** Decide si `propertyStanding` entra en alcance.
+2. **Ruta y forma de respuesta de ADRES Health Affiliation Status.** Está en el catálogo; su ruta
+   no aparece en `Digentia` ni en `creva_score`, así que no se supone. De ella depende si
+   `formality` distingue cotizante de beneficiario, que es lo que hace funcionar la regla de D-12.
+3. **Rutas de RUNT y SIMIT.** Verificadas en `Digentia`; re-confirmar antes de depender.
 4. **Cobertura de PILA por tipo de trabajador**, antes de dejar que `formality` influya en nada.
    Es el requisito de D-11 y no está medido.
 5. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.

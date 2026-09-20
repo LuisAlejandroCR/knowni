@@ -46,13 +46,24 @@ Contraloría, Contaduría, SICAAC, Rama Judicial y RUES con una sola integració
 y la misma para Colombia, Perú y México. Detalle en
 [`docs/CROMA.md`](docs/CROMA.md).
 
-**Lo que no se consulta: antecedentes penales, de nadie.** No dicen si alguien
+**Lo que no se consulta: antecedentes penales, de nadie — ni Sisbén.** El
+catálogo de Croma incluye la clasificación socioeconómica del DNP, y usarla
+aquí le entregaría a una contraparte un filtro de pobreza con sello oficial.
+Tampoco se consulta.
+
+**Antecedentes penales, de nadie.** No dicen si alguien
 puede pagar un arriendo; dicen que cumplió una condena. Como filtro de vivienda
 le cierra la puerta a quien ya pagó. La pregunta que sí se responde es si hay una
 **inhabilidad legal vigente** para contratar, que es otra cosa y es la que una
 contraparte regulada tiene obligación de mirar.
 
-Lo que Croma **no** cubre hoy es la pregunta que de verdad decide un arriendo:
+Croma **no** cubre PILA ni el certificado de tradición — confirmado contra el
+catálogo, no pendiente. Por eso la demo del hackathon es una **compraventa de
+vehículo ante notario**: es el único recorrido que cierra con fuentes reales de
+punta a punta, sujeto y activo. El arrendamiento espera a PILA, declarado y no
+disimulado.
+
+La pregunta que sigue sin fuente, y que es la que decide un arriendo:
 
 **PILA** — la Planilla Integrada de Liquidación de Aportes. Cuando un
 arrendador pide certificación laboral *y* certificación bancaria, está

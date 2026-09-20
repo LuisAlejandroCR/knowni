@@ -112,12 +112,28 @@ Y hay algo mejor todavía: ya trabajaste contra esta API, dos veces. El cliente 
 rutas colombianas de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia). Ninguno se
 reescribe. Detalle completo en [`CROMA.md`](CROMA.md).
 
-### Lo que sigue abierto
+### Lo que sigue abierto — ya no, está respondido
 
-Croma **no** cubre aportes a seguridad social ni certificado de tradición. Son exactamente las
-fuentes de `solvency`, `formality` y `propertyStanding` — es decir, la pregunta *"¿le alcanza?"*,
-que es la que de verdad decide un arriendo. Confirmar si están en el catálogo es la primera tarea
-de integración, porque cambia el alcance del hackathon.
+Revisé el catálogo real de Colombia el 2026-09-20. Dos respuestas firmes, no pendientes:
+
+**PILA no está.** *"¿Cuánto gana?"* no tiene fuente directa en Croma. El sustituto más cercano es
+**ADRES** —afiliación a salud—, que dice si alguien es cotizante activo en régimen contributivo.
+Responde `formality`; **no** da el IBC, así que no responde `solvency`.
+
+**SNR no está.** Ni matrícula inmobiliaria ni certificado de tradición. `propertyStanding` sobre un
+**inmueble** no se puede construir con Croma. Sobre un **vehículo sí, y completo**: RUNT por placa,
+historial y comparendos en SIMIT.
+
+**Y apareció algo que no esperaba: `DNP Social Classification (Sisbén IV y RUI)`.** Es una
+clasificación de pobreza del Estado. Meterla aquí le entregaría a un arrendador un filtro
+socioeconómico con sello oficial — listo, sin que haya que inferir nada. Queda fuera, sin bandera de
+configuración, y con ella la misma trampa por la puerta de atrás: ADRES distingue régimen
+contributivo de **subsidiado**, así que solo produce `formality: true` para cotizante activo y
+`unavailable` —nunca `false`— para todo lo demás. Un `false` ahí se lee como *"es pobre"*.
+
+**Lo que eso cambia:** un arrendamiento se decide por *¿le alcanza?*, que es el predicado sin
+fuente. Una **compraventa ante notario** se decide por identidad, capacidad e inhabilidades — los
+tres que sí están, y que además un notario tiene obligación legal de verificar. La demo apunta ahí.
 
 ### Lo que sí sobrevive de la lectura equivocada
 
@@ -238,41 +254,33 @@ funciona sin cripto en el flujo, que es lo que `MOBILE.md` marca como fricción 
 
 ## 7. El catálogo de predicados
 
-Construidos hoy:
+Contra el catálogo real de Croma, no contra lo que uno quisiera que existiera.
 
-| Predicado | Pregunta | Divulga |
-|---|---|---|
-| `personhood` | ¿Existe, vigente, vivo, mayor de edad? | un booleano |
-| `solvency` | ¿Le alcanza para el canon? | una banda: 1×, 2×, 3× |
-| `formality` | ¿Cotiza, y hace cuánto? | un booleano |
-| `sanctions` | ¿Hay una inhabilidad legal vigente para contratar? | un booleano |
+| Predicado | Pregunta | Divulga | Fuente |
+|---|---|---|---|
+| `personhood` | ¿Existe, vigente, vivo? | un booleano | Registraduría ✅ |
+| `sanctions` | ¿Hay inhabilidad legal para contratar? | un booleano | Procuraduría · Contraloría · Contaduría ✅ |
+| `capacity` | ¿Sin insolvencia, sin proceso que lo impida? | un booleano | SICAAC · Rama Judicial ✅ |
+| `formality` | ¿Cotiza, y está activo? | un booleano | ADRES ✅ con la regla asimétrica |
+| `assetStanding` | ¿El vehículo existe, sin comparendos, historial limpio? | un booleano | RUNT · SIMIT ✅ |
+| `solvency` | ¿Le alcanza? | una banda | **sin fuente** — PILA no está en Croma |
+| `propertyStanding` | ¿El inmueble está libre de gravámenes? | un booleano | **sin fuente** — SNR no está en Croma |
 
-Candidatos naturales, en orden de valor:
-
-- **`capacity`** — ¿tiene capacidad legal para contratar? (interdicción,
-  representación legal). Es el predicado que un notario necesita y que hoy
-  nadie verifica bien.
-- **`propertyStanding`** — sobre el **inmueble**, no la persona: ¿la matrícula
-  inmobiliaria existe, está libre de gravámenes, el vendedor es el titular?
-  Esto invierte el producto y es probablemente el más valioso: hoy el
-  arrendatario prueba todo y el arrendador nada. Fuente: Superintendencia de
-  Notariado y Registro.
-- **`rentalHistory`** — ¿cumplió contratos anteriores? Solo funciona si los
-  contratos anteriores dejaron anclas, así que se construye solo con el
-  tiempo. Es el efecto de red del producto.
-- **`guarantorCapacity`** — el codeudor, que es donde de verdad se traba un
-  arriendo en Colombia.
+`assetStanding` es el que le da la vuelta al producto: es un predicado sobre el **activo**, no sobre
+la persona. Hoy el comprador prueba todo y el vendedor nada, y resulta que es el único que el
+catálogo cubre entero.
 
 Y los que **no** hay que construir, por más que los pidan:
 
+- **Sisbén, o cualquier clasificación de pobreza.** Está a un endpoint de distancia y por eso hay
+  que escribirlo: un producto que promete quitarle expedientes a la gente no puede ser el que
+  entrega el filtro socioeconómico.
 - **Un número agregado**, aquí. No por principio universal —ver la sección 6— sino porque en este
-  producto le devolvería al arrendador una cifra opaca sobre la que decidir, que es exactamente lo
-  que se le está quitando. Knowni responde preguntas que el arrendador formuló; no le da una
-  opinión.
-- **Antecedentes penales**, de nadie, por ninguna vía. Decisión firme, heredada de `creva_score`.
-- **Cualquier predicado sobre datos no públicos y no consentidos** — redes
-  sociales, scraping, "señales de comportamiento". Un registro público es el
-  publicado por una autoridad, no lo que se puede encontrar.
+  producto le devolvería al arrendador una cifra opaca sobre la que decidir.
+- **Antecedentes penales**, de nadie. Decisión firme, heredada de `creva_score`, y ahora también
+  aplica a `Fiscalía Criminal Case by Number`.
+- **Los endpoints globales aplicados a una persona** — Web Search, Research, Extract. Rompen por la
+  puerta de atrás la regla de que registro público es lo publicado por una autoridad.
 
 ## 8. Quién paga
 
@@ -290,18 +298,25 @@ cobra a la persona por demostrar que es quien dice.
 
 ## 9. Riesgos honestos
 
-**El acceso a las fuentes sigue siendo el riesgo, pero es la mitad del que era.**
-Croma cubre identidad, antecedentes, insolvencia y registro mercantil con una
-sola key. Lo que no cubre es PILA — y PILA es la fuente de la pregunta que de
-verdad decide un arriendo, *¿le alcanza?*. Eso sigue siendo un acuerdo con un
-operador de información, y un acuerdo comercial no se resuelve programando. La
-arquitectura está escrita para que sea un adaptador y no un bloqueo: todo corre
-hoy contra fuentes sintéticas.
+**El acceso a las fuentes ya no es un riesgo: es una ausencia conocida.**
+Croma cubre identidad, inhabilidades, insolvencia, registro mercantil, salud y
+vehículos con una sola key. PILA y SNR **no están**, y eso está confirmado
+contra el catálogo, no pendiente. Conseguirlos es acuerdo comercial, no
+programación. Lo que cambió es que ya no hay que planear a ciegas: el alcance
+del hackathon se fijó contra lo que existe.
+
+**El sesgo de pobreza, que es el riesgo nuevo y el más serio.** El catálogo
+trae `DNP Social Classification (Sisbén IV)` a un endpoint de distancia, y
+ADRES —el sustituto de PILA— distingue régimen contributivo de subsidiado. Las
+dos cosas convierten el producto en un filtro socioeconómico con sello oficial
+si uno se descuida. Por eso Sisbén queda fuera sin bandera de configuración, y
+ADRES solo produce `true`; todo lo demás es `unavailable`, nunca `false`. Un
+`false` ahí se lee como *"es pobre"*, y con respaldo del Estado.
 
 **El sesgo de formalidad.** Si "cotiza a seguridad social" se vuelve el
 requisito de facto, el producto excluye a la mitad informal del país. Por eso
-formalidad es un predicado separado y explícito: el arrendador tiene que
-*pedirlo*, a la vista, y no recibirlo escondido dentro de un puntaje.
+formalidad es un predicado separado y explícito: la contraparte tiene que
+*pedirlo*, a la vista, y no recibirlo escondido dentro de un resultado.
 
 **El circuito todavía no compila.** `circomlib` está hecho para BN254; para
 BLS12-381 hacen falta constantes de Poseidon de ese campo. Es trabajo
@@ -337,25 +352,19 @@ de estos países, cambia menos de lo que parecía.
 
 ## 11. Decisiones que necesitan tu criterio
 
-Estas no las tomé; están abiertas a propósito. Dos de la versión anterior ya no lo están: móvil es
-nativo (sección 5) y la fuente de registros públicos es Croma (sección 4).
+El catálogo cerró tres de las que estaban abiertas: la fuente es Croma, PILA y SNR no están, y el
+caso de uso de la demo es compraventa. Quedan estas.
 
-1. **¿Confirmamos PILA y SNR en Croma antes de fijar el alcance?** Es la pregunta que decide el
-   hackathon. Si Croma expone aportes a seguridad social, `solvency` y `formality` son reales y el
-   producto está completo. Si no, son sintéticos —declarados como tales en pantalla— y la demo se
-   apoya en `personhood`, `standing` y `capacity`, que sí son reales.
-2. **¿El inmueble entra en el alcance?** `propertyStanding` —matrícula libre de gravámenes, el
-   vendedor es el titular— le da la vuelta al producto: hoy el arrendatario prueba todo y el
-   arrendador nada. Depende de la respuesta anterior sobre SNR.
-3. **¿Sello firmado, ancla en cadena, o los dos?** `creva_score` ya demuestra que un reporte
-   infalsificable no necesita cadena: huella por archivo, firma, folio visible. El sello prueba
-   integridad y origen y funciona sin cripto en el flujo; el ancla prueba que existía en un momento
-   y no depende de que una llave siga viva en diez años. Mi lectura: complementarios, y el sello
-   primero porque quita la fricción de que el usuario necesite XLM.
-4. **¿Demo con anclaje `memo` o con contrato Soroban?** `memo` corre hoy en testnet sin desplegar
-   nada; el contrato es el producto y es el que demuestra la protección contra replay.
-5. **¿Prueba ZK real o atestación firmada?** Depende de cerrar el hueco de Poseidon sobre
-   BLS12-381. El puerto las hace intercambiables, así que se pueden mostrar las dos.
-6. **¿Arrendamiento o compraventa primero?** Compraventa tiene notario —un verificador
-   institucional con obligación legal de verificar, y por tanto presupuesto— y es el cliente que
-   `Digentia` ya estaba atendiendo. Arrendamiento tiene volumen y ciclos cortos.
+1. **¿Vehículo o inmueble en la demo?** El vehículo cierra hoy —sujeto y activo con fuentes
+   reales, cero sintético—. El inmueble es el mercado que te interesa, pero sin SNR le falta el
+   predicado sobre el activo. Mi lectura: demostrar vehículo, contar inmueble.
+2. **¿Sello firmado, ancla en cadena, o los dos?** `creva_score` ya demuestra que un reporte
+   infalsificable no necesita cadena. El sello prueba integridad y origen sin cripto en el flujo;
+   el ancla prueba que existía en un momento. Complementarios, y el sello primero.
+3. **¿Demo con anclaje `memo` o con contrato Soroban?** `memo` corre hoy en testnet sin desplegar
+   nada; el contrato demuestra la protección contra replay.
+4. **¿Prueba ZK real o atestación firmada?** Depende de cerrar el hueco de Poseidon sobre
+   BLS12-381. El puerto las hace intercambiables.
+5. **¿Perseguimos PILA por operador después del hackathon?** Es lo que desbloquea el arrendamiento,
+   que es el volumen. Es acuerdo comercial, no programación, y conviene empezarlo antes de
+   necesitarlo.

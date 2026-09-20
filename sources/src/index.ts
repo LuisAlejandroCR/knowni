@@ -11,6 +11,18 @@ export { issueClaimSet } from "./issuer.ts";
 export type { CromaClient, CromaClientOptions, CromaOutcome, CromaTelemetry } from "./croma/client.ts";
 export { CROMA_BASE_URL, createCromaClient } from "./croma/client.ts";
 
+export { VITAL_STATUS_PATH, createRegistraduriaPersonhoodSource } from "./croma/registraduria.ts";
+export { INSOLVENCY_PATH, createSicaacCapacitySource } from "./croma/sicaac.ts";
+export {
+  CONTADURIA_PATH,
+  CONTRALORIA_PATH,
+  PROCURADURIA_PATH,
+  createSanctionsSource,
+  listSetRoot,
+} from "./croma/sanctions.ts";
+export type { VehicleLookup, VehicleStandingPort } from "./croma/vehicle.ts";
+export { RUNT_VEHICLE_PATH, SIMIT_PATH, createVehicleStandingSource } from "./croma/vehicle.ts";
+
 export type { PilaClient, PilaContribution, PilaOptions } from "./colombia/pila.ts";
 export { createPilaFormalitySource, createPilaIncomeSource } from "./colombia/pila.ts";
 

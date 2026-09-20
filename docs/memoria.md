@@ -415,6 +415,7 @@ en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de a
 | 2026-09-20 | Jev (`typesafe-ai/jev`, vía Vercel AI Gateway) entra solo como herramienta de desarrollo, con medidor de gasto versionado. Precio verificado: $0,042 por millón de tokens de entrada, salida $0. No responde en `/v1/chat/completions`: es modelo de evaluación |
 | 2026-09-20 | Día 5: primer anclaje real en Stellar testnet, con XDR, StrKey y firma ed25519 escritos a mano para no romper la regla de cero dependencias. La firma va sobre el **hash** de la base, no sobre la base — firmarla al revés da `tx_bad_auth` con un sobre bien formado |
 | 2026-09-20 | Día 6: workspace `attestation/`. El emisor firma la raíz una vez y la contraparte verifica firma, inclusión y apertura sin red ni cadena. Regla nueva: la ausencia de respuesta del registro **no** es una revocación — D-18 |
+| 2026-09-20 | Día 7: la contraparte firma su solicitud y la respuesta queda atada a audiencia, finalidad, reto y parámetros. El nullifier se gasta **solo al aceptar**: una presentación rechazada no puede dejar al titular sin credencial — D-20 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -1,0 +1,22 @@
+{
+  "retrievedAt": "2026-09-20",
+  "path": "/co/registraduria/vital-status/v1",
+  "httpStatus": 400,
+  "note": "Real validation envelope from an empty body. No subject data was sent.",
+  "body": {
+    "error": {
+      "type": "invalid_request_error",
+      "code": "invalid_param",
+      "message": "Invalid input: expected string, received undefined",
+      "param": "document_number",
+      "details": {
+        "issues": [
+          {
+            "path": "document_number",
+            "message": "Invalid input: expected string, received undefined"
+          }
+        ]
+      }
+    }
+  }
+}

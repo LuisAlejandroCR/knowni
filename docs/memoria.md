@@ -371,7 +371,7 @@ menos una vez.
 
 | Límite | Estado |
 |---|---|
-| Croma REST | ⏳ nunca llamado en vivo desde este repositorio |
+| Croma REST | ⏳ nunca llamado en vivo. El cliente existe y está probado contra respuestas simuladas (`sources/test/croma.test.ts`); simular el contrato no es haberlo ejercido |
 | Stellar Horizon / RPC | ⏳ nunca llamado |
 | Contrato Soroban | ⏳ nunca compilado ni desplegado |
 | Circom / snarkjs | ⏳ nunca compilado |

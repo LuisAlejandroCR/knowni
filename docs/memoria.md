@@ -394,6 +394,27 @@ exclusión de Sisbén no cambia.
 en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de afiliado, ARL— es
 **supuesto propio** hasta ver una respuesta real.
 
+### D-21 — Se presentan respuestas firmadas, no credenciales · 2026-09-20
+
+El handoff de diseño del día 8 encontró el hueco: `AttestedCredential` lleva `claim` y `salt`
+porque `verifyCredential` los necesita para abrir el compromiso. Entregarla a una contraparte le
+entrega el ingreso, la referencia del sujeto y todo lo demás, por mucho que la pantalla no lo
+muestre. Una pantalla no es un límite de privacidad.
+
+*Las dos salidas, y cuál se toma:* una **prueba de predicado** oculta el testigo y es hacia donde
+va el producto, pero exige la vía ZK medida en un teléfono real. Una **atestación de resultados**
+—el emisor evalúa los predicados contra los umbrales que nombra la solicitud y firma las
+respuestas— es construible hoy. Se toma la segunda, con sus costos escritos, no disimulados:
+
+- el emisor ve la evidencia —siempre la vio— pero ahora además sabe **qué contraparte preguntó**,
+  porque las respuestas van atadas a la sesión;
+- el emisor tiene que estar disponible en el momento de la solicitud, así que un umbral nuevo no se
+  responde offline desde una credencial vieja;
+- la contraparte **confía** en la evaluación del emisor en vez de comprobarla, que es justo lo que
+  la vía ZK elimina después.
+
+*Lo que no se hace:* llamar ZK a esto, ni prometer no correlación por ocultar un nombre.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -416,6 +437,7 @@ en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de a
 | 2026-09-20 | Día 5: primer anclaje real en Stellar testnet, con XDR, StrKey y firma ed25519 escritos a mano para no romper la regla de cero dependencias. La firma va sobre el **hash** de la base, no sobre la base — firmarla al revés da `tx_bad_auth` con un sobre bien formado |
 | 2026-09-20 | Día 6: workspace `attestation/`. El emisor firma la raíz una vez y la contraparte verifica firma, inclusión y apertura sin red ni cadena. Regla nueva: la ausencia de respuesta del registro **no** es una revocación — D-18 |
 | 2026-09-20 | Día 7: la contraparte firma su solicitud y la respuesta queda atada a audiencia, finalidad, reto y parámetros. El nullifier se gasta **solo al aceptar**: una presentación rechazada no puede dejar al titular sin credencial — D-20 |
+| 2026-09-20 | P0 del handoff del día 8: `AttestedCredential` entregaba `claim` y `salt` a la contraparte. Se separa lo que se guarda de lo que se presenta — el emisor firma las respuestas, atadas a la sesión — y la aceptación las verifica antes de gastar el nullifier. No es ZK y el código lo dice — D-21 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

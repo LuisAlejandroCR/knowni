@@ -139,7 +139,7 @@ Node 22.18+. No hay paso de compilación y no hay dependencias externas.
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 204 pruebas
+npm test      # 216 pruebas
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
@@ -164,13 +164,14 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 204 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 216 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
 | Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas y un `200` sobre una empresa pública. **Ninguna sobre una persona** |
 | Credencial firmada y verificable sin cadena | **Corre.** Firma de la raíz, ruta de Merkle y apertura del compromiso, offline — `attestation/` |
 | Solicitud firmada y anti-replay | **Corre.** La respuesta se ata a audiencia, finalidad, reto y parámetros; el nullifier se gasta una vez |
+| Lo que cruza la red | **Corre.** Respuestas firmadas por el emisor. El reclamo y la sal se quedan en el teléfono — y hay una prueba que lo afirma |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
 | App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |

@@ -39,22 +39,22 @@ No son lo mismo y conviene no confundirlos:
 
 | Proyecto | Qué es | Qué aporta aquí |
 |---|---|---|
-| [**`creva_score`**](https://github.com/LuisAlejandroCR/creva_score) | **La hackathon.** IA Hackathon GovTech, 12–16 de agosto de 2026, sobre Croma. México, para emprendedoras que piden su primer crédito | El cliente de Croma **más maduro** (tope de polls, timeout, `sleep` y logger inyectables), el caché, y — más importante — un conjunto de decisiones de producto ya tomadas y publicadas. Ver abajo |
-| [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) | **Un producto sin terminar.** Debida diligencia notarial para compraventa, Colombia | Las rutas `/co/*` y sus esquemas de respuesta. Es el mismo dominio que Knowni, así que el mapa de endpoints vale; el estado del proyecto no lo invalida, pero sí obliga a re-verificar antes de depender |
+| **El proyecto GovTech** | **La hackathon.** IA Hackathon GovTech, 12–16 de agosto de 2026, sobre Croma. México, para emprendedoras que piden su primer crédito | El cliente de Croma **más maduro** (tope de polls, timeout, `sleep` y logger inyectables), el caché, y — más importante — un conjunto de decisiones de producto ya tomadas y publicadas. Ver abajo |
+| **El prototipo notarial** | **Sin terminar.** Debida diligencia notarial para compraventa, Colombia | Las rutas `/co/*` y sus esquemas de respuesta. Es el mismo dominio que Knowni, así que el mapa de endpoints vale; el estado del proyecto no lo invalida, pero sí obliga a re-verificar antes de depender |
 
-**El cliente se toma de `creva_score`, no de `Digentia`.** Mismo contrato, mejor implementación:
+**El cliente se toma del proyecto GovTech, no del prototipo notarial.** Mismo contrato, mejor implementación:
 tope de polls (un job colgado no cuelga la app), timeout explícito, y `sleep`/`fetch`/`logger`
 inyectables — que es lo que permite probarlo entero sin red. Su `SourceResult<T>` es el mismo shape
 que este repositorio ya usa.
 
-**Y hay algo que pesa más que el código.** `creva_score` tiene decisiones de producto publicadas
+**Y hay algo que pesa más que el código.** El proyecto GovTech trae decisiones de producto ya publicadas
 que este proyecto tiene que respetar o contradecir a la cara. Están en
 [`memoria.md`](memoria.md) → D-09 y D-10.
 
 ## El catálogo de Colombia, completo
 
 Lista tomada del catálogo real de Croma el **2026-09-20**. Las **rutas** de nueve de ellos están
-verificadas en vivo en `Digentia` (2026-08-11); las del resto están en el catálogo pero su ruta y su
+verificadas en vivo en el prototipo notarial (2026-08-11); las del resto están en el catálogo pero su ruta y su
 forma de respuesta siguen sin verificar, y aquí se marcan como tales.
 
 La URL base `https://api.croma.run` y la convención `/{país}/{fuente}/{recurso}/v1` aparecen en dos
@@ -124,7 +124,7 @@ El que falta es `solvency`, que es justo el que decide un **arrendamiento** — 
 
 ## El contrato HTTP
 
-Verificado en `Digentia` el 2026-08-11.
+Verificado en el prototipo notarial el 2026-08-11.
 
 ```
 POST https://api.croma.run<path>
@@ -144,7 +144,7 @@ Prefer: wait=55
 
 ## Cómo se envuelve
 
-Dos reglas, heredadas de `Digentia` y de la disciplina de `creva-zk`:
+Dos reglas, heredadas del prototipo notarial y de la disciplina del proyecto ZK anterior:
 
 **Ninguna llamada lanza hacia arriba.** Sin key, sin red, con el upstream caído o con el job
 fallido, el resultado es un `SourceResult` degradado con una razón de un vocabulario fijo. Una

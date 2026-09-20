@@ -52,10 +52,10 @@ la revocación es el emisor republicando una raíz sin esa hoja.
 
 ## 3. Qué se reutiliza de lo que ya tienes
 
-Busqué en tus repos. `creva-zk` no es un antecedente parecido: es
+Busqué en tu trabajo anterior. El proyecto ZK que hiciste no es un antecedente parecido: es
 **exactamente la primitiva**, ya probada en una hackathon.
 
-| De `creva-zk` | Cómo llega aquí |
+| Del proyecto ZK anterior | Cómo llega aquí |
 |---|---|
 | `Attestation<T>` genérica: el emisor firma un reclamo, el circuito lo verifica y solo el resultado sale | El patrón completo. `core/` es esta idea con cuatro predicados en vez de dos |
 | `identity-check.compact`: `verified ∧ ofAge ∧ taxId coincide` | `provePersonhood` es el mismo predicado con una jurisdicción y una ventana de frescura |
@@ -64,12 +64,12 @@ Busqué en tus repos. `creva-zk` no es un antecedente parecido: es
 | La tabla de divulgación como comentario de cabecera en cada circuito | La convención se mantiene, y además se verifica en un test |
 | La disciplina de `degraded` vs `failed` | Idéntica, y por la misma razón: "no calificas" y "no se pudo consultar" son respuestas distintas |
 
-Y de los dos proyectos de Croma, que no son lo mismo:
+Y de los dos trabajos anteriores sobre Croma, que no son lo mismo:
 
-- [**`creva_score`**](https://github.com/LuisAlejandroCR/creva_score) — **la hackathon** (IA
+- **El proyecto GovTech** — **la hackathon** (IA
   Hackathon GovTech, 12–16 ago 2026). De ahí sale el cliente maduro, el caché, `SourceResult<T>`
   y, sobre todo, un conjunto de decisiones de producto ya publicadas.
-- [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) — **producto sin terminar**, debida
+- **El prototipo notarial** — **sin terminar**, debida
   diligencia notarial para compraventa. Mismo dominio que esto, así que su mapa de rutas `/co/*`
   vale; su estado obliga a re-verificar antes de depender.
 
@@ -77,7 +77,7 @@ Y de los dos proyectos de Croma, que no son lo mismo:
 
 Midnight prueba sobre **BLS12-381**, y la curva embebida de BLS12-381 es
 **Jubjub** — que es exactamente la curva sobre la que está escrito el Schnorr
-de `creva-zk`. Stellar, desde
+del proyecto ZK anterior. Stellar, desde
 [CAP-0059](https://github.com/stellar/stellar-protocol/blob/master/core/cap-0059.md)
 (Protocolo 22+), verifica **Groth16 sobre BLS12-381 de forma nativa**.
 
@@ -110,8 +110,8 @@ fuentes es el riesgo real, no la criptografía"*. Croma resuelve la mitad de ese
 | `solvency`, `formality` | operador de PILA | **sigue abierto** — ver más abajo |
 
 Y hay algo mejor todavía: ya trabajaste contra esta API, dos veces. El cliente sale de
-[**`creva_score`**](https://github.com/LuisAlejandroCR/creva_score) —la hackathon— y el mapa de
-rutas colombianas de [`Digentia`](https://github.com/LuisAlejandroCR/Digentia). Ninguno se
+el proyecto GovTech —la hackathon— y el mapa de
+rutas colombianas del prototipo notarial. Ninguno se
 reescribe. Detalle completo en [`CROMA.md`](CROMA.md).
 
 ### Lo que sigue abierto — ya no, está respondido
@@ -166,7 +166,7 @@ solo es cierto si la prueba se genera ahí. Un proof server remoto ve el testigo
 ingreso, ve el estado de la cédula, ve el resultado del screening. Si la prueba se genera allá, el
 producto se reduce a una promesa contractual — que es exactamente lo que ya existe y no funciona.
 
-Tu propia nota lo tiene escrito como regla (`procedures/00_Files/kuira_android_midnight.md`):
+Una nota propia de procedimientos lo tiene escrito como regla:
 
 > **Se elige nativo cuando el proving en el dispositivo es la tesis del proyecto.**
 
@@ -187,14 +187,14 @@ Tres consecuencias que no son obvias:
    eliminar. Pedirlo "solo para el alta" lo reintroduce entero — el número se teclea, o se lee por
    NFC.
 
-## 6. Lo que `creva_score` ya decidió, y que aquí hay que respetar
+## 6. Lo que el proyecto GovTech anterior ya decidió, y que aquí hay que respetar
 
-Tu hackathon de Croma no solo dejó código. Dejó **decisiones de producto publicadas**, y dos de
+El proyecto GovTech anterior no solo dejó código. Dejó **decisiones de producto publicadas**, y dos de
 ellas chocan de frente con lo que yo había escrito. Las dos las tienes tú bien y yo mal.
 
 ### Antecedentes penales: fuera
 
-`creva_score` lo dice sin matices: *"No usamos antecedentes penales. Ni de ella, ni de nadie. Es
+El proyecto GovTech anterior lo dice sin matices: *"No usamos antecedentes penales. Ni de ella, ni de nadie. Es
 una decisión firme y no va a cambiar."*
 
 Yo había metido `/co/policia/criminal-records/v1` dentro de `standing`. Se retira, y la razón
@@ -211,7 +211,7 @@ Lo que sí se mantiene es **otra pregunta**, y la diferencia no es de grado:
 
 ### El puntaje: yo dije "nunca", y estaba mal formulado
 
-Escribí *"nunca emitir un puntaje"* como exclusión no negociable. `creva_score` **sí emite uno**, y
+Escribí *"nunca emitir un puntaje"* como exclusión no negociable. El proyecto GovTech anterior **sí emite uno**, y
 tiene razón — lo que lo hace defendible es que **el resultado se declara a sí mismo**:
 
 ```
@@ -228,13 +228,13 @@ como "buen pagador", que es una predicción que nadie hizo.
 
 Lo que cambia: el sobre lleva una declaración con esa forma. Lo que no cambia: Knowni sigue sin
 emitir un número agregado, y ahora por una razón concreta en vez de un principio de folleto —
-`creva_score` le da a un banco algo que mirar donde no había nada, y un puntaje es la forma correcta
+El proyecto GovTech anterior le da a un banco algo que mirar donde no había nada, y un puntaje es la forma correcta
 de eso; Knowni le quita a un arrendador un expediente que no debía tener, y un puntaje se lo
 devolvería convertido en cifra.
 
 ### Medir la cobertura antes de que una fuente puntúe
 
-El sello de negocio de `creva_score` no aporta al puntaje, y la razón está medida, no supuesta: *"el
+El sello de negocio del proyecto GovTech anterior no aporta al puntaje, y la razón está medida, no supuesta: *"el
 directorio cubre muchísimo mejor a unos estados que a otros; si diera puntos, premiaría el código
 postal"*.
 
@@ -245,7 +245,7 @@ que pedir **a la vista** — y antes de medir nada, hay que medir a quién cubre
 
 ### Y una pieza que no había considerado
 
-`creva_score` resuelve "este reporte no se puede falsificar" **sin cadena**: huella por archivo,
+El proyecto GovTech anterior resuelve "este reporte no se puede falsificar" **sin cadena**: huella por archivo,
 firma con la llave de Creva, folio visible, y el banco lo comprueba sin pedirle nada al usuario.
 
 Merece una pregunta honesta: para el caso de uso de un arrendador, ¿hace falta anclar en Stellar, o
@@ -296,7 +296,7 @@ Y los que **no** hay que construir, por más que los pidan:
   entrega el filtro socioeconómico.
 - **Un número agregado**, aquí. No por principio universal —ver la sección 6— sino porque en este
   producto le devolvería al arrendador una cifra opaca sobre la que decidir.
-- **Antecedentes penales**, de nadie. Decisión firme, heredada de `creva_score`, y ahora también
+- **Antecedentes penales**, de nadie. Decisión firme, heredada del proyecto GovTech anterior, y ahora también
   aplica a `Fiscalía Criminal Case by Number`.
 - **Los endpoints globales aplicados a una persona** — Web Search, Research, Extract. Rompen por la
   puerta de atrás la regla de que registro público es lo publicado por una autoridad.
@@ -377,7 +377,7 @@ caso de uso de la demo es compraventa. Quedan estas.
 1. **¿Vehículo o inmueble en la demo?** El vehículo cierra hoy —sujeto y activo con fuentes
    reales, cero sintético—. El inmueble es el mercado que te interesa, pero sin SNR le falta el
    predicado sobre el activo. Mi lectura: demostrar vehículo, contar inmueble.
-2. **¿Sello firmado, ancla en cadena, o los dos?** `creva_score` ya demuestra que un reporte
+2. **¿Sello firmado, ancla en cadena, o los dos?** El proyecto GovTech anterior ya demuestra que un reporte
    infalsificable no necesita cadena. El sello prueba integridad y origen sin cripto en el flujo;
    el ancla prueba que existía en un momento. Complementarios, y el sello primero.
 3. **¿Demo con anclaje `memo` o con contrato Soroban?** `memo` corre hoy en testnet sin desplegar

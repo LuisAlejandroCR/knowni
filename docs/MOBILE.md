@@ -8,7 +8,7 @@
 
 ## La tesis decide la plataforma
 
-`procedures/00_Files/kuira_android_midnight.md` deja escrita la regla, y aquí aplica sin matices:
+una nota propia de procedimientos deja escrita la regla, y aquí aplica sin matices:
 
 > **Se elige nativo cuando el proving en el dispositivo es la tesis del proyecto.** Si la tesis es
 > otra —que el dato no viaja, que la contraparte verifica sin creer— la PWA la demuestra igual.
@@ -27,7 +27,7 @@ Lo demás se sigue de ahí.
 |---|---|
 | **PWA instalable** | Sin proving en el dispositivo, sin enclave seguro, sin passkey. Es el camino barato y correcto para *otra* tesis; para esta vacía el producto |
 | **Nativo dos veces (Swift + Kotlin)** | Dos implementaciones de la misma lógica de predicados es dos veces la superficie donde pueden divergir. La divergencia entre plataformas en un predicado es un fallo de seguridad, no un bug de UI |
-| **Kuira SDK** (`kuiralabs/kuira-sdk-android`) | Resuelve exactamente el trío que hace falta —proving en dispositivo, identidad por passkey, wallet embebida— pero es **solo Android** y **solo Midnight**. Queda como referencia de diseño, no como dependencia |
+| **Un SDK nativo de ZK para Android** | Resuelve exactamente el trío que hace falta —proving en dispositivo, identidad por passkey, wallet embebida— pero es **solo Android** y va atado a una sola cadena. Queda como referencia de diseño, no como dependencia |
 | **Flutter** | Viable por FFI al mismo núcleo Rust. Se descarta porque el dominio ya está en TypeScript y correría sin tocarlo en React Native; con Flutter habría que portarlo o exponerlo por FFI también |
 
 Un descarte sin razón se vuelve a discutir a las 3 de la mañana. Por eso están escritos.
@@ -116,7 +116,7 @@ Lo que se puede decir sin medir:
 - El presupuesto de producto es **mantener la interfaz respondiendo**: la prueba se genera fuera del
   hilo de UI, con progreso real y cancelable.
 
-Referencia de coste conocida: `creva-zk` midió ~23,7 s por prueba de *backing* sobre Midnight en
+Referencia de coste conocida: el proyecto ZK anterior midió ~23,7 s por prueba de *backing* sobre Midnight en
 escritorio. No es comparable —otro sistema de prueba, otro circuito, otra máquina— y se cita solo
 para fijar que esto se mide, no se estima.
 

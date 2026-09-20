@@ -88,8 +88,8 @@ No asumir el estado de un archivo sin leerlo.
 |---|---|
 | **Sisbén, y cualquier clasificación de pobreza del Estado** | Entregaría a un arrendador un filtro socioeconómico con sello oficial. No hay bandera de configuración ni modo avanzado: el endpoint no existe para este código. Ver `docs/memoria.md` D-12 |
 | **Régimen subsidiado como respuesta negativa** | ADRES solo produce `formality: true` para cotizante activo; todo lo demás es `unavailable`, nunca `false`. Un `false` se lee como "es pobre". Ver D-12 |
-| **Antecedentes penales, de nadie** | No dicen si alguien puede pagar un arriendo ni si puede contratar; dicen que cumplió una condena. Como filtro de vivienda le cierra la puerta a quien ya pagó, a escala y en silencio. Decisión firme heredada de `creva_score`. Ver `docs/memoria.md` D-09 |
-| Un número agregado de 0 a 1000 **en este producto** | No es un principio universal —`creva_score` emite un puntaje y hace bien— sino que aquí devolvería a la contraparte a decidir sobre una cifra opaca, que es justo lo que se le está quitando. Ver D-10 |
+| **Antecedentes penales, de nadie** | No dicen si alguien puede pagar un arriendo ni si puede contratar; dicen que cumplió una condena. Como filtro de vivienda le cierra la puerta a quien ya pagó, a escala y en silencio. Decisión firme heredada del proyecto GovTech anterior. Ver `docs/memoria.md` D-09 |
+| Un número agregado de 0 a 1000 **en este producto** | No es un principio universal —el proyecto GovTech anterior emite un puntaje y hace bien— sino que aquí devolvería a la contraparte a decidir sobre una cifra opaca, que es justo lo que se le está quitando. Ver D-10 |
 | Que una fuente de cobertura desigual alimente una decisión agregada | Premiaría el código postal o la formalidad laboral en vez de la capacidad de pagar. Se mide la cobertura antes de decidir. Ver D-11 |
 | Datos no públicos y no consentidos | Registro público es lo publicado por una autoridad, no lo que se puede encontrar. Sin scraping, sin redes sociales, sin "señales de comportamiento" |
 | Los endpoints globales de Croma (Web Search, Research, Extract) aplicados a una persona | Rompen la exclusión anterior por la puerta de atrás: buscar en la web sobre un sujeto no es consultar un registro público |
@@ -153,12 +153,14 @@ tras tres intentos fallidos, parar y nombrar el supuesto dudoso.
 
 ## Herencia — qué viene de dónde
 
+Trabajo propio anterior, sin dependencia de código entre proyectos.
+
 | De | Qué se reutiliza |
 |---|---|
-| [`creva-zk`](https://github.com/LuisAlejandroCR/creva-zk) | La primitiva: verificar un reclamo firmado, evaluar un predicado público, divulgar solo el resultado. El puerto de anclaje. La regla `degraded` ≠ `failed` |
-| [`creva_score`](https://github.com/LuisAlejandroCR/creva_score) | **La hackathon de Croma** (IA Hackathon GovTech, 12–16 ago 2026). El cliente maduro —tope de polls, timeout, `sleep`/`fetch`/`logger` inyectables—, `SourceResult<T>`, el caché, y las decisiones D-09, D-10 y D-11 |
-| [`Digentia`](https://github.com/LuisAlejandroCR/Digentia) | Producto sin terminar, mismo dominio (compraventa notarial, Colombia). Aporta el mapa de rutas `/co/*` y sus esquemas de respuesta |
-| `procedures/00_Files/kuira_android_midnight.md` | La regla para elegir nativo vs PWA, y su tabla de costes |
+| El proyecto ZK anterior | La primitiva: verificar un reclamo firmado, evaluar un predicado público, divulgar solo el resultado. El puerto de anclaje. La regla `degraded` ≠ `failed` |
+| El proyecto GovTech anterior | El cliente de Croma —tope de polls, timeout, `sleep`/`fetch`/`logger` inyectables—, `SourceResult<T>`, el caché, y las decisiones D-09, D-10 y D-11 |
+| El prototipo notarial anterior | Mismo dominio en Colombia. El mapa de rutas `/co/*` y sus esquemas de respuesta |
+| Notas propias de procedimientos | La regla para elegir nativo vs PWA, y su tabla de costes |
 
 ## Referencias
 

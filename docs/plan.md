@@ -63,7 +63,7 @@ Sin dependencias y sin SDK de ninguna cadena.
 
 Reemplazar el adaptador sintético por el cliente real.
 
-1. Cliente: **portado desde [`creva_score`](https://github.com/LuisAlejandroCR/creva_score)**, que
+1. Cliente: **portado desde el proyecto GovTech anterior**, que
    ya tiene tope de polls, timeout y `sleep`/`fetch`/`logger` inyectables. `POST`, `Bearer`,
    `Prefer: wait=55`, jobs `202` con poll, reintento en `502`, cabeceras de rate limit. Ninguna
    llamada lanza hacia arriba.
@@ -111,7 +111,7 @@ hoy el comprador prueba todo y el vendedor nada.
 
 ### B4b — Declaración del resultado ⏳
 
-Un `PredicateDisclosure` con la forma del `ScoreDisclosure` de `creva_score`: qué describe cada
+Un `PredicateDisclosure` con la forma del `ScoreDisclosure` del proyecto GovTech anterior: qué describe cada
 respuesta y qué **no** estima. Un `tier` es una banda descriptiva, no una probabilidad de impago, y
 hoy no lo dice en ninguna parte.
 

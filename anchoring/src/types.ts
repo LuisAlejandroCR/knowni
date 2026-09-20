@@ -2,7 +2,7 @@
 // The port every chain adapter implements. No chain SDK may be imported in
 // this file or anywhere else in src/ outside adapters/.
 //
-// The one change from the shape this was ported from (creva-zk's
+// The one change from the shape this was ported from (the prior ZK project's
 // anchoring/): ChainId is an open string, not a closed union of the chains
 // that happened to exist when it was written. A closed union makes adding a
 // chain a change to the domain layer — which is exactly the coupling the

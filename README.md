@@ -152,7 +152,7 @@ es el recorrido completo, sin red y sin mocks.
 | Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 111 pruebas |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Contra submitters de prueba |
-| Adaptador de Croma | **No escrito.** Las rutas están verificadas en `Digentia` (2026-08-11), no aquí |
+| Adaptador de Croma | **No escrito.** Las rutas vienen verificadas de trabajo propio anterior (2026-08-11), no de aquí |
 | App iOS / Android | **No escrita.** Decisión de stack tomada y escrita |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
@@ -167,7 +167,7 @@ corrido aquí.
 - [`docs/BRAINSTORM.md`](docs/BRAINSTORM.md) — el razonamiento del producto:
   qué se construye, qué no, y por qué.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — las decisiones técnicas y
-  lo que se reutiliza de `creva-zk`.
+  lo que se reutiliza del proyecto ZK anterior.
 - [`docs/COLOMBIA.md`](docs/COLOMBIA.md) — el panorama de fuentes y el marco
   legal (Ley 1581, Habeas Data).
 - [`docs/CROMA.md`](docs/CROMA.md) — la fuente: endpoints, contrato HTTP y la
@@ -216,13 +216,5 @@ See the Spanish section above for the workspace map, how to run it, and the tabl
 and what is not. All documentation is in `docs/`.
 
 ---
-
-## Origin
-
-Built on the primitive proven in
-[`creva-zk`](https://github.com/LuisAlejandroCR/creva-zk) (Midnight
-Hackathon, August 2026): verify a signed attestation, evaluate a public
-predicate, disclose only the outcome. What carries over, what changed and
-why is in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 Licensed Apache-2.0.

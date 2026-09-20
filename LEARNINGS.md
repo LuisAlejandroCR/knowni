@@ -27,7 +27,7 @@ nativo y prohíbe cualquier atajo de servidor.
 ## 1. ¿Qué aprendí que no sabía antes de empezarlo?
 
 - `2026-09-20` — La curva embebida de BLS12-381 es **Jubjub**, la misma sobre la que estaba escrito
-  el Schnorr de `creva-zk` para Midnight. Stellar verifica BLS12-381 nativamente desde CAP-0059
+  el Schnorr del proyecto ZK anterior para Midnight. Stellar verifica BLS12-381 nativamente desde CAP-0059
   (Protocolo 22+). No es portar entre ecosistemas: es el mismo emparejamiento. Elegir la curva es la
   decisión que separa demo de producto, y estaba tomada sin saberlo.
 - `2026-09-20` — La verificación de firma dentro del circuito no es obligatoria para confiar en un
@@ -43,7 +43,7 @@ nativo y prohíbe cualquier atajo de servidor.
 
 - `2026-09-20` — Un resultado se puede declarar a sí mismo, y eso es lo que separa un puntaje
   defendible de una central de riesgo: `kind: 'descriptive'` más una lista explícita de lo que **no**
-  estima. `creva_score` ya lo tenía; yo había escrito "nunca un puntaje" como si fuera un principio,
+  estima. El proyecto GovTech anterior ya lo tenía; yo había escrito "nunca un puntaje" como si fuera un principio,
   cuando el principio real es *un resultado que no dice qué es, se lee como una predicción*.
 - `2026-09-20` — La diferencia entre "inhabilidad legal vigente" y "antecedente penal" no es de
   grado y decide si un producto de vivienda es justo. La primera es una restricción actual sobre la
@@ -73,24 +73,24 @@ nativo y prohíbe cualquier atajo de servidor.
 - `2026-09-20` — Las cabeceras de código salieron de 10–30 líneas con narrativa. **Causa:** se
   escribió el código antes de leer `procedures/templates/AGENTS.md`, que pide 2–3 líneas sin
   justificaciones. El arranque de la constitución existe justo para eso y se saltó.
-- `2026-09-20` — Atribuí el trabajo previo de Croma al repo equivocado: `Digentia` en vez de
-  `creva_score`. **Causa:** lo deduje de una fila de `HARVEST.md` en vez de abrir los dos
-  repositorios. Coste real: no el crédito, sino que me perdí las **decisiones de producto
-  publicadas** de `creva_score` —sin antecedentes penales, el resultado se declara a sí mismo,
-  medir cobertura antes de puntuar— y escribí exclusiones que las contradecían.
+- `2026-09-20` — Atribuí el trabajo previo de Croma al proyecto equivocado. **Causa:** lo deduje de
+  una fila de `HARVEST.md` en vez de abrir los dos repositorios. Coste real: no el crédito, sino que
+  me perdí las **decisiones de producto ya publicadas** en el proyecto correcto —sin antecedentes
+  penales, el resultado se declara a sí mismo, medir cobertura antes de puntuar— y escribí
+  exclusiones que las contradecían.
 
 ## 3. ¿Qué se decidió, y por qué?
 
 | Fecha | Decisión | Alternativa descartada | Motivo |
 |---|---|---|---|
-| `2026-09-20` | Raíz de Merkle publicada | Firma dentro del circuito (como `creva-zk`) | Un hash por nivel contra el gadget más caro del circuito; revocación gratis |
+| `2026-09-20` | Raíz de Merkle publicada | Firma dentro del circuito (como el proyecto ZK anterior) | Un hash por nivel contra el gadget más caro del circuito; revocación gratis |
 | `2026-09-20` | Groth16 sobre BLS12-381 | BN254 (default de Circom) | Es lo único que Stellar verifica hoy; BN254 espera a CAP-0074 |
 | `2026-09-20` | `ChainId` abierto y validado | Unión cerrada | Una unión cerrada hace que añadir una cadena sea un cambio en el dominio |
 | `2026-09-20` | Nativo iOS + Android (React Native + núcleo Rust) | PWA instalable | El proving en el dispositivo **es** la tesis; la PWA vacía el producto |
 | `2026-09-20` | React Native | Flutter, Kotlin Multiplatform, nativo dos veces | El dominio ya es TypeScript sin dependencias y corre en el teléfono sin puerto |
 | `2026-09-20` | Mediana de 12 meses para el ingreso | Media, o último mes | La media la arrastra una prima; el último mes se lee como cero si se radicó tarde |
-| `2026-09-20` | Sin número agregado **en este producto**, y cada respuesta declara qué no estima | Un score sin declaración | Un resultado que no dice qué es se lee como predicción. `creva_score` emite puntaje y hace bien: son productos distintos |
-| `2026-09-20` | Sin antecedentes penales, de nadie | Incluirlos en `standing` | No dicen si alguien puede pagar un arriendo; como filtro de vivienda castigan a quien ya cumplió. Decisión firme heredada de `creva_score` |
+| `2026-09-20` | Sin número agregado **en este producto**, y cada respuesta declara qué no estima | Un score sin declaración | Un resultado que no dice qué es se lee como predicción. El proyecto GovTech anterior emite puntaje y hace bien: son productos distintos |
+| `2026-09-20` | Sin antecedentes penales, de nadie | Incluirlos en `standing` | No dicen si alguien puede pagar un arriendo; como filtro de vivienda castigan a quien ya cumplió. Decisión firme heredada del proyecto GovTech anterior |
 | `2026-09-20` | `Purpose` abierto y validado; el contrato es un perfil que compone quien pregunta | Unión cerrada de tipos de contrato | Una unión cerrada hace que añadir un contrato sea un cambio en el dominio — el mismo error que `ChainId`, dos veces |
 | `2026-09-20` | Sisbén nunca, y ADRES solo en la dirección positiva | Usar la clasificación socioeconómica, o devolver `false` por régimen subsidiado | Sería un filtro de pobreza con sello oficial, entregado listo |
 | `2026-09-20` | La demo es compraventa de vehículo, no arrendamiento | Arrendamiento con `solvency` sintética | Sin PILA, `solvency` no tiene fuente; vehículo cierra con fuentes reales de punta a punta |
@@ -102,7 +102,7 @@ nativo y prohíbe cualquier atajo de servidor.
   campo nuevo falla antes de poder llenarse con algo revelador.
 - Adaptadores escritos contra una interfaz mínima propia en vez de contra el SDK del proveedor. Es
   lo que permitió probar Stellar y Croma sin red y sin key.
-- Separar `degraded` de `failed` desde la primera línea. Heredado de `creva-zk`; ya son dos
+- Separar `degraded` de `failed` desde la primera línea. Heredado del proyecto ZK anterior; ya son dos
   proyectos seguidos y no ha fallado una vez.
 
 ## 5. ¿Qué no se volvería a hacer?

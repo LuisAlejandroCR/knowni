@@ -40,7 +40,7 @@ Es la decisión estructural del repositorio, así que está escrita aquí y no e
 un comentario.
 
 **Opción A — firma verificada dentro del circuito.** Es lo que hace
-`creva-zk`: el emisor firma la atestación, el sujeto la entrega como testigo,
+Es lo que hace el proyecto ZK anterior: el emisor firma la atestación, el sujeto la entrega como testigo,
 y el circuito verifica la firma antes de confiar en el reclamo.
 
 - *A favor*: no hay nada que publicar. El emisor firma y desaparece.
@@ -59,7 +59,7 @@ una vez, fuera del circuito. El sujeto prueba inclusión.
   saber qué raíz es la vigente. Eso es lo que hace `register_issuer_root` en
   el contrato.
 
-**Elegimos B**, y A sigue siendo válida: `creva-zk` la tiene funcionando
+**Elegimos B**, y A sigue siendo válida: el proyecto ZK anterior la tiene funcionando
 sobre Midnight, y `AttestationPort` puede exponer las dos. En un despliegue
 donde el emisor se niega a publicar nada, A es la respuesta.
 
@@ -75,7 +75,7 @@ Esto merece su propia sección porque decide el cronograma.
 | Noir / Barretenberg | BN254 | — | No |
 | RISC Zero → Groth16 | BN254 | — | No |
 
-El Schnorr sobre Jubjub de `creva-zk` está escrito sobre la curva embebida de
+El Schnorr sobre Jubjub del proyecto ZK anterior está escrito sobre la curva embebida de
 BLS12-381. Stellar verifica BLS12-381 nativamente hoy. **Es el mismo campo.**
 
 El hueco que queda no es de curva, es de biblioteca: `circomlib` trae
@@ -145,7 +145,7 @@ más dolería.
 
 ## Por qué `ChainId` es una cadena abierta
 
-`creva-zk` usa `type ChainId = "cardano" | "evm"`. Aquí es `string`, validada
+El proyecto ZK anterior usa `type ChainId = "cardano" | "evm"`. Aquí es `string`, validada
 al registrar.
 
 Una unión cerrada hace que **añadir una cadena sea un cambio en la capa de
@@ -188,7 +188,7 @@ de "un nullifier por persona" destruye.
 
 ## `degraded` no es `failed`
 
-Heredado de `creva-zk` literalmente, porque la distinción es la misma:
+Heredado del proyecto ZK anterior literalmente, porque la distinción es la misma:
 
 - **`failed`** — el predicado no se cumple. Es una respuesta, y es "no".
 - **`degraded`** — nadie pudo verificar. El registro está caído, la consulta

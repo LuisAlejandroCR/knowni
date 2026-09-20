@@ -24,12 +24,12 @@ nadie. Verificado en `core/test/no-vendor-imports.test.ts`.
 ## Decisiones clave
 
 Numeradas `D-NN` para que un comentario de código pueda citarlas sin repetirlas —
-la convención de [`creva_score`](https://github.com/LuisAlejandroCR/creva_score).
+la convención del proyecto GovTech anterior.
 
 
 ### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 
-`creva-zk` verifica la firma del emisor dentro del circuito. Aquí el emisor publica una raíz sobre
+El proyecto ZK anterior verifica la firma del emisor dentro del circuito. Aquí el emisor publica una raíz sobre
 los compromisos emitidos y firma **la raíz**, una vez, fuera.
 
 *Razón:* la verificación de firma es la operación más cara de un circuito de predicado y amarra la
@@ -47,14 +47,14 @@ vigente. Eso es `register_issuer_root` en el contrato.
 —el default de Circom, de Noir y de RISC Zero— está bloqueado hasta CAP-0074.
 
 *Hallazgo:* la curva embebida de BLS12-381 es Jubjub, que es sobre la que ya está escrito el
-Schnorr de `creva-zk`. El trabajo de Midnight apunta al mismo campo que Stellar verifica. No fue
+Schnorr del proyecto ZK anterior. El trabajo de Midnight apunta al mismo campo que Stellar verifica. No fue
 planeado.
 
 *Modo de falla si se ignora:* todo parece funcionar hasta la llamada al contrato.
 
 ### D-03 — `ChainId` es cadena abierta validada, no unión cerrada · 2026-09-20
 
-Corrección sobre `creva-zk`, que la tiene cerrada (`"cardano" | "evm"`).
+Corrección sobre el proyecto ZK anterior, que la tiene cerrada (`"cardano" | "evm"`).
 
 *Razón:* una unión cerrada hace que añadir una cadena sea un cambio en la capa de dominio — justo
 el acoplamiento que el puerto existe para evitar.
@@ -82,18 +82,17 @@ Croma consultan **por nombre** y devuelven varios candidatos.
 confirmado antes de diseñar sobre él. Ver [`../LEARNINGS.md`](../LEARNINGS.md).
 
 *Corrección posterior, mismo día:* la primera versión de esta entrada atribuyó el trabajo previo de
-Croma a `Digentia` y lo llamó "tu hackathon". No lo es. La hackathon fue
-[`creva_score`](https://github.com/LuisAlejandroCR/creva_score) — IA Hackathon GovTech, 12–16 de
-agosto de 2026 — y `Digentia` es un producto sin terminar. Importa porque cambia de dónde se toma
-el cliente y, sobre todo, porque `creva_score` trae decisiones de producto publicadas que este
-proyecto tiene que respetar — D-09 y D-10.
+Croma al proyecto equivocado. La hackathon de Croma fue el proyecto GovTech (12–16 de agosto de
+2026); el prototipo notarial quedó sin terminar. Importa porque cambia de dónde se toma el cliente
+y, sobre todo, porque el proyecto GovTech trae decisiones de producto ya publicadas que este
+proyecto tiene que respetar — D-09, D-10 y D-11.
 
 ### D-05 — Nativo, no PWA · 2026-09-20
 
 *Razón:* la tesis del producto es que el dato no sale del teléfono, y eso exige proving en el
 dispositivo. Un proof server remoto ve el testigo entero.
 
-*Regla aplicada:* `procedures/00_Files/kuira_android_midnight.md` — "se elige nativo cuando el
+*Regla aplicada:* una nota propia de procedimientos — "se elige nativo cuando el
 proving en el dispositivo es la tesis del proyecto".
 
 *Elección:* React Native + Expo con núcleo Rust sobre UniFFI. El dominio ya es TypeScript sin
@@ -124,7 +123,7 @@ cabeceras pertenece a este archivo; las cabeceras hay que recortarlas. Deuda ano
 
 ### D-09 — No se consultan antecedentes penales · 2026-09-20
 
-`creva_score` lo tiene publicado como decisión firme: *"No usamos antecedentes penales. Ni de ella,
+El proyecto GovTech anterior lo tiene publicado como decisión firme: *"No usamos antecedentes penales. Ni de ella,
 ni de nadie. Es una decisión firme y no va a cambiar."* Este repositorio tenía
 `/co/policia/criminal-records/v1` dentro de `standing`. Se retira.
 
@@ -150,7 +149,7 @@ queda escrito en las exclusiones de [`../CLAUDE.md`](../CLAUDE.md).
 
 ### D-10 — Un resultado declara qué es y qué no estima · 2026-09-20
 
-Este repositorio tenía *"nunca emitir un puntaje"* como exclusión no negociable. `creva_score`
+Este repositorio tenía *"nunca emitir un puntaje"* como exclusión no negociable. El proyecto GovTech anterior
 **sí emite un puntaje**, y no se contradicen: lo que hace defendible al suyo es que el resultado
 **se declara a sí mismo**.
 
@@ -163,7 +162,7 @@ probabilidad— y hoy no lo dice en ninguna parte. Un `PredicateDisclosure` con 
 con el sobre: qué describe cada respuesta, y qué **no** estima.
 
 *Lo que no cambia:* Knowni sigue sin emitir un número agregado. No por desacuerdo, sino porque son
-productos distintos: `creva_score` le da a un banco algo que mirar donde no había nada, y un
+productos distintos: el proyecto GovTech anterior le da a un banco algo que mirar donde no había nada, y un
 puntaje es la forma correcta de eso; Knowni le quita a un arrendador un expediente que no debía
 tener, y un puntaje volvería a darle una cifra opaca sobre la que decidir. La exclusión se reescribe
 para decir eso en vez de sonar a principio universal.
@@ -174,7 +173,7 @@ comprobó alguien, o me lo está contando?*
 
 ### D-11 — La cobertura se mide antes de decidir si puntúa · 2026-09-20
 
-`creva_score` mide la cobertura del directorio oficial **antes** de decidir si el sello aporta al
+El proyecto GovTech anterior mide la cobertura del directorio oficial **antes** de decidir si el sello aporta al
 puntaje, y concluye que no debe: *"el directorio cubre muchísimo mejor a unos estados que a otros;
 si diera puntos, premiaría el código postal"*.
 
@@ -296,10 +295,10 @@ nunca comparten `sessionId`, y que un propósito ilegible se rechaza.
 | Fecha | Qué pasó |
 |---|---|
 | 2026-09-20 | Arranque. `core`, `sources`, `retrieval`, `anchoring`, `journey`. 111 pruebas. Circuitos y contrato escritos sin compilar |
-| 2026-09-20 | Corrección de Croma. Rutas reales tomadas de `Digentia`. Documentada la deuda de `retrieval/` |
+| 2026-09-20 | Corrección de Croma. Rutas reales tomadas del prototipo notarial. Documentada la deuda de `retrieval/` |
 | 2026-09-20 | Decisión de móvil: nativo iOS + Android sobre React Native |
 | 2026-09-20 | Adoptada la constitución de `procedures/templates/AGENTS.md`: commits de una línea sin trailers, cabeceras en `.md`, reparto por agente |
-| 2026-09-20 | Corregida la atribución: `creva_score` fue la hackathon de Croma, `Digentia` es un producto sin terminar. De ahí salen D-09, D-10 y D-11 |
+| 2026-09-20 | Corregida la atribución del trabajo previo de Croma. De ahí salen D-09, D-10 y D-11 |
 | 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
 | 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
 

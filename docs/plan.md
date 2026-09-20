@@ -90,6 +90,10 @@ de Croma (`rama-judicial/cases-by-entity`, `rues/entities-by-name`).
 
 Croma **no** cubre PILA — confirmado contra el catálogo el 2026-09-20, no pendiente.
 
+0. **Antes de codear: ¿hay RUAF?** Si Croma lo expone, `formality` se apoya en la afiliación a ARL
+   —que no tiene versión subsidiada— y la regla asimétrica deja de hacer falta por esa vía (D-16).
+   Si no, se queda ADRES con la regla. En ninguno de los dos casos hay historial: los dos son
+   registros de estado, así que `monthsContributedLast12` no es respondible sin PILA.
 1. **`formality` por ADRES Health Affiliation Status**, con la regla asimétrica de D-12: cotizante
    activo en régimen contributivo → `true`; todo lo demás → `unavailable`, **nunca `false`**.
    Del `SourceResult` solo sobrevive el booleano: la EPS, el régimen y la fecha se descartan dentro

@@ -333,6 +333,51 @@ asumí, y `formality` tiene que tolerar meses sin fecha sin leerlos como ausenci
 obligatorio es de ese año, y los decretos citados pueden haberse modificado. Nada de esto se da por
 vigente sin re-confirmar.
 
+### D-16 — RUAF y ADRES no reemplazan PILA, pero RUAF mejora D-12 · 2026-09-20
+
+La pregunta era si RUAF y ADRES bastan para no depender de PILA. La respuesta se parte en dos, y
+una mitad corrige una decisión anterior.
+
+*Lo que sí está verificado en fuente primaria* (el ABECÉ de MinSalud, jun 2018, respuesta 20): los
+operadores de PILA **validan la EPS contra la BDUA** —administrada por ADRES— y **la
+administradora de pensiones contra el RUAF**. Son registros de **afiliación**, y existen
+precisamente para decir *a qué administradora pertenece* alguien.
+
+*Lo que eso implica, y es categórico:* **ninguno de los dos lleva el IBC.** El IBC solo existe en
+la planilla de PILA, porque es el valor sobre el que se liquidó un aporte. Un registro de afiliación
+dice *dónde estás*, no *cuánto declaraste*. Para `solvency` no hay sustituto, y no es cuestión de
+acceso: el dato no está ahí.
+
+*Lo que sí mejora, y corrige D-12:* para `formality`, **la afiliación a ARL o a AFP es mejor señal
+que el régimen de salud** — y por la razón exacta que hacía peligrosa a ADRES.
+
+| Fuente | Señal | ¿Marcador de pobreza? |
+|---|---|---|
+| ADRES — régimen de salud | contributivo vs **subsidiado** | **Sí.** De ahí la regla asimétrica de D-12 |
+| RUAF — afiliación a **ARL** | afiliado o no | **No.** No existe una ARL subsidiada |
+| RUAF — afiliación a AFP / Colpensiones | afiliado o no | **No.** La afiliación a pensiones va atada a cotizar |
+
+No hay versión subsidiada de riesgos laborales: se está afiliado a una ARL por una relación de
+trabajo —dependiente, cotizante `59` con contrato de prestación de servicios, o `57` voluntario— o
+no se está. **La puerta de atrás que obligó a la regla asimétrica no existe en esta señal.** Si se
+consigue RUAF, `formality` sale de ADRES y deja de necesitar la asimetría por esta vía.
+
+*Lo que se pierde de todas formas:* los dos son registros de **estado**, no libros de **historial**.
+Dicen si alguien está afiliado y activo hoy; no dicen cuántos de los últimos doce meses cotizó. Así
+que `monthsContributedLast12` **no es respondible** por esta vía, y `formality` se degrada de
+*"cotiza, y con qué continuidad"* a *"está activo hoy"*. Es menos, y hay que decirlo en pantalla.
+
+*Y el obstáculo práctico:* **RUAF no está en el catálogo de Croma.** ADRES sí. Así que la mejor de
+las dos señales es, además, la que exige una integración aparte.
+
+*Decisión:* D-12 se mantiene tal cual mientras la fuente sea ADRES. Si RUAF entra, `formality` se
+apoya en la afiliación a ARL, la regla asimétrica deja de hacer falta **por esa vía**, y la
+exclusión de Sisbén no cambia. Confirmar si Croma expone RUAF es tarea de `verificacion.md`.
+
+*Nivel de evidencia:* que BDUA y RUAF existen y para qué los usan los operadores está **verificado
+en fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de afiliado, ARL— es
+**supuesto propio** hasta ver una respuesta real.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -345,6 +390,7 @@ vigente sin re-confirmar.
 | 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
 | 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
 | 2026-09-20 | PILA contra fuente primaria (ABECÉ MinSalud, jun 2018). Confirma el piso de 1 SMLMV y el conteo por meses; rompe el supuesto de que existe vía de consulta — D-15 |
+| 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real
 

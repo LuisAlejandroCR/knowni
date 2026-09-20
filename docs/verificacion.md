@@ -39,17 +39,22 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 1. **¿Existe una vía por la que el titular consulte su historial de aportes PILA?** El ABECÉ de
    MinSalud describe cómo se *paga*, no cómo se *consulta*. Antes se daba por hecho que era un
    acuerdo comercial con un operador; ahora hay que confirmar que el servicio existe. Es la
-   pregunta que decide si `solvency` y `formality` son alcanzables. Ver D-15.
-8. **`CROMA_API_KEY`** — sin key no hay ninguna llamada en vivo. Bloquea B2 y el criterio A10.
-2. **Ruta y forma de respuesta de ADRES Health Affiliation Status.** Está en el catálogo; su ruta
-   no aparece en el prototipo notarial anterior ni en el proyecto GovTech anterior, así que no se supone. De ella depende si
-   `formality` distingue cotizante de beneficiario, que es lo que hace funcionar la regla de D-12.
-3. **Rutas de RUNT y SIMIT.** Verificadas en el prototipo notarial anterior; re-confirmar antes de depender.
-4. **Cobertura de PILA por tipo de trabajador**, antes de dejar que `formality` influya en nada.
+   pregunta que decide si `solvency` es alcanzable. Ver D-15.
+2. **¿Croma expone RUAF?** No aparece en el catálogo de Colombia. Si se consiguiera, la afiliación
+   a ARL sería mejor fuente de `formality` que el régimen de salud, y **quitaría la necesidad de la
+   regla asimétrica de D-12 por esa vía**. Ver D-16.
+3. **¿Qué campos devuelve ADRES?** Régimen, estado, tipo de afiliado (cotizante/beneficiario) y EPS
+   son supuesto propio. De ello depende que `formality` distinga cotizante de beneficiario, que es
+   lo que hace funcionar D-12.
+4. **`CROMA_API_KEY`** — sin key no hay ninguna llamada en vivo. Bloquea B2 y el criterio A10.
+5. **Ruta y forma de respuesta de ADRES Health Affiliation Status.** Está en el catálogo; su ruta
+   no aparece en ningún trabajo anterior, así que no se supone.
+6. **Rutas de RUNT y SIMIT.** Verificadas en el prototipo notarial; re-confirmar antes de depender.
+7. **Cobertura de PILA por tipo de trabajador**, antes de dejar que `formality` influya en nada.
    Es el requisito de D-11 y no está medido.
-5. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.
-6. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista.
-7. **Fecha y rúbrica del hackathon.**
+8. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.
+9. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista.
+10. **Fecha y rúbrica del hackathon.**
 
 ## Deuda conocida
 

@@ -104,6 +104,43 @@ esta fuente.
 obligatorio es de ese año y hoy es otro; los decretos citados pueden haberse modificado. Nada de
 esta sección debe darse por vigente sin re-confirmar.
 
+## ¿RUAF y ADRES reemplazan a PILA?
+
+Media respuesta sí, media no, y la que sí corrige una decisión anterior.
+
+**Qué son, verificado en fuente primaria.** El ABECÉ de MinSalud (respuesta 20) dice que los
+operadores de PILA **validan la EPS contra la BDUA** —que administra ADRES— y **la administradora
+de pensiones contra el RUAF**. Son registros de **afiliación**: existen para decir a qué
+administradora pertenece alguien.
+
+**Para `solvency`, no. Y no es cuestión de acceso.** Ninguno lleva el IBC. El IBC solo existe en la
+planilla de PILA porque es el valor sobre el que se liquidó un aporte; un registro de afiliación
+dice *dónde estás*, no *cuánto declaraste*. El dato no está ahí.
+
+**Para `formality`, sí — y mejor que ADRES.**
+
+| Fuente | Señal | ¿Marcador de pobreza? |
+|---|---|---|
+| ADRES — régimen de salud | contributivo vs **subsidiado** | **Sí.** De ahí la regla asimétrica de [`memoria.md`](memoria.md) D-12 |
+| RUAF — afiliación a **ARL** | afiliado o no | **No.** No existe una ARL subsidiada |
+| RUAF — afiliación a AFP / Colpensiones | afiliado o no | **No.** Va atada a cotizar |
+
+No hay versión subsidiada de riesgos laborales: se está afiliado a una ARL por una relación de
+trabajo —dependiente, cotizante `59` con contrato de prestación de servicios, o `57` voluntario— o
+no se está. **La puerta de atrás que obligó a la regla asimétrica no existe en esta señal.**
+
+**Lo que se pierde igual.** Los dos son registros de **estado**, no libros de **historial**. Dicen
+si alguien está afiliado y activo hoy; no dicen cuántos de los últimos doce meses cotizó. Así que
+`monthsContributedLast12` **no es respondible** por esta vía, y `formality` baja de *"cotiza, y con
+qué continuidad"* a *"está activo hoy"*. Es menos, y la pantalla tiene que decirlo.
+
+**El obstáculo práctico.** **RUAF no está en el catálogo de Croma**; ADRES sí. La mejor de las dos
+señales es también la que exige una integración aparte.
+
+**Nivel de evidencia.** Que BDUA y RUAF existen y para qué los usan los operadores: **verificado en
+fuente primaria**. Qué campos expone cada uno —régimen, estado, tipo de afiliado, ARL—: **supuesto
+propio** hasta ver una respuesta real.
+
 ## Marco legal
 
 **Ley 1581 de 2012 (Protección de Datos Personales)** y **Ley 1266 de 2008

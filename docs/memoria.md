@@ -415,6 +415,28 @@ respuestas— es construible hoy. Se toma la segunda, con sus costos escritos, n
 
 *Lo que no se hace:* llamar ZK a esto, ni prometer no correlación por ocultar un nombre.
 
+### D-22 — La revocación tiene tres estados, y quien acepta declara su política · 2026-09-20
+
+`IssuerRegistry.isRevoked` devolvía un booleano opcional, y eso obliga a mentir en una de las dos
+direcciones: un registro inalcanzable tiene que aparecer como *vigente* o como *revocado*, y
+ninguna de las dos es cierta. Ahora hay `live`, `revoked` y `unknown`, y los dos primeros llevan la
+**fecha del snapshot**: validar una firma sin conexión demuestra que el emisor firmó, no que hoy
+siga vigente.
+
+*Decisión:* qué hacer ante `unknown` o ante un snapshot viejo **no lo decide el producto**, lo
+decide quien acepta, y lo declara en su política. Una notaría que registra una transferencia puede
+rechazar; una comprobación de bajo riesgo puede aceptar dejando constancia. Una aceptación
+cualificada devuelve esa nota, así que el titular puede saber que su respuesta se aceptó con
+reservas.
+
+*Y el orden importa:* el nullifier se reclama en el **último** paso y en uno solo. Cualquier
+rechazo anterior —firma, atadura, evidencia, revocación— deja la credencial intacta, porque un
+fallo que no es del titular no puede dejarlo sin poder responder. La misma presentación repetida es
+**idempotente**; una distinta bajo el mismo nullifier es un replay.
+
+*Lo que sigue faltando:* el registro en memoria no da persistencia ni atomicidad entre procesos. En
+producción, `NullifierLedger` se implementa contra una transacción de base de datos.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -438,6 +460,7 @@ respuestas— es construible hoy. Se toma la segunda, con sus costos escritos, n
 | 2026-09-20 | Día 6: workspace `attestation/`. El emisor firma la raíz una vez y la contraparte verifica firma, inclusión y apertura sin red ni cadena. Regla nueva: la ausencia de respuesta del registro **no** es una revocación — D-18 |
 | 2026-09-20 | Día 7: la contraparte firma su solicitud y la respuesta queda atada a audiencia, finalidad, reto y parámetros. El nullifier se gasta **solo al aceptar**: una presentación rechazada no puede dejar al titular sin credencial — D-20 |
 | 2026-09-20 | P0 del handoff del día 8: `AttestedCredential` entregaba `claim` y `salt` a la contraparte. Se separa lo que se guarda de lo que se presenta — el emisor firma las respuestas, atadas a la sesión — y la aceptación las verifica antes de gastar el nullifier. No es ZK y el código lo dice — D-21 |
+| 2026-09-20 | Segundo P0: orquestación de aceptación en cinco pasos, con la revocación en tres estados y el consumo del nullifier al final y en un solo paso. Una presentación repetida es idempotente; otra distinta bajo el mismo nullifier es replay — D-22 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

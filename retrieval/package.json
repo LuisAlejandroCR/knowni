@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "Entity resolution over public records, behind a vendor-neutral index port. Chroma is one adapter.",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "test": "node --test --experimental-strip-types \"test/**/*.test.ts\"" }
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "node --test --experimental-strip-types \"test/**/*.spec.ts\""
+  }
 }

@@ -148,6 +148,19 @@ export function createMemoryRegistry(
 export type { AttestationFailure, AttestationResult, AttestedCredential, AttestedRoot, IssuerRegistry } from "./types.ts";
 
 export type {
+  Acceptance,
+  AcceptanceFailure,
+  AcceptanceInput,
+  AcceptanceResult,
+  ClaimOutcome,
+  NullifierLedger,
+  RevocationOracle,
+  RevocationPolicy,
+  RevocationState,
+} from "./acceptance.ts";
+export { acceptAnswer, createMemoryNullifierLedger } from "./acceptance.ts";
+
+export type {
   AttestResultsRequest,
   AttestedAnswer,
   AttestedResults,

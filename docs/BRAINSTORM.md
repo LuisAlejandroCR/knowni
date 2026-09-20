@@ -8,26 +8,28 @@ dónde el diseño todavía necesita una decisión tuya.
 
 Vale la pena nombrarlo con precisión porque decide todo lo demás.
 
-Cuando un arrendador pide certificación bancaria, no quiere tus extractos.
-Quiere saber si le alcanza para el canon. Cuando pide la cédula, no quiere tu
-número de documento; quiere saber que existes y que eres quien firmas. El
-problema no es que verifiquen — es que la única forma de verificar que
-existe hoy es **entregar el documento entero**, y el documento contiene diez
-veces más de lo que la pregunta necesitaba.
+Cuando una contraparte pide certificación bancaria, no quiere tus extractos: quiere saber si te
+alcanza. Cuando pide la cédula, no quiere tu número de documento: quiere saber que existes y que
+eres quien firma. El problema no es que verifiquen — es que la única forma de verificar que existe
+hoy es **entregar el documento entero**, y el documento contiene diez veces más de lo que la
+pregunta necesitaba.
+
+**Y pasa en todo contrato, no solo en un arriendo.** Arrendar, comprar un vehículo ante notario,
+salir de codeudor, firmar un contrato de suministro, otorgar un poder: cada uno cuesta un
+expediente nuevo, casi siempre el mismo, entregado otra vez a alguien distinto. El arrendamiento es
+la aplicación más visible; no es el producto.
 
 Eso tiene tres costos, y los tres son reales:
 
-- **Para el arrendatario**: su cédula, su salario y su empleador quedan en un
-  Drive compartido de una inmobiliaria. No es hipotético; es el caso normal.
-- **Para el arrendador**: ahora es responsable de datos personales bajo la
-  Ley 1581 sin haberlo pedido y sin capacidad de cumplir.
-- **Para quien no tiene los papeles**: el independiente, el que acaba de
-  llegar, el que trabaja por prestación de servicios. No es que no le
-  alcance — es que no tiene el formato en que se lo piden.
+- **Para quien firma**: su cédula, su salario y su empleador quedan en un Drive compartido de una
+  inmobiliaria, de una notaría o de un proveedor. No es hipotético; es el caso normal.
+- **Para la contraparte**: ahora es responsable de datos personales bajo la Ley 1581 sin haberlo
+  pedido y sin capacidad de cumplir.
+- **Para quien no tiene los papeles**: el independiente, el que acaba de llegar, el que trabaja por
+  prestación de servicios. No es que no califique — es que no tiene el formato en que se lo piden.
 
-El tercero es el que hace esto un producto y no una función de privacidad.
-Un sistema que responde preguntas en vez de pedir documentos **incluye** a
-quien tiene los ingresos pero no el papel.
+El tercero es el que hace esto un producto y no una función de privacidad. Un sistema que responde
+preguntas en vez de pedir documentos **incluye** a quien califica pero no tiene el papel.
 
 ## 2. La inversión: de documentos a predicados
 
@@ -269,6 +271,23 @@ Contra el catálogo real de Croma, no contra lo que uno quisiera que existiera.
 `assetStanding` es el que le da la vuelta al producto: es un predicado sobre el **activo**, no sobre
 la persona. Hoy el comprador prueba todo y el vendedor nada, y resulta que es el único que el
 catálogo cubre entero.
+
+### Y el contrato es un perfil, no una rama
+
+Los mismos cinco predicados sirven para todo. Lo que cambia entre contratos es **cuáles** se piden y
+**con qué umbrales** — nunca qué significa un predicado:
+
+| Perfil | Pide |
+|---|---|
+| Arrendamiento | `personhood` · `solvency` · `formality` · `sanctions` |
+| Compraventa de vehículo | `personhood` · `capacity` · `sanctions` · `assetStanding` |
+| Codeudor o garantía | `personhood` · `solvency` · `capacity` |
+| Suministro con persona jurídica | `capacity` · `solvency` · `sanctions` |
+| Poder o representación | `personhood` · `capacity` |
+
+Por eso el alcance del hackathon es una **elección de perfil**, no un recorte del producto. Y por
+eso `Purpose` tuvo que dejar de ser una unión cerrada: la capa de dominio no puede saber qué es un
+arriendo. Ver [`memoria.md`](memoria.md) D-14.
 
 Y los que **no** hay que construir, por más que los pidan:
 

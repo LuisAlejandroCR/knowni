@@ -8,12 +8,18 @@
 
 ## Specify
 
-**Para quién:** una persona que quiere comprar o arrendar en Colombia y hoy entrega cédula,
-certificación laboral, certificación bancaria y desprendibles de nómina para lograrlo.
+**Qué es:** *demuestra que calificas para firmar, sin decir quién eres* — sin importar qué se
+firma. El tipo de contrato es un **perfil** de la solicitud: qué predicados pide y con qué
+parámetros. El arrendamiento es una aplicación, no la definición. Ver [`memoria.md`](memoria.md)
+D-14.
 
-**Alcance del hackathon:** una **compraventa de vehículo ante notario** — el único recorrido que
-el catálogo de Croma cubre de punta a punta con fuentes reales, sujeto y activo. El arrendamiento
-queda a la espera de PILA, declarado y no disimulado. Ver [`memoria.md`](memoria.md) D-13.
+**Para quién:** una persona que hoy entrega un expediente completo cada vez que firma algo en
+Colombia — un arriendo, una compraventa, una garantía.
+
+**Perfil del hackathon:** una **compraventa de vehículo ante notario** — el único perfil que el
+catálogo de Croma cubre de punta a punta con fuentes reales, sujeto y activo. Es una elección de
+perfil, no un recorte del producto. El arrendamiento espera a PILA, declarado y no disimulado. Ver
+[`memoria.md`](memoria.md) D-13.
 
 **Qué cambia:** entrega cuatro respuestas desde su teléfono. La contraparte recibe `true`,
 `STRONG`, `true`, `true` — y nada más.
@@ -32,6 +38,7 @@ solicitante.
 | A4 | Ninguna respuesta de fuente cruda sobrevive al adaptador | `sources/test/pila.test.ts` (forma actual) · ⏳ falta la versión Croma |
 | A5 | La misma verificación ancla en dos cadenas sin cambiar nada por encima del registro | `anchoring/test/registry.test.ts` · ✅ pasa |
 | A6 | Una prueba no se puede reusar en otra sesión ni en otro verificador | `core/test/session.test.ts` · ✅ pasa |
+| A11 | Nada en `core/` conoce un tipo de contrato; el mismo juego de credenciales responde cualquiera | `core/test/session.test.ts` · `disclosure.invariant.test.ts` · ✅ pasa |
 | A7 | Un adaptador que no puede rechazar replays lo declara | `anchoring/test/stellar.test.ts` · ✅ pasa |
 | A8 | La app genera una prueba sin red | ⏳ pendiente — necesita B6 y B7 |
 | A9 | El circuito y `core/src/predicates.ts` dan el mismo resultado sobre las mismas entradas | ⏳ pendiente — prueba diferencial, necesita B5 |

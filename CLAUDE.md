@@ -10,11 +10,16 @@
 
 ## Norte — la misión
 
-> *Que una persona pueda arrendar o comprar un inmueble demostrando que califica, sin entregar
-> cédula, nómina ni extractos — desde su teléfono, y sin que el dato salga de él.*
+> *Demuestra que calificas para firmar, sin decir quién eres.*
+
+Sin importar qué se firma. Un arrendamiento, una compraventa, una garantía, un contrato de
+suministro, un poder: **el tipo de contrato es un perfil de la solicitud, no una rama del dominio**
+(ver `docs/memoria.md` D-14). Cada aplicación elige qué predicados pide y con qué parámetros; ningún
+predicado sabe para qué contrato lo están usando.
 
 Cosas que tienen que ser ciertas:
 
+0. **Nada en `core/` sabe qué tipo de contrato se está firmando.** `Purpose` es una cadena abierta validada, no una unión de los contratos que existían cuando se escribió.
 1. La contraparte recibe respuestas, nunca datos. Su registro completo de la solicitud cabe en diez
    campos y ninguno dice nada del solicitante más allá de lo que preguntó.
 2. La app funciona sin red una vez emitidas las credenciales. La prueba se genera en el teléfono.
@@ -29,7 +34,8 @@ Cosas que tienen que ser ciertas:
 | Entrega / deadline | Hackathon Stellar — fecha ⏳ pendiente |
 | Jurado / cliente | ⏳ pendiente |
 | Criterio de evaluación | ⏳ pendiente |
-| Caso de uso de la demo | **Compraventa de vehículo ante notario** — el único recorrido con fuentes reales de punta a punta. Ver `docs/memoria.md` D-13 |
+| Producto | Contract-agnostic: cualquier contrato es un perfil. Ver D-14 |
+| Perfil de la demo | **Compraventa de vehículo ante notario** — el único con fuentes reales de punta a punta. Ver D-13 |
 | Plataformas | iOS y Android — ver [`docs/MOBILE.md`](docs/MOBILE.md) |
 | Fuente de datos | Croma — ver [`docs/CROMA.md`](docs/CROMA.md) |
 | Cadena (primera) | Stellar, detrás de un puerto agnóstico |
@@ -87,6 +93,7 @@ No asumir el estado de un archivo sin leerlo.
 | Que una fuente de cobertura desigual alimente una decisión agregada | Premiaría el código postal o la formalidad laboral en vez de la capacidad de pagar. Se mide la cobertura antes de decidir. Ver D-11 |
 | Datos no públicos y no consentidos | Registro público es lo publicado por una autoridad, no lo que se puede encontrar. Sin scraping, sin redes sociales, sin "señales de comportamiento" |
 | Los endpoints globales de Croma (Web Search, Research, Extract) aplicados a una persona | Rompen la exclusión anterior por la puerta de atrás: buscar en la web sobre un sujeto no es consultar un registro público |
+| Un tipo de contrato conocido por la capa de dominio | El contrato es un perfil que compone quien pregunta. Una unión cerrada de contratos hace que añadir uno sea un cambio en el dominio. Ver D-14 |
 | Formalidad escondida dentro de otro predicado | Si "cotiza a seguridad social" se vuelve requisito de facto e invisible, el producto excluye a la mitad informal del país |
 | Foto de la cédula en cualquier punto del flujo | Es exactamente el artefacto que el producto existe para eliminar |
 | PWA como camino principal | No hay proving en el dispositivo, ni enclave seguro, ni passkey. Ver [`docs/MOBILE.md`](docs/MOBILE.md) → *Lo que se descartó* |

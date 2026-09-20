@@ -13,30 +13,49 @@ something that runs and which do not.
 
 ## Español
 
-Hoy, para arrendar un apartamento en Bogotá, entregas: copia de la cédula,
-certificación laboral, certificación bancaria, desprendibles de nómina y a
-veces el puntaje de DataCrédito. El arrendador recibe un expediente completo
+Firmar cualquier contrato en Colombia cuesta un expediente. Para arrendar: cédula, certificación
+laboral, certificación bancaria, desprendibles y a veces el puntaje de DataCrédito. Para comprar un
+vehículo ante notario: cédula, declaración de origen de fondos, certificado de tradición, paz y
+salvo de comparendos. Para ser codeudor, otra vez todo. La contraparte recibe un dossier completo
 sobre tu vida — y no tiene ni la obligación ni la capacidad de protegerlo.
 
-Pero el arrendador no necesita ese expediente. Necesita cuatro respuestas:
+No necesita el dossier. Necesita respuestas:
 
 | Pregunta | Lo que hoy entregas | Lo que Knowni entrega |
 |---|---|---|
 | ¿Existe y es quien dice ser? | Cédula escaneada | `true` |
-| ¿Le alcanza para el canon? | Certificación bancaria, nómina | `STRONG` (≥3× el canon) |
-| ¿Tiene ingresos estables? | Certificación laboral | `true` |
-| ¿Hay una inhabilidad para contratar? | Nada, o una consulta a tu nombre | `true` (sin inhabilidad) |
+| ¿Tiene capacidad legal para contratar? | Nada, o una consulta a tu nombre | `true` |
+| ¿Hay una inhabilidad vigente? | Antecedentes de todo tipo | `true` |
+| ¿Le alcanza? | Certificación bancaria, nómina | `STRONG` (≥3× la obligación) |
+| ¿El activo está limpio? | Certificado de tradición, paz y salvo | `true` |
 
-Cuatro respuestas. Ni el nombre, ni el número de cédula, ni el salario, ni el
-empleador, ni la fecha de nacimiento. El expediente completo de la solicitud
-cabe en diez campos, y ninguno dice nada de ti más allá de lo que te
-preguntaron — eso está verificado, no prometido:
+Respuestas. Ni el nombre, ni el número de cédula, ni el salario, ni el empleador, ni la fecha de
+nacimiento. El expediente completo de la solicitud cabe en diez campos, y ninguno dice nada de ti
+más allá de lo que te preguntaron — eso está verificado, no prometido:
 [`journey/test/journey.test.ts`](journey/test/journey.test.ts).
 
-**Es una app de iOS y Android, y eso no es un detalle de entrega.** La promesa no
-es "no compartimos tus datos": es que **el dato nunca sale del teléfono**. La
-prueba se genera ahí, sin servidor en el medio, y una vez emitidas las
-credenciales funciona sin red. Ver [`docs/MOBILE.md`](docs/MOBILE.md).
+### El contrato es un perfil, no el producto
+
+El arrendamiento es **una aplicación**. Lo que cambia entre un arriendo, una compraventa, una
+garantía o un contrato de suministro es **cuáles** predicados se piden y **con qué umbrales** —
+nunca qué significa un predicado, y nunca nada dentro de `core/`.
+
+| Perfil | Pide |
+|---|---|
+| Arrendamiento | `personhood` · `solvency` · `formality` · `sanctions` |
+| Compraventa de vehículo | `personhood` · `capacity` · `sanctions` · `assetStanding` |
+| Codeudor o garantía | `personhood` · `solvency` · `capacity` |
+| Suministro con persona jurídica | `capacity` · `solvency` · `sanctions` |
+| Poder o representación | `personhood` · `capacity` |
+
+`Purpose` es una cadena abierta validada, no una unión de los contratos que existían el día que se
+escribió el tipo. Añadir un contrato es componer un perfil, no tocar el dominio. Ver
+[`docs/memoria.md`](docs/memoria.md) D-14.
+
+**Es una app de iOS y Android, y eso no es un detalle de entrega.** La promesa no es "no
+compartimos tus datos": es que **el dato nunca sale del teléfono**. La prueba se genera ahí, sin
+servidor en el medio, y una vez emitidas las credenciales funciona sin red. Ver
+[`docs/MOBILE.md`](docs/MOBILE.md).
 
 ### De dónde salen las respuestas
 
@@ -166,34 +185,35 @@ corrido aquí.
 
 ## English
 
-To rent an apartment in Bogotá today you hand over a scanned ID, an
-employment letter, a bank certification, payslips and sometimes a credit
-score. The landlord receives a complete dossier about your life, and has
-neither the obligation nor the capacity to protect it.
+**Prove you qualify to sign, without saying who you are.**
 
-The landlord does not need the dossier. They need four answers: does this
-person exist, can they cover the rent, is their income steady, are they on a
-restrictive list. Knowni delivers those four answers and nothing else — no
-name, no ID number, no salary, no employer, no date of birth.
+Signing anything in Colombia costs a dossier — a lease, a vehicle sale before a notary, a
+guarantee. The counterparty receives a complete file about your life and has neither the
+obligation nor the capacity to protect it. They do not need the file. They need answers: does this
+person exist, do they have legal capacity, is there a standing disqualification, can they cover
+the obligation, is the asset clean.
 
-**It is an iOS and Android app, and that is not a delivery detail.** The promise
-is not "we don't share your data" — it is that the data never leaves the phone.
-The proof is generated there, and once credentials are issued it works offline.
+**The contract type is a profile, not the product.** A lease is one application. What changes
+between a lease, a sale, a guarantee or a supply contract is *which* predicates are asked and with
+*what* thresholds — never what a predicate means, and never anything inside `core/`. `Purpose` is
+an open validated string, not a union of the contract types that existed the day it was written.
 
-Official records are read through [Croma](https://docs.usecroma.com), a Latin
-American government-data API covering Colombia, Peru and Mexico through one
-integration. What Croma does not cover is the question that actually decides a
-lease — income — which comes from **social-security contribution records**
-(PILA in Colombia).
+**It is an iOS and Android app, and that is not a delivery detail.** The promise is not "we don't
+share your data" — it is that the data never leaves the phone. The proof is generated there, and
+once credentials are issued it works offline.
 
-Colombia is the first jurisdiction, not the design: nothing in `core/` knows
-Colombia exists. Stellar is the first chain, behind a port with a chain
-registry — the same verification anchors on Stellar, on EVM or in memory
-with no change above the registry. Croma is one adapter of a source port,
-for the same reason.
+Official records are read through [Croma](https://docs.usecroma.com), a Latin American
+government-data API covering Colombia, Peru and Mexico through one integration. Croma does not
+cover social-security contributions or the property registry, which is why the hackathon profile is
+a **vehicle sale**: the only one the catalogue covers end to end with real sources, subject and
+asset alike.
 
-See the Spanish section above for the workspace map, how to run it, and the
-table of what is built and what is not. All documentation is in `docs/`.
+Colombia is the first jurisdiction, not the design: nothing in `core/` knows Colombia exists.
+Stellar is the first chain, behind a port with a chain registry. Croma is one adapter of a source
+port, for the same reason.
+
+See the Spanish section above for the workspace map, how to run it, and the table of what is built
+and what is not. All documentation is in `docs/`.
 
 ---
 

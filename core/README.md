@@ -20,6 +20,13 @@ de divulgación. Sin dependencias y sin SDK de ninguna cadena.
   memoria, sobre afuera. Pura y síncrona, que es lo que permite probar el
   invariante como propiedad de una función.
 
+## Lo que core NO sabe
+
+No sabe qué es un arriendo. `Purpose` es una cadena abierta validada, no una unión de tipos de
+contrato, y `verify` no ramifica por él: el tipo de contrato es un **perfil** que compone quien
+pregunta. Es la misma regla que hace a `ChainId` abierto, y está probada en
+[`test/session.test.ts`](test/session.test.ts) con siete contratos distintos.
+
 ## El invariante
 
 [`test/disclosure.invariant.test.ts`](test/disclosure.invariant.test.ts)

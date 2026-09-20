@@ -14,7 +14,7 @@ import type { Disclosure, PredicateResult } from "./disclosure.ts";
 import type { FieldHash } from "./hash.ts";
 import { SolvencyTier, proveFormality, provePersonhood, proveSolvency, proveStanding } from "./predicates.ts";
 import type { FormalityParams, PersonhoodParams, SolvencyParams, StandingParams } from "./predicates.ts";
-import { deriveNullifier, isExpired, sessionId, type SessionRequest, type SubjectSecret } from "./session.ts";
+import { deriveNullifier, isExpired, isPurpose, sessionId, type SessionRequest, type SubjectSecret } from "./session.ts";
 
 // What the relying party asked. Every field is public — the subject reads
 // this before deciding to answer, and a question they cannot read is a
@@ -42,7 +42,10 @@ export interface HeldClaims {
 // the subject did not fail anything, the window closed.
 export type VerificationResult =
   | { readonly status: "disclosed"; readonly disclosure: Disclosure }
-  | { readonly status: "refused"; readonly reason: "session_expired" | "subject_mismatch" };
+  | {
+      readonly status: "refused";
+      readonly reason: "session_expired" | "subject_mismatch" | "invalid_purpose";
+    };
 
 export function verify(
   h: FieldHash,
@@ -50,6 +53,13 @@ export function verify(
   held: HeldClaims,
   nowUnix: number,
 ): VerificationResult {
+  // Checked before anything else and refused rather than thrown: the purpose
+  // is caller-supplied and reaches a hash, so a malformed one must not take
+  // the verification down.
+  if (!isPurpose(request.session.purpose)) {
+    return { status: "refused", reason: "invalid_purpose" };
+  }
+
   if (isExpired(request.session, nowUnix)) {
     return { status: "refused", reason: "session_expired" };
   }

@@ -81,6 +81,36 @@ BLS12-381. Stellar verifica BLS12-381 nativamente hoy. **Es el mismo campo.**
 El hueco que queda no es de curva, es de biblioteca: `circomlib` trae
 constantes de Poseidon para BN254. Ver `circuits/README.md`.
 
+## El contrato es un perfil
+
+La capa de dominio no sabe qué es un arriendo, y esa es la diferencia entre un producto y una
+aplicación de ese producto.
+
+Un **perfil** es lo que compone quien pregunta: qué predicados pide, con qué parámetros públicos, y
+bajo qué `purpose`. Vive del lado de la contraparte, no en `core/`.
+
+```
+  Perfil "vehicle-sale"           Perfil "lease"
+  ─────────────────────           ──────────────
+  personhood   { jurisdiction }   personhood  { jurisdiction }
+  capacity     { … }              solvency    { monthlyObligationMinor, currency }
+  sanctions    { … }              formality   { maxMonthsSince… }
+  assetStanding{ plate }          sanctions   { … }
+        │                               │
+        └──────────► VerificationRequest ◄──────────┘
+                            │
+                     core/src/verify.ts
+                  (no sabe cuál de los dos es)
+```
+
+`Purpose` es una cadena abierta validada por la misma razón que `ChainId`: una unión cerrada haría
+que añadir un tipo de contrato sea un cambio en el dominio. El formato se restringe —minúsculas,
+guiones, ≤64— porque el propósito se hashea en el `sessionId` **y se le muestra al sujeto antes de
+que responda**. Un valor que no puede leer es una pregunta que no puede rechazar.
+
+Y porque entra en el `sessionId`, un mismo juego de credenciales **no** produce la misma prueba para
+dos contratos: una prueba obtenida para arrendar no verifica contra una sesión de compraventa.
+
 ## Dónde se consulta
 
 La frontera principal del producto, y es una regla sobre **quién llama**, no sobre tipos.

@@ -12,7 +12,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | Qué | Cómo | Fecha |
 |---|---|---|
-| 111 pruebas pasan | `npm test` con Node 22.22.2 | 2026-09-20 |
+| 116 pruebas pasan | `npm test` con Node 22.22.2 | 2026-09-20 |
+| Nada en `core/` conoce un tipo de contrato; siete perfiles distintos responden con las mismas credenciales | `core/test/session.test.ts` · `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | El sobre no filtra ningún valor de los reclamos | `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | `core/` no importa ningún SDK ni declara dependencias | `core/test/no-vendor-imports.test.ts` | 2026-09-20 |
 | La misma verificación ancla en dos cadenas sin cambiar nada por encima del registro | `anchoring/test/registry.test.ts` | 2026-09-20 |

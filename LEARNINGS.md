@@ -58,6 +58,11 @@ nativo y prohíbe cualquier atajo de servidor.
   pobreza en un booleano. La regla asimétrica —`true` o `unavailable`, nunca `false`— es lo que lo
   evita, y solo se ve si uno se pregunta *qué se lee* en el `false`, no solo qué significa.
 
+- `2026-09-20` — El caso de uso con el que uno arranca se cuela en la definición del producto si no
+  se vigila. Escribí la misión como *"arrendar o comprar un inmueble"* y el dominio acabó con
+  `type Purpose = "lease" | "purchase" | …` — la capa que no puede saber qué es un arriendo,
+  sabiéndolo. El producto es *demuestra que calificas para firmar*; el contrato es un perfil.
+
 ## 2. ¿Qué costó más de lo esperado, y por qué?
 
 - `2026-09-20` — Un workspace entero (`retrieval/`) construido sobre la lectura equivocada de
@@ -86,6 +91,7 @@ nativo y prohíbe cualquier atajo de servidor.
 | `2026-09-20` | Mediana de 12 meses para el ingreso | Media, o último mes | La media la arrastra una prima; el último mes se lee como cero si se radicó tarde |
 | `2026-09-20` | Sin número agregado **en este producto**, y cada respuesta declara qué no estima | Un score sin declaración | Un resultado que no dice qué es se lee como predicción. `creva_score` emite puntaje y hace bien: son productos distintos |
 | `2026-09-20` | Sin antecedentes penales, de nadie | Incluirlos en `standing` | No dicen si alguien puede pagar un arriendo; como filtro de vivienda castigan a quien ya cumplió. Decisión firme heredada de `creva_score` |
+| `2026-09-20` | `Purpose` abierto y validado; el contrato es un perfil que compone quien pregunta | Unión cerrada de tipos de contrato | Una unión cerrada hace que añadir un contrato sea un cambio en el dominio — el mismo error que `ChainId`, dos veces |
 | `2026-09-20` | Sisbén nunca, y ADRES solo en la dirección positiva | Usar la clasificación socioeconómica, o devolver `false` por régimen subsidiado | Sería un filtro de pobreza con sello oficial, entregado listo |
 | `2026-09-20` | La demo es compraventa de vehículo, no arrendamiento | Arrendamiento con `solvency` sintética | Sin PILA, `solvency` no tiene fuente; vehículo cierra con fuentes reales de punta a punta |
 | `2026-09-20` | Medir la cobertura de una fuente antes de dejarla influir en un resultado | Suponer que una fuente oficial es neutral | Una fuente de cobertura desigual que puntúa es un sesgo con respaldo oficial |
@@ -101,6 +107,8 @@ nativo y prohíbe cualquier atajo de servidor.
 
 ## 5. ¿Qué no se volvería a hacer?
 
+- Dejar que el primer caso de uso escriba la definición del producto. Se cuela hasta el tipo de un
+  campo, y ahí ya es una unión cerrada en el dominio.
 - Diseñar sobre un nombre de herramienta sin abrir su documentación primero. Costó un workspace.
 - Escribir código antes de leer la constitución del proyecto, teniéndola a un `cat` de distancia.
 - Deducir de qué proyecto viene un trabajo previo en vez de abrir los repositorios. Lo caro no fue
@@ -124,6 +132,8 @@ nativo y prohíbe cualquier atajo de servidor.
       consultar — escrito antes de tener la credencial` → tema propuesto: `catalogues-are-not-neutral`
 - [ ] `Preguntarse qué se LEE en un false, no solo qué significa: un negativo puede publicar una
       inferencia que nadie pidió` → tema propuesto: `what-a-false-reads-as`
+- [ ] `El caso de uso con el que se arranca se cuela en la definición del producto y termina como
+      una unión cerrada en el dominio` → tema propuesto: `first-use-case-leaks-into-the-domain`
 
 ## Verify
 

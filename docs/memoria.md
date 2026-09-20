@@ -250,6 +250,47 @@ solo dato sintético, y por eso es el que se demuestra.
 *Lo que no cambia:* los predicados, el sobre, el anclaje y la frontera de privacidad son los
 mismos. Cambia `sources/` y cambia qué se enseña.
 
+### D-14 — El tipo de contrato es un perfil de la solicitud, no una rama del dominio · 2026-09-20
+
+El producto es **"demuestra que calificas para firmar, sin decir quién eres"**, sin importar qué se
+firma. El arrendamiento es una aplicación, no la definición — y hasta hoy tanto la misión como el
+código decían lo contrario.
+
+*Dónde estaba el error, en concreto:* `core/src/session.ts` tenía
+
+```ts
+export type Purpose = "lease" | "purchase" | "guarantor" | "employment" | "other";
+```
+
+Una unión cerrada de los tipos de contrato que existían el día que se escribió. Eso es la capa de
+dominio sabiendo qué es un arriendo — exactamente el acoplamiento que D-03 le quitó a `ChainId`, y
+por la misma razón: añadir un tipo de contrato no puede ser un cambio en el dominio.
+
+*El arreglo:* `Purpose` es una cadena abierta validada (`^[a-z0-9]+(?:-[a-z0-9]+)*$`, ≤64). El
+formato se restringe porque el propósito se hashea en el `sessionId` **y se le muestra al sujeto
+antes de que responda**: un valor que no puede leer es una pregunta que no puede rechazar.
+`sessionId` lanza ante un propósito malformado —es un helper puro en la frontera del hash, como
+`fromHex`— y `verify` lo comprueba primero y **rechaza** con `invalid_purpose`, porque un campo que
+escribe la contraparte no puede tumbar la verificación.
+
+*Qué es entonces un tipo de contrato:* un **perfil** — qué predicados pide y con qué parámetros
+públicos. Lo compone quien pregunta; `core/` nunca aprende qué significa ninguno.
+
+| Perfil | Predicados que pide |
+|---|---|
+| Arrendamiento | `personhood` · `solvency` · `formality` · `sanctions` |
+| Compraventa de vehículo | `personhood` · `capacity` · `sanctions` · `assetStanding` |
+| Codeudor o garantía | `personhood` · `solvency` · `capacity` |
+| Suministro con persona jurídica | `capacity` (RUES) · `solvency` (Supersociedades) · `sanctions` |
+| Poder o representación | `personhood` · `capacity` |
+
+*Lo que esto explica de golpe:* por qué los mismos cinco predicados sirven para todo. El contrato
+cambia **cuáles** se piden y **con qué umbrales**, nunca qué significa un predicado. Y por qué el
+alcance del hackathon (D-13) es una elección de perfil, no un recorte del producto.
+
+*Verificado:* `core/test/session.test.ts` prueba siete tipos de contrato distintos, que dos de ellos
+nunca comparten `sessionId`, y que un propósito ilegible se rechaza.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -260,6 +301,7 @@ mismos. Cambia `sources/` y cambia qué se enseña.
 | 2026-09-20 | Adoptada la constitución de `procedures/templates/AGENTS.md`: commits de una línea sin trailers, cabeceras en `.md`, reparto por agente |
 | 2026-09-20 | Corregida la atribución: `creva_score` fue la hackathon de Croma, `Digentia` es un producto sin terminar. De ahí salen D-09, D-10 y D-11 |
 | 2026-09-20 | Revisado el catálogo real de Croma para Colombia. PILA y SNR **no están**; aparecen ADRES y RUNT/SIMIT, y aparece Sisbén. De ahí salen D-12 y D-13 |
+| 2026-09-20 | Reencuadre del producto: es contract-agnostic. `Purpose` deja de ser una unión cerrada — D-14. 116 pruebas |
 
 ## Límites de proceso — estado del ejercicio real
 

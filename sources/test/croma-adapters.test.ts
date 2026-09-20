@@ -5,6 +5,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
+import { sha256Hash } from "@knowni/core/node";
+
 import type { CromaClient, CromaOutcome } from "../src/providers/croma/client.ts";
 import { createRegistraduriaPersonhoodSource } from "../src/country/colombia/registraduria.ts";
 import { createSicaacCapacitySource } from "../src/country/colombia/sicaac.ts";
@@ -133,7 +135,7 @@ const cleanRegisters = {
 
 test("three clean registers make one standing claim, rooted in the snapshots read", async () => {
   const client = clientOf(cleanRegisters);
-  const result = await createSanctionsSource(client).fetch(subject, NOW);
+  const result = await createSanctionsSource(client, sha256Hash).fetch(subject, NOW);
   assert.equal(result.status, "claimed");
   if (result.status !== "claimed" || result.claim.kind !== "standing") throw new Error("shape");
   assert.equal(result.claim.listed, false);
@@ -142,42 +144,34 @@ test("three clean registers make one standing claim, rooted in the snapshots rea
 });
 
 test("the root changes when a register publishes a different snapshot", async () => {
-  const first = await createSanctionsSource(clientOf(cleanRegisters)).fetch(subject, NOW);
-  const second = await createSanctionsSource(
-    clientOf({
+  const first = await createSanctionsSource(clientOf(cleanRegisters), sha256Hash).fetch(subject, NOW);
+  const second = await createSanctionsSource(clientOf({
       ...cleanRegisters,
       [CONTRAL]: data({ found: true, is_fiscal_responsible: false, verification_code: "ZZZ-999" }),
-    }),
-  ).fetch(subject, NOW);
+    }), sha256Hash).fetch(subject, NOW);
   const rootOf = (r: typeof first) =>
     r.status === "claimed" && r.claim.kind === "standing" ? r.claim.listSetRoot : "";
   assert.notEqual(rootOf(first), rootOf(second));
 });
 
 test("one register reporting is enough to be listed", async () => {
-  const result = await createSanctionsSource(
-    clientOf({
+  const result = await createSanctionsSource(clientOf({
       ...cleanRegisters,
       [PROC]: data({ found: true, has_records: true, status: "SANCION", checked_at: "2026-09-20T10:00:00Z" }),
-    }),
-  ).fetch(subject, NOW);
+    }), sha256Hash).fetch(subject, NOW);
   assert.equal(result.status === "claimed" && result.claim.kind === "standing" && result.claim.listed, true);
 });
 
 test("a register that could not be read makes the whole screening unavailable", async () => {
-  const result = await createSanctionsSource(
-    clientOf({ ...cleanRegisters, [CONTAD]: down }),
-  ).fetch(subject, NOW);
+  const result = await createSanctionsSource(clientOf({ ...cleanRegisters, [CONTAD]: down }), sha256Hash).fetch(subject, NOW);
   assert.deepEqual(result, { status: "degraded", reason: "source_unavailable" });
 });
 
 test("the full name the Procuraduría returns never reaches the claim", async () => {
-  const result = await createSanctionsSource(
-    clientOf({
+  const result = await createSanctionsSource(clientOf({
       ...cleanRegisters,
       [PROC]: data({ found: true, full_name: "MARIA RODRIGUEZ GOMEZ", has_records: false, checked_at: "2026-09-20T10:00:00Z" }),
-    }),
-  ).fetch(subject, NOW);
+    }), sha256Hash).fetch(subject, NOW);
   assert.ok(!JSON.stringify(result).includes("RODRIGUEZ"));
 });
 

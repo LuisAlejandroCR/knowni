@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import type { AssetStandingClaim, CapacityClaim } from "../src/claims.ts";
 import { proveAssetStanding, proveCapacity } from "../src/predicates.ts";
 import { commitClaim, randomSalt } from "../src/commitment.ts";
-import { sha256Hash } from "../src/hash.ts";
+import { sha256Hash } from "../src/node.ts";
 
 const NOW = 1_760_000_000;
 const REF = "a".repeat(64);

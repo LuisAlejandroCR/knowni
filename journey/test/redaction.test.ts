@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { sha256Hash } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import {
   createCromaClient,
   createPilaIncomeSource,

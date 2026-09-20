@@ -3,8 +3,8 @@
 // commitment opening, with no network and no chain.
 
 import type { Claim, FieldHash, Salt } from "@knowni/core";
-import { commitClaim, hashLeaf, u64be, utf8, verifyInclusion } from "@knowni/core";
-import { createPrivateKey, createPublicKey, randomBytes, sign, verify } from "node:crypto";
+import { commitClaim, concatBytes, fromHex, hashLeaf, lengthPrefixed, toHex, u64be, utf8, verifyInclusion } from "@knowni/core";
+import type { SignaturePort } from "./signing.ts";
 import type {
   AttestationResult,
   AttestedCredential,
@@ -12,20 +12,17 @@ import type {
   IssuerRegistry,
 } from "./types.ts";
 
-const PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
-const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 
 const ROOT_DOMAIN = "knowni/issuer-root/v1";
 
-export function signedBytes(root: Omit<AttestedRoot, "signature" | "algorithm">): Buffer {
-  const parts = [
+export function signedBytes(root: Omit<AttestedRoot, "signature" | "algorithm">): Uint8Array {
+  return lengthPrefixed([
     utf8(ROOT_DOMAIN),
     utf8(root.issuerId),
     utf8(root.root),
     u64be(root.issuedAt),
     u64be(root.size),
-  ];
-  return Buffer.concat(parts.map((part) => Buffer.concat([Buffer.from(u64be(part.length)), Buffer.from(part)])));
+  ]);
 }
 
 export interface IssuerKeypair {
@@ -33,57 +30,47 @@ export interface IssuerKeypair {
   readonly publicKey: Uint8Array;
 }
 
-export function generateIssuerKeypair(): IssuerKeypair {
-  const seed = Uint8Array.from(randomBytes(32));
-  return { privateKeySeed: seed, publicKey: publicKeyFromSeed(seed) };
-}
-
-export function publicKeyFromSeed(seed: Uint8Array): Uint8Array {
-  const spki = createPublicKey(privateKeyOf(seed)).export({ format: "der", type: "spki" });
-  return Uint8Array.from(spki.subarray(spki.length - 32));
-}
-
-function privateKeyOf(seed: Uint8Array) {
-  if (seed.length !== 32) throw new TypeError("an ed25519 seed is 32 bytes");
-  return createPrivateKey({
-    key: Buffer.concat([PKCS8_PREFIX, Buffer.from(seed)]),
-    format: "der",
-    type: "pkcs8",
-  });
+export function generateIssuerKeypair(signatures: SignaturePort): IssuerKeypair {
+  const seed = signatures.randomSeed();
+  return { privateKeySeed: seed, publicKey: signatures.publicKeyOf(seed) };
 }
 
 export function attestRoot(
+  signatures: SignaturePort,
   seed: Uint8Array,
   root: Omit<AttestedRoot, "signature" | "algorithm">,
 ): AttestedRoot {
-  const signature = sign(null, signedBytes(root), privateKeyOf(seed));
-  return { ...root, algorithm: "ed25519", signature: signature.toString("hex") };
+  return {
+    ...root,
+    algorithm: "ed25519",
+    signature: toHex(signatures.sign(seed, signedBytes(root))),
+  };
 }
 
-export function verifyAttestedRoot(registry: IssuerRegistry, attestation: AttestedRoot): AttestationResult {
+export function verifyAttestedRoot(
+  signatures: SignaturePort,
+  registry: IssuerRegistry,
+  attestation: AttestedRoot,
+): AttestationResult {
   const publicKey = registry.publicKeyOf(attestation.issuerId);
   if (publicKey === undefined) return { status: "invalid", reason: "unknown_issuer" };
   if (registry.isRevoked?.(attestation.issuerId, attestation.root) === true) {
     return { status: "invalid", reason: "revoked" };
   }
 
-  let signature: Buffer;
+  let signature: Uint8Array;
   try {
-    signature = Buffer.from(attestation.signature, "hex");
+    signature = fromHex(attestation.signature);
   } catch {
     return { status: "invalid", reason: "bad_signature" };
   }
 
-  const key = createPublicKey({
-    key: Buffer.concat([SPKI_PREFIX, Buffer.from(publicKey)]),
-    format: "der",
-    type: "spki",
-  });
-  const ok = verify(null, signedBytes(attestation), key, signature);
+  const ok = signatures.verify(publicKey, signedBytes(attestation), signature);
   return ok ? { status: "valid" } : { status: "invalid", reason: "bad_signature" };
 }
 
 export interface CredentialCheck {
+  readonly signatures: SignaturePort;
   readonly registry: IssuerRegistry;
   readonly nowUnix: number;
   readonly maxRootAgeSeconds: number;
@@ -95,7 +82,7 @@ export function verifyCredential(
   credential: AttestedCredential,
   check: CredentialCheck,
 ): AttestationResult {
-  const rootResult = verifyAttestedRoot(check.registry, credential.attestation);
+  const rootResult = verifyAttestedRoot(check.signatures, check.registry, credential.attestation);
   if (rootResult.status === "invalid") return rootResult;
 
   const age = check.nowUnix - credential.attestation.issuedAt;
@@ -127,6 +114,7 @@ export function createMemoryRegistry(
   };
 }
 
+export type { SignaturePort } from "./signing.ts";
 export type { AttestationFailure, AttestationResult, AttestedCredential, AttestedRoot, IssuerRegistry } from "./types.ts";
 
 export type {

@@ -5,7 +5,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { SolvencyTier, deriveNullifier, sessionId, sha256Hash, type SessionRequest } from "@knowni/core";
+import { SolvencyTier, deriveNullifier, sessionId, type SessionRequest } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import { issueClaimSet } from "@knowni/sources";
 import {
   acceptAnswer,
@@ -19,6 +20,7 @@ import {
   type AttestedAnswer,
   type RevocationOracle,
 } from "@knowni/attestation";
+import { nodeSignatures } from "@knowni/attestation/node";
 import { createMemoryAnchor, createStellarMemoAnchor } from "@knowni/anchoring";
 
 const h = sha256Hash;
@@ -67,8 +69,8 @@ const answers: AttestedAnswer[] = [
 
 // Issued before the phone lost signal; everything after this point is offline.
 function issuedBeforehand() {
-  const issuer = generateIssuerKeypair();
-  const counterparty = generateIssuerKeypair();
+  const issuer = generateIssuerKeypair(nodeSignatures);
+  const counterparty = generateIssuerKeypair(nodeSignatures);
   const set = issueClaimSet(h, {
     issuerId: ISSUER,
     claims: [
@@ -93,7 +95,7 @@ function issuedBeforehand() {
     }),
     credential: {
       ...set.credentials[0]!,
-      attestation: attestRoot(issuer.privateKeySeed, {
+      attestation: attestRoot(nodeSignatures, issuer.privateKeySeed, {
         issuerId: set.issuerId,
         root: set.root,
         issuedAt: set.issuedAt,
@@ -106,7 +108,7 @@ function issuedBeforehand() {
 test("the wallet verifies its own credential with no network at all", () => {
   const { credential, registry } = issuedBeforehand();
   const result = withoutNetwork(() =>
-    verifyCredential(h, credential, { registry, nowUnix: NOW, maxRootAgeSeconds: ROOT_AGE }),
+    verifyCredential(h, credential, { signatures: nodeSignatures, registry, nowUnix: NOW, maxRootAgeSeconds: ROOT_AGE }),
   );
   assert.deepEqual(result, { status: "valid" });
 });
@@ -114,8 +116,8 @@ test("the wallet verifies its own credential with no network at all", () => {
 test("a signed request is read and answered offline, and the counterparty accepts offline", () => {
   const { issuer, counterparty, registry } = issuedBeforehand();
   const outcome = withoutNetwork(() => {
-    const signed = signRequest(counterparty.privateKeySeed, request);
-    const results = attestResults(h, issuer.privateKeySeed, {
+    const signed = signRequest(nodeSignatures, counterparty.privateKeySeed, request);
+    const results = attestResults(h, nodeSignatures, issuer.privateKeySeed, {
       issuerId: ISSUER,
       request: signed.request,
       answers,
@@ -125,6 +127,7 @@ test("a signed request is read and answered offline, and the counterparty accept
     const session = attestedSession(signed.request);
     const live: RevocationOracle = { stateOf: () => ({ status: "live", checkedAt: NOW - 60 }) };
     return acceptAnswer(h, {
+      signatures: nodeSignatures,
       signedRequest: signed,
       audience: NOTARY,
       disclosure: session.disclosure,
@@ -160,10 +163,10 @@ test("the chain being unreachable degrades the anchor and changes nothing else",
 
 test("an accepted answer needed no anchor, and says so by not carrying one", () => {
   const { issuer, counterparty, registry } = issuedBeforehand();
-  const signed = signRequest(counterparty.privateKeySeed, request);
+  const signed = signRequest(nodeSignatures, counterparty.privateKeySeed, request);
   const session = attestedSession(signed.request);
   assert.equal(session.disclosure.anchor, undefined);
-  const results = attestResults(h, issuer.privateKeySeed, {
+  const results = attestResults(h, nodeSignatures, issuer.privateKeySeed, {
     issuerId: ISSUER,
     request: signed.request,
     answers,
@@ -172,6 +175,7 @@ test("an accepted answer needed no anchor, and says so by not carrying one", () 
   });
   const outcome = withoutNetwork(() =>
     acceptAnswer(h, {
+      signatures: nodeSignatures,
       signedRequest: signed,
       audience: NOTARY,
       disclosure: session.disclosure,

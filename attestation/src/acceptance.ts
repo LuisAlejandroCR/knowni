@@ -5,6 +5,7 @@
 import type { Disclosure, FieldHash } from "@knowni/core";
 import { sessionId } from "@knowni/core";
 import type { IssuerRegistry } from "./types.ts";
+import type { SignaturePort } from "./signing.ts";
 import type { AttestedResults } from "./results.ts";
 import { verifyResults } from "./results.ts";
 import type { PresentationFailure, SignedRequest } from "./presentation.ts";
@@ -61,6 +62,7 @@ export type AcceptanceResult =
   | { readonly status: "refused"; readonly reason: AcceptanceFailure };
 
 export interface AcceptanceInput {
+  readonly signatures: SignaturePort;
   readonly signedRequest: SignedRequest;
   readonly audience: string;
   readonly disclosure: Disclosure;
@@ -80,7 +82,13 @@ export function acceptAnswer(h: FieldHash, input: AcceptanceInput): AcceptanceRe
   const request = input.signedRequest.request;
 
   // 1. Is this our own request, signed and still open?
-  const requestCheck = verifyRequest(input.registry, input.signedRequest, input.audience, input.nowUnix);
+  const requestCheck = verifyRequest(
+    input.signatures,
+    input.registry,
+    input.signedRequest,
+    input.audience,
+    input.nowUnix,
+  );
   if (requestCheck.status === "refused") return requestCheck;
 
   // 2. Is the answer bound to it?
@@ -94,6 +102,7 @@ export function acceptAnswer(h: FieldHash, input: AcceptanceInput): AcceptanceRe
 
   // 3. Is the evidence authenticated?
   const verified = verifyResults(h, input.results, {
+    signatures: input.signatures,
     registry: input.registry,
     request,
     nowUnix: input.nowUnix,

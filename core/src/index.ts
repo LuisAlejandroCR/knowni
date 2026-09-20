@@ -17,8 +17,20 @@ export type {
   SubjectRef,
 } from "./claims.ts";
 
-export type { FieldHash } from "./hash.ts";
-export { fromHex, sha256Hash, u32be, u64be, utf8 } from "./hash.ts";
+export type { Digest, FieldHash } from "./hash.ts";
+export { createFieldHash } from "./hash.ts";
+export {
+  concatBytes,
+  equalBytes,
+  fromHex,
+  lengthPrefixed,
+  toHex,
+  u32be,
+  u64be,
+  utf8,
+} from "./bytes.ts";
+export type { RandomSource } from "./random.ts";
+export { randomBytes, setRandomSource } from "./random.ts";
 
 export {
   SolvencyTier,

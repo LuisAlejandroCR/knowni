@@ -4,18 +4,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  SolvencyTier,
-  commitOutcome,
-  meetsAll,
-  outcomeOf,
-  sha256Hash,
-  verify,
-  verifyInclusion,
-  verifyOutcomeCommitment,
-  type HeldClaims,
-  type VerificationRequest,
-} from "@knowni/core";
+import { SolvencyTier, commitOutcome, meetsAll, outcomeOf, verify, verifyInclusion, verifyOutcomeCommitment, type HeldClaims, type VerificationRequest } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import {
   createListScreeningSource,
   createPilaFormalitySource,

@@ -139,7 +139,7 @@ Node 22.18+. No hay paso de compilación y no hay dependencias externas.
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 236 pruebas
+npm test      # 240 pruebas
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
@@ -164,7 +164,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 236 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 240 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
@@ -175,7 +175,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Modo avión y logs sanitizados | **Corre.** El recorrido se completa con `fetch` desactivado y la cadena caída; ningún log lleva documento, nombre, salario ni cuenta |
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
-| App iOS / Android | **No escrita.** Stack decidido y ocho pantallas de diseño aprobadas — [`design/day-08/`](design/day-08/README.md) |
+| App iOS / Android | **En construcción, bloque 1 de 5.** El dominio ya corre sin `node:crypto` ni `Buffer`, comprobado por prueba. Stack decidido y ocho pantallas aprobadas — [`design/day-08/`](design/day-08/README.md) |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |

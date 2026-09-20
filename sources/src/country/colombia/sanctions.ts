@@ -2,8 +2,8 @@
 // (disciplinary), Contraloría (fiscal) and Contaduría (state debtors), reduced to one boolean
 // plus the snapshot it was read against.
 
-import type { StandingClaim } from "@knowni/core";
-import { sha256Hash, utf8 } from "@knowni/core";
+import type { FieldHash, StandingClaim } from "@knowni/core";
+import { utf8 } from "@knowni/core";
 import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
 import { degraded } from "../../types.ts";
 import type { CromaClient } from "../../providers/croma/client.ts";
@@ -33,14 +33,14 @@ function readVerdict(data: unknown, field: string): Verdict | undefined {
   return { listed, stamp: stampOf(record) };
 }
 
-export function listSetRoot(stamps: readonly string[]): string {
-  return sha256Hash.hash("knowni/co-sanctions/v1", [
+export function listSetRoot(h: FieldHash, stamps: readonly string[]): string {
+  return h.hash("knowni/co-sanctions/v1", [
     utf8(["procuraduria", "contraloria", "contaduria"].join("|")),
     utf8(stamps.join("|")),
   ]);
 }
 
-export function createSanctionsSource(client: CromaClient): SourcePort {
+export function createSanctionsSource(client: CromaClient, h: FieldHash): SourcePort {
   return {
     id: "co-sanctions",
     jurisdiction: "CO",
@@ -70,7 +70,7 @@ export function createSanctionsSource(client: CromaClient): SourcePort {
         jurisdiction: "CO",
         subjectRef: { hex: subject.subjectRef },
         listed: verdicts.some((verdict) => verdict.listed),
-        listSetRoot: listSetRoot(verdicts.map((verdict) => verdict.stamp)),
+        listSetRoot: listSetRoot(h, verdicts.map((verdict) => verdict.stamp)),
         attestedAt: nowUnix,
       };
       return { status: "claimed", claim };

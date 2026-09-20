@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { sha256Hash } from "../src/hash.ts";
+import { sha256Hash } from "../src/node.ts";
 import { deriveNullifier, isExpired, isPurpose, sessionId, type SessionRequest } from "../src/session.ts";
 
 const h = sha256Hash;

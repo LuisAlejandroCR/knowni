@@ -437,6 +437,27 @@ fallo que no es del titular no puede dejarlo sin poder responder. La misma prese
 *Lo que sigue faltando:* el registro en memoria no da persistencia ni atomicidad entre procesos. En
 producción, `NullifierLedger` se implementa contra una transacción de base de datos.
 
+### D-23 — El dominio no importa nada que un teléfono no tenga · 2026-09-20
+
+El handoff del día 8 lo dijo sin rodeos: *"no es correcto asumir que TypeScript sin dependencias
+funciona en React Native"*. `attestation/` importaba `node:crypto` y usaba `Buffer`, y ninguna de
+las dos cosas existe en un teléfono.
+
+*Decisión:* tres seams, no tres dependencias.
+
+| Qué | Puerto | Node lo enlaza en | La app lo enlazará con |
+|---|---|---|---|
+| Hash | `FieldHash` + `createFieldHash` | `@knowni/core/node` | `@noble/hashes` |
+| Aleatoriedad | `RandomSource`, con Web Crypto por defecto | automático | `expo-crypto` |
+| Firma ed25519 | `SignaturePort` | `@knowni/attestation/node` | `@noble/curves` |
+
+`Buffer` desaparece de `core/`, `attestation/` y `sources/` a favor de `Uint8Array` y de un módulo
+`bytes.ts` con hex, UTF-8, enteros big-endian y prefijo de longitud. Los bytes firmados no cambian:
+las mismas pruebas de firma y de compromiso siguen pasando sin tocar un vector.
+
+*Y se vigila:* `core/test/portable.test.ts` falla si alguien vuelve a importar un builtin de Node o
+a usar `Buffer` en el dominio. La regla deja de depender de que alguien se acuerde.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -464,6 +485,7 @@ producción, `NullifierLedger` se implementa contra una transacción de base de 
 | 2026-09-20 | Regla dura del usuario, aplicada a todo el repositorio: cabecera de nombre de archivo y 2–3 líneas en **cada** archivo, y comentarios solo donde el bloque no se explique solo. 65 archivos, 146 bloques narrativos fuera. Salda la deuda de cabeceras |
 | 2026-09-20 | Día 9: recorrido con `fetch` reemplazado por algo que lanza —cualquier ruta que busque red falla la prueba— y con la cadena caída. Y una prueba de redacción contra fuentes que devuelven el documento en su propio error. 236 pruebas |
 | 2026-09-20 | Día 10: auditoría de afirmaciones del README contra lo que corre —doce afirmaciones, dos con matiz y una corregida— y guion de los dos videos en `design/demo/guion.md`. Queda pendiente hacer público el repositorio, que las bases exigen |
+| 2026-09-20 | App B1: el dominio deja de depender de `node:crypto` y de `Buffer`. Hash, aleatoriedad y firma ed25519 pasan a ser puertos; cada plataforma los enlaza en su propio `node.ts` o en la app. Una prueba lo vigila — D-23 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

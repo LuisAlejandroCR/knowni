@@ -5,7 +5,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import type { SessionRequest } from "@knowni/core";
-import { SolvencyTier, deriveNullifier, sessionId, sha256Hash } from "@knowni/core";
+import { SolvencyTier, deriveNullifier, sessionId } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import {
   acceptAnswer,
   attestResults,
@@ -17,6 +18,7 @@ import {
   type RevocationOracle,
   type RevocationPolicy,
 } from "../src/index.ts";
+import { nodeSignatures } from "../src/node.ts";
 
 const NOW = 1_760_000_000;
 const ISSUER = "knowni-demo-issuer";
@@ -55,8 +57,8 @@ const tolerant: RevocationPolicy = { maxSnapshotAgeSeconds: 3_600, onUnknown: "a
 const liveOracle: RevocationOracle = { stateOf: () => ({ status: "live", checkedAt: NOW - 60 }) };
 
 function setup() {
-  const issuer = generateIssuerKeypair();
-  const counterparty = generateIssuerKeypair();
+  const issuer = generateIssuerKeypair(nodeSignatures);
+  const counterparty = generateIssuerKeypair(nodeSignatures);
   const registry = createMemoryRegistry({
     [ISSUER]: issuer.publicKey,
     [AGENCY]: counterparty.publicKey,
@@ -64,8 +66,8 @@ function setup() {
   const session = sessionId(sha256Hash, request);
   return {
     registry,
-    signedRequest: signRequest(counterparty.privateKeySeed, request),
-    results: attestResults(sha256Hash, issuer.privateKeySeed, {
+    signedRequest: signRequest(nodeSignatures, counterparty.privateKeySeed, request),
+    results: attestResults(sha256Hash, nodeSignatures, issuer.privateKeySeed, {
       issuerId: ISSUER,
       request,
       answers,
@@ -91,6 +93,7 @@ const inputOf = (over: Record<string, unknown> = {}) => {
   const base = setup();
   return {
     ...base,
+    signatures: nodeSignatures,
     audience: AGENCY,
     presentationId: "pres-1",
     ledger: createMemoryNullifierLedger(),
@@ -151,8 +154,8 @@ test("a stale snapshot is refused by a strict counterparty and noted by a tolera
 });
 
 test("an unsigned or forged request never reaches the evidence checks", () => {
-  const impostor = generateIssuerKeypair();
-  const forged = signRequest(impostor.privateKeySeed, request);
+  const impostor = generateIssuerKeypair(nodeSignatures);
+  const forged = signRequest(nodeSignatures, impostor.privateKeySeed, request);
   assert.deepEqual(acceptAnswer(sha256Hash, inputOf({ signedRequest: forged })), {
     status: "refused",
     reason: "bad_signature",
@@ -162,13 +165,13 @@ test("an unsigned or forged request never reaches the evidence checks", () => {
 test("an answer addressed to one counterparty does not fit another, and fails on the address", () => {
   const base = inputOf();
   const elsewhere = { ...request, relyingPartyId: "otra-notaria" };
-  const counterparty = generateIssuerKeypair();
+  const counterparty = generateIssuerKeypair(nodeSignatures);
   const registry = createMemoryRegistry({ "otra-notaria": counterparty.publicKey });
   assert.deepEqual(
     acceptAnswer(sha256Hash, {
       ...base,
       registry,
-      signedRequest: signRequest(counterparty.privateKeySeed, elsewhere),
+      signedRequest: signRequest(nodeSignatures, counterparty.privateKeySeed, elsewhere),
       audience: "otra-notaria",
     }),
     // Caught at the address, before the session id is even recomputed: the
@@ -204,7 +207,8 @@ test("the same presentation twice is idempotent, not a second acceptance", () =>
 test("a different presentation under the same nullifier is a replay", () => {
   const input = inputOf();
   acceptAnswer(sha256Hash, input);
-  assert.deepEqual(acceptAnswer(sha256Hash, { ...input, presentationId: "pres-2" }), {
+  assert.deepEqual(acceptAnswer(sha256Hash, {
+      signatures: nodeSignatures, ...input, presentationId: "pres-2" }), {
     status: "refused",
     reason: "replayed",
   });
@@ -213,11 +217,11 @@ test("a different presentation under the same nullifier is a replay", () => {
 test("nothing before the last step consumes the nullifier", () => {
   const ledger = createMemoryNullifierLedger();
   const silent: RevocationOracle = { stateOf: () => ({ status: "unknown" }) };
-  const impostor = generateIssuerKeypair();
+  const impostor = generateIssuerKeypair(nodeSignatures);
 
   for (const broken of [
     inputOf({ ledger, revocation: silent, policy: strict }),
-    inputOf({ ledger, signedRequest: signRequest(impostor.privateKeySeed, request) }),
+    inputOf({ ledger, signedRequest: signRequest(nodeSignatures, impostor.privateKeySeed, request) }),
     inputOf({ ledger, requiredPredicates: ["assetStanding"] }),
     inputOf({ ledger, nowUnix: request.expiresAt + 1 }),
   ]) {

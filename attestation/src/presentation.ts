@@ -3,14 +3,12 @@
 // that already arrived.
 
 import type { Disclosure, FieldHash, SessionRequest } from "@knowni/core";
-import { isExpired, isPurpose, sessionId } from "@knowni/core";
-import { createPublicKey, sign, verify } from "node:crypto";
+import { fromHex, isExpired, isPurpose, lengthPrefixed, sessionId, toHex, utf8 } from "@knowni/core";
+import type { SignaturePort } from "./signing.ts";
 import type { IssuerRegistry } from "./types.ts";
 import type { AttestedResults } from "./results.ts";
 import { verifyResults } from "./results.ts";
 
-const PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
-const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 
 const REQUEST_DOMAIN = "knowni/presentation-request/v1";
 
@@ -34,40 +32,31 @@ export type PresentationResult =
   | { readonly status: "accepted" }
   | { readonly status: "refused"; readonly reason: PresentationFailure };
 
-function requestBytes(request: SessionRequest): Buffer {
-  const parts = [
-    Buffer.from(REQUEST_DOMAIN, "utf8"),
-    Buffer.from(request.relyingPartyId, "utf8"),
-    Buffer.from(request.purpose, "utf8"),
-    Buffer.from(request.nonce, "utf8"),
-    Buffer.from(String(request.expiresAt), "utf8"),
-    Buffer.from(request.paramsHash, "utf8"),
-  ];
-  // Length-prefixed, so two adjacent fields cannot be re-split into a
-  // different pair that signs the same bytes.
-  return Buffer.concat(
-    parts.map((part) => {
-      const length = Buffer.alloc(4);
-      length.writeUInt32BE(part.length);
-      return Buffer.concat([length, part]);
-    }),
-  );
+function requestBytes(request: SessionRequest): Uint8Array {
+  return lengthPrefixed([
+    utf8(REQUEST_DOMAIN),
+    utf8(request.relyingPartyId),
+    utf8(request.purpose),
+    utf8(request.nonce),
+    utf8(String(request.expiresAt)),
+    utf8(request.paramsHash),
+  ]);
 }
 
-export function signRequest(seed: Uint8Array, request: SessionRequest): SignedRequest {
-  const key = {
-    key: Buffer.concat([PKCS8_PREFIX, Buffer.from(seed)]),
-    format: "der" as const,
-    type: "pkcs8" as const,
-  };
+export function signRequest(
+  signatures: SignaturePort,
+  seed: Uint8Array,
+  request: SessionRequest,
+): SignedRequest {
   return {
     request,
     algorithm: "ed25519",
-    signature: sign(null, requestBytes(request), key).toString("hex"),
+    signature: toHex(signatures.sign(seed, requestBytes(request))),
   };
 }
 
 export function verifyRequest(
+  signatures: SignaturePort,
   registry: IssuerRegistry,
   signed: SignedRequest,
   expectedAudience: string,
@@ -82,12 +71,7 @@ export function verifyRequest(
   const publicKey = registry.publicKeyOf(signed.request.relyingPartyId);
   if (publicKey === undefined) return { status: "refused", reason: "unknown_relying_party" };
 
-  const key = createPublicKey({
-    key: Buffer.concat([SPKI_PREFIX, Buffer.from(publicKey)]),
-    format: "der",
-    type: "spki",
-  });
-  const ok = verify(null, requestBytes(signed.request), key, Buffer.from(signed.signature, "hex"));
+  const ok = signatures.verify(publicKey, requestBytes(signed.request), fromHex(signed.signature));
   return ok ? { status: "accepted" } : { status: "refused", reason: "bad_signature" };
 }
 
@@ -114,6 +98,7 @@ export interface AcceptOptions {
   readonly nowUnix: number;
   readonly results?: AttestedResults;
   readonly registry?: IssuerRegistry;
+  readonly signatures?: SignaturePort;
   readonly requiredPredicates?: readonly string[];
 }
 
@@ -138,8 +123,11 @@ export function acceptPresentation(h: FieldHash, options: AcceptOptions): Presen
   // Evidence before spending: an envelope whose answers are not
   // authenticated must not consume the subject's nullifier.
   if (options.results !== undefined) {
-    if (options.registry === undefined) return { status: "refused", reason: "results_unauthenticated" };
+    if (options.registry === undefined || options.signatures === undefined) {
+      return { status: "refused", reason: "results_unauthenticated" };
+    }
     const verified = verifyResults(h, options.results, {
+      signatures: options.signatures,
       registry: options.registry,
       request,
       nowUnix,

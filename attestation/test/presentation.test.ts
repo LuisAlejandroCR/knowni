@@ -5,7 +5,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import type { Disclosure, SessionRequest } from "@knowni/core";
-import { SolvencyTier, deriveNullifier, sessionId, sha256Hash } from "@knowni/core";
+import { SolvencyTier, deriveNullifier, sessionId } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import {
   acceptPresentation,
   createMemoryRegistry,
@@ -14,6 +15,7 @@ import {
   signRequest,
   verifyRequest,
 } from "../src/index.ts";
+import { nodeSignatures } from "../src/node.ts";
 
 const NOW = 1_760_000_000;
 const AGENCY = "inmobiliaria-demo";
@@ -48,49 +50,49 @@ const disclosureFor = (request: SessionRequest): Disclosure => {
 // ─── the request the subject is asked to answer ───────────────────────────
 
 test("a signed request from the expected counterparty is accepted", () => {
-  const keypair = generateIssuerKeypair();
+  const keypair = generateIssuerKeypair(nodeSignatures);
   const registry = createMemoryRegistry({ [AGENCY]: keypair.publicKey });
-  const signed = signRequest(keypair.privateKeySeed, requestFor());
-  assert.deepEqual(verifyRequest(registry, signed, AGENCY, NOW), { status: "accepted" });
+  const signed = signRequest(nodeSignatures, keypair.privateKeySeed, requestFor());
+  assert.deepEqual(verifyRequest(nodeSignatures, registry, signed, AGENCY, NOW), { status: "accepted" });
 });
 
 test("a perfectly valid signature from the wrong party is still refused", () => {
   // The phishing case: the notary's key is real, the notary just is not who
   // the subject thinks they are answering.
-  const notary = generateIssuerKeypair();
+  const notary = generateIssuerKeypair(nodeSignatures);
   const registry = createMemoryRegistry({ [NOTARY]: notary.publicKey });
-  const signed = signRequest(notary.privateKeySeed, requestFor({ relyingPartyId: NOTARY }));
-  assert.deepEqual(verifyRequest(registry, signed, AGENCY, NOW), {
+  const signed = signRequest(nodeSignatures, notary.privateKeySeed, requestFor({ relyingPartyId: NOTARY }));
+  assert.deepEqual(verifyRequest(nodeSignatures, registry, signed, AGENCY, NOW), {
     status: "refused",
     reason: "wrong_audience",
   });
 });
 
 test("a tampered request does not survive its own signature", () => {
-  const keypair = generateIssuerKeypair();
+  const keypair = generateIssuerKeypair(nodeSignatures);
   const registry = createMemoryRegistry({ [AGENCY]: keypair.publicKey });
-  const signed = signRequest(keypair.privateKeySeed, requestFor());
+  const signed = signRequest(nodeSignatures, keypair.privateKeySeed, requestFor());
   const tampered = { ...signed, request: { ...signed.request, paramsHash: "ee".repeat(32) } };
-  assert.deepEqual(verifyRequest(registry, tampered, AGENCY, NOW), {
+  assert.deepEqual(verifyRequest(nodeSignatures, registry, tampered, AGENCY, NOW), {
     status: "refused",
     reason: "bad_signature",
   });
 });
 
 test("an expired window is refused before any key is looked up", () => {
-  const keypair = generateIssuerKeypair();
+  const keypair = generateIssuerKeypair(nodeSignatures);
   const registry = createMemoryRegistry({ [AGENCY]: keypair.publicKey });
-  const signed = signRequest(keypair.privateKeySeed, requestFor({ expiresAt: NOW - 1 }));
-  assert.deepEqual(verifyRequest(registry, signed, AGENCY, NOW), {
+  const signed = signRequest(nodeSignatures, keypair.privateKeySeed, requestFor({ expiresAt: NOW - 1 }));
+  assert.deepEqual(verifyRequest(nodeSignatures, registry, signed, AGENCY, NOW), {
     status: "refused",
     reason: "session_expired",
   });
 });
 
 test("a counterparty nobody published cannot ask anything", () => {
-  const keypair = generateIssuerKeypair();
-  const signed = signRequest(keypair.privateKeySeed, requestFor());
-  assert.deepEqual(verifyRequest(createMemoryRegistry({}), signed, AGENCY, NOW), {
+  const keypair = generateIssuerKeypair(nodeSignatures);
+  const signed = signRequest(nodeSignatures, keypair.privateKeySeed, requestFor());
+  assert.deepEqual(verifyRequest(nodeSignatures, createMemoryRegistry({}), signed, AGENCY, NOW), {
     status: "refused",
     reason: "unknown_relying_party",
   });
@@ -103,6 +105,7 @@ test("an answer built for this request is accepted", () => {
   const spent = createMemorySpentSet();
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
       disclosure: disclosureFor(request),
       request,
       audience: AGENCY,
@@ -133,6 +136,7 @@ test("an answer given to one counterparty does not work at another", () => {
   const atNotary = requestFor({ relyingPartyId: NOTARY });
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
       disclosure,
       request: atNotary,
       audience: NOTARY,
@@ -147,6 +151,7 @@ test("a fresh challenge makes yesterday's answer useless", () => {
   const disclosure = disclosureFor(requestFor({ nonce: "11".repeat(16) }));
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
       disclosure,
       request: requestFor({ nonce: "22".repeat(16) }),
       audience: AGENCY,
@@ -161,6 +166,7 @@ test("an answer cannot be moved to a cheaper question", () => {
   const disclosure = disclosureFor(requestFor());
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
       disclosure,
       request: requestFor({ paramsHash: "99".repeat(32) }),
       audience: AGENCY,
@@ -175,6 +181,7 @@ test("an answer for one purpose is not an answer for another", () => {
   const disclosure = disclosureFor(requestFor({ purpose: "lease" }));
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
       disclosure,
       request: requestFor({ purpose: "vehicle-sale" }),
       audience: AGENCY,
@@ -189,6 +196,7 @@ test("the window closing refuses the answer rather than failing the subject", ()
   const request = requestFor();
   assert.deepEqual(
     acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
       disclosure: disclosureFor(request),
       request,
       audience: AGENCY,
@@ -213,6 +221,7 @@ test("a refused presentation does not spend the nullifier", () => {
   const disclosure = disclosureFor(request);
   const spent = createMemorySpentSet();
   acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures,
     disclosure,
     request: requestFor({ nonce: "33".repeat(16) }),
     audience: AGENCY,
@@ -220,7 +229,8 @@ test("a refused presentation does not spend the nullifier", () => {
     nowUnix: NOW,
   });
   assert.deepEqual(
-    acceptPresentation(sha256Hash, { disclosure, request, audience: AGENCY, spent, nowUnix: NOW }),
+    acceptPresentation(sha256Hash, {
+      signatures: nodeSignatures, disclosure, request, audience: AGENCY, spent, nowUnix: NOW }),
     { status: "accepted" },
   );
 });

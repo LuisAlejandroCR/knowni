@@ -1,7 +1,8 @@
 // anchor-testnet.ts: anchors one real commitment on Stellar testnet and prints the transaction
 // hash and its Explorer link. Creates and funds the demo account on first run.
 
-import { commitOutcome, sha256Hash } from "@knowni/core";
+import { commitOutcome } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import { createStellarMemoAnchor } from "../src/adapters/stellar.ts";
 import {
   accountIdOf,

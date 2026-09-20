@@ -2,12 +2,10 @@
 // request. The claim and its salt stay in the wallet.
 
 import type { FieldHash, SessionRequest } from "@knowni/core";
-import { sessionId, utf8 } from "@knowni/core";
-import { createPublicKey, sign, verify } from "node:crypto";
+import { fromHex, lengthPrefixed, sessionId, toHex, utf8 } from "@knowni/core";
+import type { SignaturePort } from "./signing.ts";
 import type { IssuerRegistry } from "./types.ts";
 
-const PKCS8_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
-const SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 const RESULTS_DOMAIN = "knowni/attested-results/v1";
 
 export interface AttestedAnswer {
@@ -41,17 +39,7 @@ export type ResultsVerification =
   | { readonly status: "valid"; readonly answers: readonly AttestedAnswer[] }
   | { readonly status: "invalid"; readonly reason: ResultsFailure };
 
-function lengthPrefixed(parts: readonly Uint8Array[]): Buffer {
-  return Buffer.concat(
-    parts.map((part) => {
-      const length = Buffer.alloc(4);
-      length.writeUInt32BE(part.length);
-      return Buffer.concat([length, Buffer.from(part)]);
-    }),
-  );
-}
-
-export function resultsBytes(results: Omit<AttestedResults, "signature" | "algorithm">): Buffer {
+export function resultsBytes(results: Omit<AttestedResults, "signature" | "algorithm">): Uint8Array {
   const parts: Uint8Array[] = [
     utf8(RESULTS_DOMAIN),
     utf8(results.issuerId),
@@ -84,6 +72,7 @@ export interface AttestResultsRequest {
 
 export function attestResults(
   h: FieldHash,
+  signatures: SignaturePort,
   seed: Uint8Array,
   request: AttestResultsRequest,
 ): AttestedResults {
@@ -94,19 +83,15 @@ export function attestResults(
     issuedAt: request.issuedAt,
     expiresAt: request.expiresAt,
   };
-  const key = {
-    key: Buffer.concat([PKCS8_PREFIX, Buffer.from(seed)]),
-    format: "der" as const,
-    type: "pkcs8" as const,
-  };
   return {
     ...unsigned,
     algorithm: "ed25519",
-    signature: sign(null, resultsBytes(unsigned), key).toString("hex"),
+    signature: toHex(signatures.sign(seed, resultsBytes(unsigned))),
   };
 }
 
 export interface ResultsCheck {
+  readonly signatures: SignaturePort;
   readonly registry: IssuerRegistry;
   readonly request: SessionRequest;
   readonly nowUnix: number;
@@ -133,12 +118,7 @@ export function verifyResults(
   }
 
   const { signature, algorithm: _algorithm, ...unsigned } = results;
-  const key = createPublicKey({
-    key: Buffer.concat([SPKI_PREFIX, Buffer.from(publicKey)]),
-    format: "der",
-    type: "spki",
-  });
-  if (!verify(null, resultsBytes(unsigned), key, Buffer.from(signature, "hex"))) {
+  if (!check.signatures.verify(publicKey, resultsBytes(unsigned), fromHex(signature))) {
     return { status: "invalid", reason: "bad_signature" };
   }
 

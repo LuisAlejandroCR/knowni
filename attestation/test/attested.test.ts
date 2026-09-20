@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import type { IdentityClaim } from "@knowni/core";
-import { sha256Hash } from "@knowni/core";
+import { sha256Hash } from "@knowni/core/node";
 import { issueClaimSet } from "@knowni/sources";
 import {
   attestRoot,
@@ -15,6 +15,7 @@ import {
   verifyAttestedRoot,
   verifyCredential,
 } from "../src/index.ts";
+import { nodeSignatures } from "../src/node.ts";
 
 const NOW = 1_760_000_000;
 const ISSUER = "knowni-demo-issuer";
@@ -31,9 +32,9 @@ const claimFor = (ref: string): IdentityClaim => ({
 });
 
 function issued(claims = [claimFor("a".repeat(64)), claimFor("b".repeat(64))]) {
-  const keypair = generateIssuerKeypair();
+  const keypair = generateIssuerKeypair(nodeSignatures);
   const set = issueClaimSet(sha256Hash, { issuerId: ISSUER, claims, issuedAt: NOW - 60, padTo: 8 });
-  const attestation = attestRoot(keypair.privateKeySeed, {
+  const attestation = attestRoot(nodeSignatures, keypair.privateKeySeed, {
     issuerId: set.issuerId,
     root: set.root,
     issuedAt: set.issuedAt,
@@ -45,6 +46,7 @@ function issued(claims = [claimFor("a".repeat(64)), claimFor("b".repeat(64))]) {
 }
 
 const check = (registry: ReturnType<typeof createMemoryRegistry>) => ({
+  signatures: nodeSignatures,
   registry,
   nowUnix: NOW,
   maxRootAgeSeconds: 86_400,
@@ -66,8 +68,8 @@ test("an issuer nobody published is refused before any cryptography runs", () =>
 
 test("a root signed by a different issuer does not pass as this one", () => {
   const { attestation, credential, registry } = issued();
-  const impostor = generateIssuerKeypair();
-  const forged = attestRoot(impostor.privateKeySeed, {
+  const impostor = generateIssuerKeypair(nodeSignatures);
+  const forged = attestRoot(nodeSignatures, impostor.privateKeySeed, {
     issuerId: attestation.issuerId,
     root: attestation.root,
     issuedAt: attestation.issuedAt,
@@ -82,7 +84,7 @@ test("a root signed by a different issuer does not pass as this one", () => {
 test("moving a signed root onto another issuer id breaks the signature", () => {
   const { attestation, registry } = issued();
   const moved = { ...attestation, issuerId: "someone-else" };
-  assert.deepEqual(verifyAttestedRoot(registry, moved), {
+  assert.deepEqual(verifyAttestedRoot(nodeSignatures, registry, moved), {
     status: "invalid",
     reason: "unknown_issuer",
   });
@@ -90,7 +92,7 @@ test("moving a signed root onto another issuer id breaks the signature", () => {
   // because the issuer id is inside what was signed.
   const { keypair } = issued();
   const registryTwo = createMemoryRegistry({ "someone-else": keypair.publicKey });
-  assert.equal(verifyAttestedRoot(registryTwo, moved).status, "invalid");
+  assert.equal(verifyAttestedRoot(nodeSignatures, registryTwo, moved).status, "invalid");
 });
 
 test("the signed bytes are length-prefixed, so two fields cannot be re-split", () => {
@@ -132,12 +134,11 @@ test("the wrong salt opens nothing, even with the right claim", () => {
 test("a stale root expires, and one stamped in the future is refused too", () => {
   const { credential, registry } = issued();
   assert.deepEqual(
-    verifyCredential(sha256Hash, credential, { registry, nowUnix: NOW, maxRootAgeSeconds: 10 }),
+    verifyCredential(sha256Hash, credential, { signatures: nodeSignatures, registry, nowUnix: NOW, maxRootAgeSeconds: 10 }),
     { status: "invalid", reason: "root_expired" },
   );
   assert.deepEqual(
-    verifyCredential(sha256Hash, credential, {
-      registry,
+    verifyCredential(sha256Hash, credential, { signatures: nodeSignatures, registry,
       nowUnix: credential.attestation.issuedAt - 60,
       maxRootAgeSeconds: 86_400,
     }),

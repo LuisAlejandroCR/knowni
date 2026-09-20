@@ -2,7 +2,8 @@
 // commitClaim binds a claim for the issuer's tree; commitOutcome binds a
 // session's outcome to a blinding factor, and only the second reaches a chain.
 
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { equalBytes, fromHex as hexToBytes, toHex } from "./bytes.ts";
+import { randomBytes } from "./random.ts";
 import type { Claim } from "./claims.ts";
 import type { FieldHash } from "./hash.ts";
 import { fromHex, u64be, utf8 } from "./hash.ts";
@@ -15,7 +16,7 @@ export interface Salt {
 }
 
 export function randomSalt(): Salt {
-  return { hex: randomBytes(32).toString("hex") };
+  return { hex: toHex(randomBytes(32)) };
 }
 
 function encodeClaim(claim: Claim): Uint8Array[] {
@@ -87,7 +88,7 @@ export interface BlindedCommitment {
 }
 
 export function commitOutcome(h: FieldHash, outcome: Outcome): BlindedCommitment {
-  const blinding: Blinding = { hex: randomBytes(32).toString("hex") };
+  const blinding: Blinding = { hex: toHex(randomBytes(32)) };
   return { commitment: digestOutcome(h, outcome, blinding), blinding };
 }
 
@@ -97,9 +98,7 @@ export function verifyOutcomeCommitment(
   blinding: Blinding,
   commitment: string,
 ): boolean {
-  const expected = Buffer.from(digestOutcome(h, outcome, blinding), "hex");
-  const actual = Buffer.from(commitment, "hex");
-  return expected.length === actual.length && timingSafeEqual(expected, actual);
+  return equalBytes(hexToBytes(digestOutcome(h, outcome, blinding)), hexToBytes(commitment));
 }
 
 function digestOutcome(h: FieldHash, outcome: Outcome, blinding: Blinding): string {

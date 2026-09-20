@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "description": "Claims, predicates, commitments and the disclosure envelope. No vendor SDK may be imported here.",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "test": "node --test --experimental-strip-types \"test/**/*.test.ts\"" }
+  "exports": {
+    ".": "./src/index.ts",
+    "./node": "./src/node.ts"
+  },
+  "scripts": {
+    "test": "node --test --experimental-strip-types \"test/**/*.test.ts\""
+  }
 }

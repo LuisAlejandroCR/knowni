@@ -3,9 +3,9 @@
 // notary asks about in a conveyance, and no more than that.
 
 import type { CapacityClaim } from "@knowni/core";
-import type { SourcePort, SourceResult, SubjectLookup } from "../types.ts";
-import { degraded } from "../types.ts";
-import type { CromaClient } from "./client.ts";
+import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
+import { degraded } from "../../types.ts";
+import type { CromaClient } from "../../providers/croma/client.ts";
 
 export const INSOLVENCY_PATH = "/co/sicaac/insolvency-cases/v1";
 

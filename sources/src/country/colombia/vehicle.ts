@@ -3,9 +3,9 @@
 // SIMIT says whether fines are outstanding. The claim is about the CAR.
 
 import type { AssetStandingClaim } from "@knowni/core";
-import type { SourceResult } from "../types.ts";
-import { degraded } from "../types.ts";
-import type { CromaClient } from "./client.ts";
+import type { SourceResult } from "../../types.ts";
+import { degraded } from "../../types.ts";
+import type { CromaClient } from "../../providers/croma/client.ts";
 
 export const RUNT_VEHICLE_PATH = "/co/runt/vehicle-by-plate/v1";
 export const SIMIT_PATH = "/co/simit/account-status/v1";

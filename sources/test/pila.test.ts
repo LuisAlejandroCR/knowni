@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createPilaFormalitySource, createPilaIncomeSource, type PilaClient } from "../src/colombia/pila.ts";
+import { createPilaFormalitySource, createPilaIncomeSource, type PilaClient } from "../src/country/colombia/pila.ts";
 
 const NOW = 1_760_000_000;
 const subject = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "a".repeat(64) };

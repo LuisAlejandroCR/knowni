@@ -3,9 +3,9 @@
 // to answer anything else. Route and schema: docs/CROMA.md.
 
 import type { IdentityClaim } from "@knowni/core";
-import type { SourcePort, SourceResult, SubjectLookup } from "../types.ts";
-import { degraded } from "../types.ts";
-import type { CromaClient } from "./client.ts";
+import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
+import { degraded } from "../../types.ts";
+import type { CromaClient } from "../../providers/croma/client.ts";
 
 export const VITAL_STATUS_PATH = "/co/registraduria/vital-status/v1";
 

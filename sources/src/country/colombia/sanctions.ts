@@ -4,9 +4,9 @@
 
 import type { StandingClaim } from "@knowni/core";
 import { sha256Hash, utf8 } from "@knowni/core";
-import type { SourcePort, SourceResult, SubjectLookup } from "../types.ts";
-import { degraded } from "../types.ts";
-import type { CromaClient } from "./client.ts";
+import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
+import { degraded } from "../../types.ts";
+import type { CromaClient } from "../../providers/croma/client.ts";
 
 export const PROCURADURIA_PATH = "/co/procuraduria/disciplinary-records/v1";
 export const CONTRALORIA_PATH = "/co/contraloria/fiscal-records/v1";

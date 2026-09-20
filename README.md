@@ -97,7 +97,7 @@ Dos límites que el producto no esconde: un trabajador informal no cotiza y se
 ve idéntico a alguien sin ingresos — por eso formalidad es un predicado
 aparte y no un proxy de confiabilidad; y muchos independientes cotizan sobre
 el mínimo legal, así que el IBC es un **piso** del ingreso, no una medición.
-Ambos están escritos en [`sources/src/colombia/pila.ts`](sources/src/colombia/pila.ts)
+Ambos están escritos en [`sources/src/country/colombia/pila.ts`](sources/src/country/colombia/pila.ts)
 y probados en [`sources/test/pila.test.ts`](sources/test/pila.test.ts).
 
 ### Empezamos en Colombia; el diseño no es colombiano

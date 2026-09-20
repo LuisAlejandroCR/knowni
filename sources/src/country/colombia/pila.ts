@@ -17,8 +17,8 @@
 // history. See docs/verificacion.md.
 
 import type { FormalityClaim, IncomeClaim } from "@knowni/core";
-import type { SourcePort, SourceResult, SubjectLookup } from "../types.ts";
-import { degraded } from "../types.ts";
+import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
+import { degraded } from "../../types.ts";
 
 // One month's contribution as an operator reports it. Deliberately not the
 // full record: the employer's NIT, the ARL, the fund and the contributor's

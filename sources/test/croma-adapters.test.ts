@@ -6,11 +6,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import type { CromaClient, CromaOutcome } from "../src/croma/client.ts";
-import { createRegistraduriaPersonhoodSource } from "../src/croma/registraduria.ts";
-import { createSicaacCapacitySource } from "../src/croma/sicaac.ts";
-import { createSanctionsSource } from "../src/croma/sanctions.ts";
-import { createVehicleStandingSource } from "../src/croma/vehicle.ts";
+import type { CromaClient, CromaOutcome } from "../src/providers/croma/client.ts";
+import { createRegistraduriaPersonhoodSource } from "../src/country/colombia/registraduria.ts";
+import { createSicaacCapacitySource } from "../src/country/colombia/sicaac.ts";
+import { createSanctionsSource } from "../src/country/colombia/sanctions.ts";
+import { createVehicleStandingSource } from "../src/country/colombia/vehicle.ts";
 
 const NOW = 1_760_000_000;
 const subject = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "a".repeat(64) };

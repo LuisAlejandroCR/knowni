@@ -24,3 +24,16 @@ probado en [`test/pila.test.ts`](test/pila.test.ts).
   llama al puerto de recuperación, y el único lugar donde una búsqueda pasa.
 - [`src/issuer.ts`](src/issuer.ts) — compromete, arma el árbol, publica la
   raíz. A partir de ahí el emisor puede estar fuera de línea para siempre.
+
+## Dónde vive cada archivo
+
+```text
+src/
+  types.ts                 el puerto: SubjectLookup, SourceResult, SourcePort
+  issuer.ts                emisión del conjunto de reclamos
+  providers/croma/         transporte HTTP, agnóstico a jurisdicción
+  country/colombia/        un archivo por registro colombiano
+```
+
+Añadir un país es **una carpeta bajo `country/`**: un adaptador reduce la respuesta de su registro
+al reclamo mínimo y nada por encima del puerto aprende qué país lo produjo.

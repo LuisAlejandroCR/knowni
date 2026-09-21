@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Knowni",
+    "slug": "knowni",
+    "scheme": "knowni",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": false, "bundleIdentifier": "co.knowni.wallet" },
+    "android": { "package": "co.knowni.wallet" },
+    "plugins": ["expo-router"]
+  }
+}

@@ -458,6 +458,23 @@ las mismas pruebas de firma y de compromiso siguen pasando sin tocar un vector.
 *Y se vigila:* `core/test/portable.test.ts` falla si alguien vuelve a importar un builtin de Node o
 a usar `Buffer` en el dominio. La regla deja de depender de que alguien se acuerde.
 
+### D-25 — La llave del proveedor vive en un servicio, no en el teléfono · 2026-09-21
+
+Pedir que "Croma funcione en la app" tiene una respuesta correcta y una cómoda. La cómoda es meter
+`CROMA_API_KEY` en el bundle: funciona en el demo y convierte el producto en un buscador de personas
+con un paso extra, porque cualquiera que instale la app puede consultar a cualquiera.
+
+*Decisión:* un servicio de emisión (`issuer/`) es el único proceso que tiene la llave. El teléfono
+manda una **consulta autorizada por el titular** —documento, placa y qué fuentes aceptó— y recibe
+respuestas firmadas que verifica por su cuenta contra la llave pública del registro.
+
+*Lo que eso hace cumplir, y que una app con la llave no podría:* una fuente sin consentimiento no se
+llama; una fuente que no responde produce `unavailable` y nunca `false`; y nada del proveedor cruza
+el límite, ni el número consultado ni el nombre que devuelve la Procuraduría.
+
+*Lo que cuesta:* la app deja de funcionar sola. Sin el emisor corriendo dice que no lo encontró y no
+consulta nada — que es la respuesta honesta, no un fallback inventado.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -491,6 +508,7 @@ a usar `Buffer` en el dominio. La regla deja de depender de que alguien se acuer
 | 2026-09-20 | App B3: el dominio entra en el teléfono. `@noble` produce **los mismos bytes** que `node:crypto` —hay prueba cruzada— y el bundle de Hermes contiene los dominios de firma del protocolo. Las pantallas 02 y 05 dejan de leer fixtures |
 | 2026-09-20 | App B4: la pantalla del verificador ejecuta `acceptAnswer` de verdad, con el estado de revocación y la política como controles en pantalla. La 08 lee el `unavailable` que **firmó el emisor**, no un texto fijo |
 | 2026-09-21 | App al SDK 57 de Expo (router 57, React Native 0.86.3, React 19.2.3). `expo-doctor` 21/21, tipos limpios, 9 pruebas y bundle de iOS con el dominio dentro. La corrida del usuario en su teléfono destapó el desajuste de versiones que el bundle verde no veía |
+| 2026-09-21 | MVP real: workspace `issuer/` — el único proceso con llave de proveedor. La app manda una consulta autorizada y verifica en el teléfono lo que le devuelven. Se acaban las fixtures en el recorrido: documento y placa se escriben, el consentimiento decide qué se consulta — D-25 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

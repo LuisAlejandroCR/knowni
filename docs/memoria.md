@@ -545,6 +545,50 @@ veredicto, ni contraparte, ni finalidad —, porque un WhatsApp se lee en una pa
 termina en el backup de otro teléfono. El teléfono es PII nueva: va por petición, con
 consentimiento aparte, y no se guarda junto a la consulta.
 
+### D-28 — Tres evidencias, tres credenciales; `solvency` las estaba mezclando · 2026-09-21
+
+Un IBC, una nómina y un movimiento bancario responden preguntas distintas y se equivocan en
+direcciones distintas. Meterlos en un solo `income` con un `basis` decorativo era dejar que una
+contraparte leyera "cotizó sobre X" como "tiene X disponible".
+
+| Evidencia | Qué dice | Qué **no** dice |
+|---|---|---|
+| `contribution_base` | base declarada para aportes (PILA) | ingreso neto, liquidez, probabilidad de pago |
+| `verified_income` | pago laboral o tributario observado | liquidez actual, continuidad |
+| `cashflow` | entradas en una cuenta consentida | empleo, aportes |
+
+*En código:* `IncomeBasis` pasa a ser esas tres, `BASIS_DOES_NOT_ESTIMATE` viaja con cada una, y el
+reclamo gana `periodsObserved` y `periodsWindow` — un mes bueno deja de parecerse a un año de ellos.
+
+*Y el predicado se vuelve estricto:* una lista `acceptedBases` vacía **no acepta nada**, porque una
+contraparte que no nombró qué evidencia toma no hizo una pregunta. Cuántos periodos son suficientes
+lo fija quien pregunta, en `minPeriodsObserved`, no la fuente.
+
+### D-29 — Ruta de acceso al IBC: institucional primero, documental como piso · 2026-09-21
+
+*Verificado el 2026-09-21:* Belvo publica Brasil, México y Chile — **Colombia no aparece** en su
+spec. Prometeo tiene la documentación tras login y su cobertura colombiana no está confirmada.
+SuAporte sí publica Swagger, pero sus dos APIs —`Gestión de Aportantes` y `Generador de Planilla`—
+son del lado de **quien paga** la planilla, no de quien quiere demostrar lo que cotizó.
+
+*Orden de trabajo, con lo que cada cosa aporta:*
+
+1. **Aportes en Línea** — tiene el histórico y su política ya contempla entregar historial PILA a
+   terceros para validar experiencia laboral. Es la conversación comercial prioritaria, y lo que se
+   pide es el resultado reducido: periodos cotizados, banda de IBC y último periodo. Nunca el PDF.
+2. **Agildata** — un manual de 2019 describe exactamente el adaptador que falta: IBC por periodo,
+   promedio de tres meses, días cotizados y acceso bajo autorización del titular. La evidencia es un
+   manual alojado por un tercero, así que **no entra al roadmap** hasta identificar quién lo opera.
+3. **UGPP / VUE, Estado Único de Cuenta** — no es API: el titular pide el documento y lo aporta.
+   Es el único camino construible hoy sin contrato, con su límite escrito: cuatro meses, documento
+   aportado, y hay que confirmar cómo se verifica su autenticidad.
+4. **Finerio Connect o Bancolombia Open Banking** — alimentan `cashflow`, que es otra credencial, no
+   un sustituto del IBC.
+
+*Lo que no se integra:* CoreSoft —consulta por documento en la URL, devuelve el expediente completo
+y no muestra autorización delegada—, SuAporte con credenciales reutilizadas del ciudadano, y
+cualquier proveedor de open finance sin cobertura colombiana confirmada por contrato.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -581,6 +625,7 @@ consentimiento aparte, y no se guarda junto a la consulta.
 | 2026-09-21 | MVP real: workspace `issuer/` — el único proceso con llave de proveedor. La app manda una consulta autorizada y verifica en el teléfono lo que le devuelven. Se acaban las fixtures en el recorrido: documento y placa se escriben, el consentimiento decide qué se consulta — D-25 |
 | 2026-09-21 | Modelo comercial: paga quien pregunta, y pagar no autoriza. El titular solo paga si quiere una credencial reutilizable — D-26 |
 | 2026-09-21 | Pago comprobado contra Horizon antes de consultar, aviso por WhatsApp sin veredicto, y wallet del pagador detrás de un puerto con Privy y Freighter. Faltan cuatro llaves; cada una ausente apaga su función — D-27 |
+| 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: Aportes en Línea primero, UGPP como piso documental, open finance como credencial aparte — D-29 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

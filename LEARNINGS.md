@@ -143,15 +143,16 @@ nativo y prohíbe cualquier atajo de servidor.
 - Lo marcado como "listo para destilar" existe en `procedures/knowledge/`: FAIL — pendiente de
   anonimizar y subir
 
-- **Expo Router 4 no declara todas sus dependencias.** `expo export` falla con `Unable to resolve
-  module query-string` hasta instalarlo a mano, y antes de eso pide `expo-asset`. `npx expo install
-  --fix` no lo resuelve. Comprobado el 2026-09-20 con expo 52.0.49 y expo-router 4.0.22.
-
-- **Metro no lee los `paths` de tsconfig.** Un paquete del monorepo que no está instalado desde el
-  registro necesita `watchFolders` más `resolver.extraNodeModules`, y además
-  `nodeModulesPaths` + `disableHierarchicalLookup` para que el código de fuera de `app/` encuentre
-  `@babel/runtime`. Comprobado el 2026-09-20 con expo 52.
-- **`expo-crypto` no se puede importar bajo `node --test`:** arrastra `expo-modules-core`, que es
-  TypeScript dentro de `node_modules`, y el stripper de Node se niega. La binding nativa vive en un
-  archivo aparte para que la criptografía siga siendo comprobable en Node.
-
+- **Meter un monorepo sin dependencias dentro de Expo cuesta cuatro ajustes, y todos se descubren
+  igual: el bundler falla, o la app arranca y avisa tarde.** (1) Metro no lee los `paths` de
+  tsconfig: un paquete propio no instalado desde el registro necesita `watchFolders`,
+  `resolver.extraNodeModules` y `nodeModulesPaths` apuntando a `app/node_modules`, o el código de
+  fuera de `app/` no encuentra `@babel/runtime`. (2) `expo-crypto` no se puede importar bajo
+  `node --test`, porque arrastra `expo-modules-core`, que es TypeScript dentro de `node_modules`:
+  la binding nativa va en un archivo aparte para que la criptografía siga siendo comprobable en
+  Node. (3) La base de tsconfig de Expo acota `types`, así que unas pruebas con `node:test`
+  necesitan `"types": ["node", "react"]` escrito a mano. (4) Subir de SDK con `npm install` deja el
+  árbol a medias y `ERESOLVE` se vuelve indescifrable: se sube con `npx expo install --fix`, se
+  borran `node_modules` y el lock, y se cierra con `npx expo-doctor` en verde —21/21 en SDK 57—
+  antes de dar la app por buena. Comprobado el 2026-09-20 sobre expo 52 y el 2026-09-21 sobre
+  expo 57.0.24, expo-router 57.0.22, react-native 0.86.3 y react 19.2.3.

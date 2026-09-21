@@ -135,7 +135,8 @@ entra como otro adaptador sin tocar un solo predicado.
 
 ### Correrlo
 
-Node 22.18+. No hay paso de compilación y no hay dependencias externas.
+Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilación. La **app**
+(`app/`) es un proyecto aparte con Expo y dos librerías de criptografía pura.
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
@@ -175,7 +176,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Modo avión y logs sanitizados | **Corre.** El recorrido se completa con `fetch` desactivado y la cadena caída; ningún log lleva documento, nombre, salario ni cuenta |
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
-| App iOS / Android | **En construcción, bloque 1 de 5.** El dominio ya corre sin `node:crypto` ni `Buffer`, comprobado por prueba. Stack decidido y ocho pantallas aprobadas — [`design/day-08/`](design/day-08/README.md) |
+| App iOS / Android | **En construcción, bloque 2 de 5.** Ocho pantallas en Expo: tipos y empaquetado iOS comprobados, sin red. Nunca ejecutada en un teléfono — [`app/`](app/README.md) |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |

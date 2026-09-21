@@ -142,3 +142,7 @@ nativo y prohíbe cualquier atajo de servidor.
 - Ninguna viñeta contiene el valor de una key o un secreto: SÍ
 - Lo marcado como "listo para destilar" existe en `procedures/knowledge/`: FAIL — pendiente de
   anonimizar y subir
+
+- **Expo Router 4 no declara todas sus dependencias.** `expo export` falla con `Unable to resolve
+  module query-string` hasta instalarlo a mano, y antes de eso pide `expo-asset`. `npx expo install
+  --fix` no lo resuelve. Comprobado el 2026-09-20 con expo 52.0.49 y expo-router 4.0.22.

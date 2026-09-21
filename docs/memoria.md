@@ -487,6 +487,7 @@ a usar `Buffer` en el dominio. La regla deja de depender de que alguien se acuer
 | 2026-09-20 | Día 10: auditoría de afirmaciones del README contra lo que corre —doce afirmaciones, dos con matiz y una corregida— y guion de los dos videos en `design/demo/guion.md`. Queda pendiente hacer público el repositorio, que las bases exigen |
 | 2026-09-20 | App B1: el dominio deja de depender de `node:crypto` y de `Buffer`. Hash, aleatoriedad y firma ed25519 pasan a ser puertos; cada plataforma los enlaza en su propio `node.ts` o en la app. Una prueba lo vigila — D-23 |
 | 2026-09-20 | Pruebas reorganizadas en `unit · fuzz · invariant` con sufijo `.spec.ts`, como pide la constitución. Los tres fuzz nuevos encontraron un fallo real: una firma ausente o malformada hacía **lanzar** a `verifyResults` en vez de devolver `bad_signature`. Corregido. 249 pruebas |
+| 2026-09-20 | App B2: ocho pantallas en Expo con fixtures, tipos limpios y bundle de iOS generado. `app/` queda **fuera** de los workspaces de la raíz para que el dominio siga instalándose sin dependencias — D-24 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

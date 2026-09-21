@@ -5,8 +5,9 @@
 
 # @knowni/app
 
-El wallet, en Expo. **Bloque 2 de 5:** las ocho pantallas del diseño con contenido sintético.
-Todavía no habla con el dominio —eso es el bloque 3— y no hace una sola llamada de red.
+El wallet, en Expo. **Bloque 4 de 5:** las ocho pantallas, con el dominio corriendo dentro.
+La solicitud se verifica en el dispositivo, las respuestas se comprueban antes de mostrarse y la
+aceptación aplica la política de revocación que elija la contraparte. Sin una sola llamada de red.
 
 ```bash
 cd app
@@ -26,6 +27,8 @@ dominio entra por `paths` de TypeScript, no por el registro.
 | Tipos | `npx tsc --noEmit`, sin errores |
 | Empaquetado | `npx expo export --platform ios` produce el bundle |
 | Sin red | ninguna pantalla importa `fetch` ni un cliente |
+| Criptografía | `@noble` produce los mismos bytes que `node:crypto` — prueba cruzada |
+| Aceptación | política, notas, idempotencia y replay, probados en `app/test` |
 
 **No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto.
 

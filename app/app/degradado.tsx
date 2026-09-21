@@ -6,9 +6,15 @@ import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { DEGRADED } from "../src/fixtures.ts";
+import { answerText, currentSession, PREDICATE_LABEL } from "../src/domain/session.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Degradado() {
+  // The missing answers are read from the verified envelope, not invented for
+  // the screen: "unavailable" is what the issuer signed, and it is not "false".
+  const missing = (currentSession().answers ?? []).filter((answer) => answer.value === "unavailable");
+  const answered = (currentSession().answers ?? []).filter((answer) => answer.value !== "unavailable");
+
   return (
     <Screen>
       <TopBar title="Estado de la consulta" />
@@ -20,10 +26,28 @@ export default function Degradado() {
         <Title>Falta una respuesta.{"\n"}No es un rechazo.</Title>
         <Body>La fuente del vehículo no respondió. No sabemos el resultado.</Body>
         <Card tone="amber">
-          <Row icon={<Text>!</Text>} title={DEGRADED.source} scope={DEGRADED.note} />
+          {missing.length === 0 ? (
+            <Row icon={<Text>!</Text>} title={DEGRADED.source} scope={DEGRADED.note} />
+          ) : (
+            missing.map((answer) => (
+              <Row
+                key={answer.predicate}
+                icon={<Text>!</Text>}
+                title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
+                scope={answer.doesNotEstimate}
+              />
+            ))
+          )}
           <Text style={{ ...typography.small, marginTop: 8 }}>{DEGRADED.explanation}</Text>
         </Card>
-        <Row icon={<Text>✓</Text>} title="Otras consultas terminadas" scope="Se conservan si siguen vigentes" />
+        {answered.map((answer) => (
+          <Row
+            key={answer.predicate}
+            icon={<Text>✓</Text>}
+            title={PREDICATE_LABEL[answer.predicate] ?? answer.predicate}
+            scope="Se conserva si sigue vigente"
+          />
+        ))}
         <Note>No enviaremos una respuesta completa mientras falte evidencia requerida.</Note>
       </ScrollView>
       <Footer>
@@ -34,7 +58,7 @@ export default function Degradado() {
           <Button tone="secondary">Volver después</Button>
         </Link>
       </Footer>
-      <DemoStamp>ESTADO DEGRADED · NO EQUIVALE A FALSE</DemoStamp>
+      <DemoStamp>ESTADO FIRMADO POR EL EMISOR · UNAVAILABLE ≠ FALSE</DemoStamp>
     </Screen>
   );
 }

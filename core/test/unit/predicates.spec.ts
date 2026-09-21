@@ -55,7 +55,8 @@ const solvencyParams = {
   currency: "COP",
   nowUnix: NOW,
   maxAgeSeconds: 30 * DAY,
-  acceptedBases: ["social_security", "payroll"] as const,
+  acceptedBases: ["contribution_base", "verified_income"] as const,
+minPeriodsObserved: 6,
 };
 
 test("solvency bands are multiples of the obligation, not absolute salaries", () => {

@@ -37,6 +37,8 @@ function encodeClaim(claim: Claim): Uint8Array[] {
         u64be(claim.monthlyMinor),
         utf8(claim.currency),
         utf8(claim.basis),
+        u64be(claim.periodsObserved),
+        u64be(claim.periodsWindow),
         u64be(claim.attestedAt),
       ];
     case "formality":

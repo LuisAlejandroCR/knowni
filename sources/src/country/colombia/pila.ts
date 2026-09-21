@@ -45,7 +45,9 @@ export function createPilaIncomeSource(client: PilaClient, options: PilaOptions 
         subjectRef: { hex: subject.subjectRef },
         monthlyMinor: median(amounts),
         currency: "COP",
-        basis: "social_security",
+        basis: "contribution_base",
+        periodsObserved: amounts.length,
+        periodsWindow: 12,
         attestedAt: nowUnix,
       };
       return { status: "claimed", claim };

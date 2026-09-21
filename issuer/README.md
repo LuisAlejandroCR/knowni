@@ -17,7 +17,7 @@ npm start --workspace @knowni/issuer
 |---|---|
 | `GET /keys` | La llave pública del emisor. Sin ella, una firma es incomprobable |
 | `POST /quote` | Cotiza por predicado **antes** de que el titular consienta, y devuelve la referencia de pago |
-| `POST /issue` | Recibe una consulta autorizada, llama a las fuentes y devuelve respuestas firmadas y lo cobrable |
+| `POST /issue` | Recibe una consulta autorizada y pagada, llama a las fuentes y devuelve respuestas firmadas |
 
 ## Por qué es un proceso aparte y no una pantalla
 
@@ -44,3 +44,34 @@ Paga quien pregunta; el titular solo paga si quiere una credencial reutilizable 
 - **`unavailable` no se cobra.** Cobrar un "no sabemos" pagaría por dejar una fuente inestable como
   está. Un `false` **sí** se cobra: cobrar solo la respuesta que el que pregunta esperaba pagaría
   por sesgar el veredicto.
+
+## Variables de entorno
+
+Los nombres están en [`.env.example`](../.env.example); los valores nunca se escriben en el
+repositorio. **Cada bloque ausente apaga su función**, y el servicio lo dice en su primera línea:
+
+```
+issuer listening on http://localhost:8787
+payments: off (no treasury account)
+notifications: none
+```
+
+| Función | Variables | Si falta |
+|---|---|---|
+| Fuentes | `CROMA_API_KEY` | el servicio **no arranca** |
+| Identidad del emisor | `KNOWNI_ISSUER_SEED` | se genera una por arranque, y lo emitido antes deja de verificar |
+| Cobro | `KNOWNI_TREASURY_ACCOUNT` | se responde sin cobrar |
+| Aviso | `KAPSO_*` o `META_*` | no se envía nada, y se reporta como `none` |
+
+## Pago
+
+El pago se comprueba **contra la cadena**, no contra un recibo que mande el cliente: `paymentTx` se
+busca en Horizon y tiene que estar exitoso, llevar el `paymentRef` como `MEMO_HASH`, haber llegado a
+la cuenta del tesoro y cubrir el mínimo. Una transacción paga **una** pregunta; un pago rechazado
+sigue disponible, para que nadie quede cobrado por una consulta que no se hizo.
+
+## Aviso
+
+El mensaje dice *"tu respuesta está lista, ábrela en la app"* y **nada más**: ni el veredicto, ni
+quién preguntó, ni para qué contrato. Un WhatsApp se lee en una pantalla bloqueada, se reenvía y
+termina en el backup de otro teléfono.

@@ -3,7 +3,9 @@
 // signed by the issuer. The phone never sees a key and never calls a registry.
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { chargeableMinor, quote } from "./pricing.ts";
+import { chargeableMinor, paymentRef, quote } from "./pricing.ts";
+import { createMemorySpentPayments, verifyPayment, type PaymentPolicy, type SpentPayments } from "./payments.ts";
+import { noNotifier, type Notifier } from "./notify.ts";
 import { sha256Hash } from "@knowni/core/node";
 import type { SessionRequest } from "@knowni/core";
 import { toHex } from "@knowni/core";
@@ -22,6 +24,11 @@ export interface IssuerOptions {
   readonly issuerId: string;
   readonly seed: Uint8Array;
   readonly fetchImpl?: typeof fetch;
+  // Absent means the service answers without charging — the shape a demo and
+  // a pilot need before a treasury account exists.
+  readonly payments?: PaymentPolicy;
+  readonly spentPayments?: SpentPayments;
+  readonly notifier?: Notifier;
 }
 
 export interface IssueRequestBody {
@@ -32,6 +39,12 @@ export interface IssueRequestBody {
   // which is the difference between a product and a lookup service.
   readonly consented: readonly string[];
   readonly request: SessionRequest;
+  // The transaction that paid for this question. Required when the service
+  // runs with a payment policy.
+  readonly paymentTx?: string;
+  // Where to send the "your answer is ready" notice, if the subject asked for
+  // one. Optional, per-request, and never stored with the consultation.
+  readonly notifyPhone?: string;
 }
 
 const WHAT_IT_DOES_NOT_SAY: Record<string, string> = {
@@ -158,8 +171,24 @@ async function readBody(request: IncomingMessage): Promise<unknown> {
   }
 }
 
+// The predicates a set of consented sources can answer. The price and the
+// payment reference are computed from these, never from what the caller says
+// it is buying.
+const SOURCE_PREDICATE: Record<string, string> = {
+  registraduria: "personhood",
+  sicaac: "capacity",
+  listas: "sanctions",
+  vehiculo: "assetStanding",
+};
+
+export function predicatesOf(consented: readonly string[]): readonly string[] {
+  return consented.map((source) => SOURCE_PREDICATE[source]).filter((p): p is string => p !== undefined);
+}
+
 export function createIssuerService(options: IssuerOptions) {
   const publicKey = nodeSignatures.publicKeyOf(options.seed);
+  const spent = options.spentPayments ?? createMemorySpentPayments();
+  const notifier = options.notifier ?? noNotifier;
 
   return createServer(async (request, response) => {
     if (request.method === "OPTIONS") return send(response, 204, {});
@@ -193,9 +222,27 @@ export function createIssuerService(options: IssuerOptions) {
       if (!Array.isArray(body.consented) || body.consented.length === 0) {
         return send(response, 400, { error: "consent_missing" });
       }
+      // Paid before consulted: the sources cost money and a question nobody
+      // paid for is a question nobody asked.
+      if (options.payments !== undefined) {
+        if (typeof body.paymentTx !== "string") {
+          return send(response, 402, { error: "payment_required" });
+        }
+        const expected = paymentRef(body.request, predicatesOf(body.consented));
+        const paid = await verifyPayment(body.paymentTx, expected, options.payments, spent);
+        if (paid.status === "refused") {
+          return send(response, 402, { error: "payment_refused", reason: paid.reason });
+        }
+      }
+
       try {
         const nowUnix = Math.floor(Date.now() / 1000);
         const { answers, results } = await issueAnswers(options, body, nowUnix);
+        // The notice says an answer is ready and nothing more; a failure to
+        // send it is not a failure to issue.
+        if (typeof body.notifyPhone === "string" && body.notifyPhone !== "") {
+          void notifier.notify(body.notifyPhone, results.sessionId);
+        }
         // Only answers that came back are billed; an unavailable source is
         // not charged for.
         return send(response, 200, { results, chargedMinor: chargeableMinor(answers) });

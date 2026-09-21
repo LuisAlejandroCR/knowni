@@ -5,10 +5,33 @@
 import { Link, router } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
-import { ANSWERS, REQUEST, WITHHELD } from "../src/fixtures.ts";
+import { REQUEST, WITHHELD } from "../src/fixtures.ts";
+import { answerText, currentSession, PREDICATE_LABEL } from "../src/domain/session.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
+  const { answers } = currentSession();
+
+  // No verified answers means nothing to show. A screen that renders what it
+  // could not check is a screen that can be lied to.
+  if (answers === undefined) {
+    return (
+      <Screen>
+        <TopBar title="Antes de compartir" />
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
+          <Title>No pudimos{"\n"}verificar la respuesta.</Title>
+          <Body>No se enviará nada. Pide una solicitud nueva.</Body>
+        </ScrollView>
+        <Footer>
+          <Link href="/" asChild>
+            <Button>Volver</Button>
+          </Link>
+        </Footer>
+        <DemoStamp>NADA SE COMPARTE SIN VERIFICAR</DemoStamp>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Antes de compartir" />
@@ -17,8 +40,13 @@ export default function Revision() {
         <Title>Esto es lo que{"\n"}recibirán.</Title>
         <Body>{`${REQUEST.counterparty}\nSolo para esta ${REQUEST.purposeLabel.toLowerCase()}.`}</Body>
         <Card>
-          {ANSWERS.map((answer) => (
-            <Row key={answer.answer} icon={<Text>✓</Text>} title={answer.answer} scope={answer.scope} />
+          {answers.map((answer) => (
+            <Row
+              key={answer.predicate}
+              icon={<Text>{answer.value === "unavailable" ? "!" : "✓"}</Text>}
+              title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
+              scope={answer.doesNotEstimate}
+            />
           ))}
         </Card>
         <Label>Fuera de la respuesta objetivo</Label>
@@ -47,7 +75,7 @@ export default function Revision() {
           <Button>Compartir respuesta de demo →</Button>
         </Link>
       </Footer>
-      <DemoStamp>ENVÍO REAL BLOQUEADO HASTA CERRAR PRIVACIDAD</DemoStamp>
+      <DemoStamp>RESPUESTAS FIRMADAS Y VERIFICADAS · ENVÍO REAL BLOQUEADO</DemoStamp>
     </Screen>
   );
 }

@@ -15,7 +15,7 @@
     "sources"
   ],
   "scripts": {
-    "test": "node --test --experimental-strip-types \"*/test/**/*.spec.ts\"",
+    "test": "node --test --experimental-strip-types \"{core,sources,retrieval,anchoring,attestation,journey}/test/**/*.spec.ts\"",
     "verify": "npm test"
   }
 }

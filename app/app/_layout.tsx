@@ -4,6 +4,9 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { installPlatformCrypto } from "../src/domain/platform.ts";
+
+installPlatformCrypto();
 
 export default function Layout() {
   return (

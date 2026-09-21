@@ -6,9 +6,33 @@ import { Link, router } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
+import { currentSession } from "../src/domain/session.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Solicitud() {
+  const session = currentSession();
+
+  // A request that did not verify is not shown as a question: the screen says
+  // what happened and offers no way to answer it.
+  if (session.state.status === "refused") {
+    return (
+      <Screen>
+        <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Solicitud" />
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
+          <Label>No se puede responder</Label>
+          <Title>Esta solicitud{"\n"}no es válida.</Title>
+          <Body>{session.state.explanation}</Body>
+        </ScrollView>
+        <Footer>
+          <Link href="/" asChild>
+            <Button>Volver</Button>
+          </Link>
+        </Footer>
+        <DemoStamp>SOLICITUD VERIFICADA EN EL DISPOSITIVO</DemoStamp>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Nueva solicitud" />
@@ -17,6 +41,7 @@ export default function Solicitud() {
         <Title>¿Qué necesitan{"\n"}saber de ti?</Title>
         <Card>
           <Text style={{ ...typography.heading }}>{REQUEST.counterparty}</Text>
+          <Text style={{ ...typography.small, marginTop: 4 }}>{`Firma verificada · reto ${session.request.nonce.slice(0, 8)}…`}</Text>
           <Text style={{ ...typography.small, marginTop: 4 }}>Destinatario de demostración · CO</Text>
           <Row title={REQUEST.purposeLabel} scope="Finalidad" />
           <Body>{`Solicitud de ejemplo · vence en ${REQUEST.expiresInMinutes} min`}</Body>
@@ -38,7 +63,7 @@ export default function Solicitud() {
           <Button tone="secondary">Rechazar solicitud</Button>
         </Link>
       </Footer>
-      <DemoStamp />
+      <DemoStamp>SOLICITUD FIRMADA Y VERIFICADA EN EL DISPOSITIVO</DemoStamp>
     </Screen>
   );
 }

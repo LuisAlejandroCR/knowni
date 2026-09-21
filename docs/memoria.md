@@ -521,6 +521,30 @@ nada, y un consentimiento revocado detiene la consulta aunque esté pagada.
 al arrendatario vía aseguradora. Si eso se confirma, el argumento comercial es sustituir ese cobro,
 no sumarse a él. Va a `verificacion.md` como pendiente.
 
+### D-27 — Privy firma, Freighter firma, y ninguno envía · 2026-09-21
+
+*Verificado en la documentación el 2026-09-21:* Privy clasifica Stellar en **nivel 2 — firmar**, no
+enviar; enviar solo está en nivel 3 (Ethereum, Solana, Tempo, Tron). Freighter tiene apps de iOS y
+Android e integra con una app móvil por **WalletConnect**, no por la API de la extensión.
+
+*Decisión:* un `PayerWalletPort` con tres adaptadores —Privy, Freighter y la llave del dispositivo—
+y el envío a Horizon en código propio, que ya existe desde el día 5. Ninguno de los dos wallets
+envía, así que el camino común no es una concesión: es el único que hay.
+
+*Y el saldo no es una función del wallet.* Un saldo en Stellar es público: se lee de Horizon por
+`accountId`. Una sola ruta de código lo muestra para los tres, y una cuenta sin fondear se lee
+vacía en vez de como error.
+
+*La línea que no se cruza:* Privy solo para **quien paga**. Un proveedor de login sabe quién entró y
+cuándo; ponerlo del lado del titular le entrega a un tercero el rastro de quién demostró qué, que es
+justo lo que el producto existe para no dejar. El titular sigue con llaves en el dispositivo.
+
+*Sobre el aviso:* Kapso revende la Cloud API de Meta, igual que Twilio o 360dialog, así que la
+capacidad es la de Meta y lo que se elige es la demo. El mensaje avisa y **no informa** — ni
+veredicto, ni contraparte, ni finalidad —, porque un WhatsApp se lee en una pantalla bloqueada y
+termina en el backup de otro teléfono. El teléfono es PII nueva: va por petición, con
+consentimiento aparte, y no se guarda junto a la consulta.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -556,6 +580,7 @@ no sumarse a él. Va a `verificacion.md` como pendiente.
 | 2026-09-21 | App al SDK 57 de Expo (router 57, React Native 0.86.3, React 19.2.3). `expo-doctor` 21/21, tipos limpios, 9 pruebas y bundle de iOS con el dominio dentro. La corrida del usuario en su teléfono destapó el desajuste de versiones que el bundle verde no veía |
 | 2026-09-21 | MVP real: workspace `issuer/` — el único proceso con llave de proveedor. La app manda una consulta autorizada y verifica en el teléfono lo que le devuelven. Se acaban las fixtures en el recorrido: documento y placa se escriben, el consentimiento decide qué se consulta — D-25 |
 | 2026-09-21 | Modelo comercial: paga quien pregunta, y pagar no autoriza. El titular solo paga si quiere una credencial reutilizable — D-26 |
+| 2026-09-21 | Pago comprobado contra Horizon antes de consultar, aviso por WhatsApp sin veredicto, y wallet del pagador detrás de un puerto con Privy y Freighter. Faltan cuatro llaves; cada una ausente apaga su función — D-27 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

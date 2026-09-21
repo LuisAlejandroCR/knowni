@@ -3,6 +3,7 @@
 // signed by the issuer. The phone never sees a key and never calls a registry.
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { chargeableMinor, quote } from "./pricing.ts";
 import { sha256Hash } from "@knowni/core/node";
 import type { SessionRequest } from "@knowni/core";
 import { toHex } from "@knowni/core";
@@ -169,6 +170,21 @@ export function createIssuerService(options: IssuerOptions) {
       return send(response, 200, { issuerId: options.issuerId, publicKey: toHex(publicKey) });
     }
 
+    // Quoted before the subject is asked to consent: the payer sees the total
+    // before a single source is called.
+    if (request.method === "POST" && request.url?.startsWith("/quote")) {
+      const body = (await readBody(request)) as
+        | { predicates?: string[]; request?: SessionRequest }
+        | undefined;
+      if (body?.request === undefined || !Array.isArray(body.predicates)) {
+        return send(response, 400, { error: "invalid_request" });
+      }
+      const result = quote(body.request, body.predicates, Math.floor(Date.now() / 1000));
+      return result.status === "quoted"
+        ? send(response, 200, { quote: result.quote })
+        : send(response, 400, { error: result.reason });
+    }
+
     if (request.method === "POST" && request.url?.startsWith("/issue")) {
       const body = (await readBody(request)) as IssueRequestBody | undefined;
       if (body === undefined || typeof body.documentNumber !== "string" || body.request === undefined) {
@@ -179,8 +195,10 @@ export function createIssuerService(options: IssuerOptions) {
       }
       try {
         const nowUnix = Math.floor(Date.now() / 1000);
-        const { results } = await issueAnswers(options, body, nowUnix);
-        return send(response, 200, { results });
+        const { answers, results } = await issueAnswers(options, body, nowUnix);
+        // Only answers that came back are billed; an unavailable source is
+        // not charged for.
+        return send(response, 200, { results, chargedMinor: chargeableMinor(answers) });
       } catch {
         // Nothing from a provider crosses this boundary, not even in a 500.
         return send(response, 502, { error: "issuance_failed" });

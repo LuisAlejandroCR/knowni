@@ -71,7 +71,13 @@ export function verifyRequest(
   const publicKey = registry.publicKeyOf(signed.request.relyingPartyId);
   if (publicKey === undefined) return { status: "refused", reason: "unknown_relying_party" };
 
-  const ok = signatures.verify(publicKey, requestBytes(signed.request), fromHex(signed.signature));
+  let signatureBytes: Uint8Array;
+  try {
+    signatureBytes = fromHex(signed.signature);
+  } catch {
+    return { status: "refused", reason: "bad_signature" };
+  }
+  const ok = signatures.verify(publicKey, requestBytes(signed.request), signatureBytes);
   return ok ? { status: "accepted" } : { status: "refused", reason: "bad_signature" };
 }
 

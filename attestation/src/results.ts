@@ -118,7 +118,15 @@ export function verifyResults(
   }
 
   const { signature, algorithm: _algorithm, ...unsigned } = results;
-  if (!check.signatures.verify(publicKey, resultsBytes(unsigned), fromHex(signature))) {
+  // A missing or malformed signature is a bad signature, not a crash: this
+  // value arrives from outside the process.
+  let signatureBytes: Uint8Array;
+  try {
+    signatureBytes = fromHex(signature);
+  } catch {
+    return { status: "invalid", reason: "bad_signature" };
+  }
+  if (!check.signatures.verify(publicKey, resultsBytes(unsigned), signatureBytes)) {
     return { status: "invalid", reason: "bad_signature" };
   }
 

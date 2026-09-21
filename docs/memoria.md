@@ -475,6 +475,52 @@ el límite, ni el número consultado ni el nombre que devuelve la Procuraduría.
 *Lo que cuesta:* la app deja de funcionar sola. Sin el emisor corriendo dice que no lo encontró y no
 consulta nada — que es la respuesta honesta, no un fallback inventado.
 
+### D-26 — Paga quien pregunta; pagar no es autorizar · 2026-09-21
+
+El modelo pasa a cobro por consulta con wallet. La pregunta que decide el producto no es cómo se
+cobra, sino **a quién**, y hay dos respuestas posibles con consecuencias opuestas.
+
+*Decisión: dos productos, dos pagadores.*
+
+| Producto | Quién paga | Qué compra |
+|---|---|---|
+| **Verificación vinculada a una solicitud** | la contraparte que pregunta | una respuesta atada a `sessionId`, audiencia y finalidad, que sirve una vez |
+| **Credencial reutilizable** | el titular, si quiere | un activo suyo que presenta en diez trámites sin volver a consultar |
+
+*Los roles, por tipo de contrato:*
+
+| Contrato | Paga | Prueba |
+|---|---|---|
+| Arrendamiento | arrendador o inmobiliaria | arrendatario y codeudor |
+| Compraventa de vehículo | comprador | vendedor y el activo |
+| Crédito | prestamista | solicitante |
+| Proveedor B2B | empresa compradora | proveedor |
+| Empleo o plataforma | empleador o marketplace | candidato o trabajador |
+
+*Por qué no al revés.* Si paga quien prueba, la contraparte pide de más porque no le cuesta nada, y
+el producto se vuelve *"paga para demostrar que mereces"* — el mismo peaje que hoy cobra el estudio
+de arrendamiento, con una app encima. Con la contraparte pagando, el precio por predicado es lo que
+desincentiva pedir más de lo necesario, que es exactamente el comportamiento que el producto existe
+para cambiar.
+
+*La regla que protege al titular:* **pagar no es autorizar**. Quien paga compra el derecho a
+preguntar; solo el titular puede consentir que se consulte. Un pago sin consentimiento no emite
+nada, y un consentimiento revocado detiene la consulta aunque esté pagada.
+
+*Tres reglas del cobro:*
+
+1. **Se cotiza antes de consentir.** El precio sale por predicado y el pagador ve el total antes de
+   que se llame a una sola fuente.
+2. **Una fuente que no responde no se cobra.** `unavailable` no es una respuesta vendible, y
+   cobrarla crearía el incentivo de no arreglar la fiabilidad de las fuentes.
+3. **El pago se ata a la pregunta.** La transacción lleva en el memo el hash del `sessionId`, así
+   que un tercero puede comprobar que ese pago corresponde a esa consulta y a ninguna otra, sin
+   aprender quién preguntó ni sobre quién.
+
+*Supuesto de mercado sin verificar:* en Colombia el estudio de arrendamiento se le suele trasladar
+al arrendatario vía aseguradora. Si eso se confirma, el argumento comercial es sustituir ese cobro,
+no sumarse a él. Va a `verificacion.md` como pendiente.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -509,6 +555,7 @@ consulta nada — que es la respuesta honesta, no un fallback inventado.
 | 2026-09-20 | App B4: la pantalla del verificador ejecuta `acceptAnswer` de verdad, con el estado de revocación y la política como controles en pantalla. La 08 lee el `unavailable` que **firmó el emisor**, no un texto fijo |
 | 2026-09-21 | App al SDK 57 de Expo (router 57, React Native 0.86.3, React 19.2.3). `expo-doctor` 21/21, tipos limpios, 9 pruebas y bundle de iOS con el dominio dentro. La corrida del usuario en su teléfono destapó el desajuste de versiones que el bundle verde no veía |
 | 2026-09-21 | MVP real: workspace `issuer/` — el único proceso con llave de proveedor. La app manda una consulta autorizada y verifica en el teléfono lo que le devuelven. Se acaban las fixtures en el recorrido: documento y placa se escriben, el consentimiento decide qué se consulta — D-25 |
+| 2026-09-21 | Modelo comercial: paga quien pregunta, y pagar no autoriza. El titular solo paga si quiere una credencial reutilizable — D-26 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -150,15 +150,26 @@ una segunda fuente comercial solo cuando su cobertura esté comprobada.
 5. El wallet crea una presentación ligada al reto. El verificador la valida sin llamar a la fuente.
 6. `AnchorPort` publica solo una raíz/recibo; si la red falla, la validación criptográfica sigue.
 
-### Modelo comercial inicial
+### Modelo comercial
 
-- **B2B por verificación emitida**, no venta de expedientes ni de datos.
-- La organización paga fuentes, emisión, verificación y soporte; el titular no paga por ejercer su
-  derecho a demostrar un dato propio.
-- Paquetes por perfil (`lease`, `vehicle-sale`, `supplier-onboarding`) comparten el mismo motor.
-- Costos de fuente se registran por adaptador para poder sustituir proveedores y proteger margen.
-- El contrato comercial prohíbe reconstruir identidad, reutilizar la presentación o solicitar
-  predicados no necesarios para la finalidad.
+**Paga quien pregunta.** La contraparte compra una verificación atada a una solicitud; el titular no
+paga por ejercer su derecho a demostrar un dato propio. Ver `memoria.md` D-26.
+
+| Producto | Pagador | Qué compra |
+|---|---|---|
+| Verificación vinculada | la contraparte | una respuesta atada a `sessionId`, audiencia y finalidad |
+| Credencial reutilizable | el titular, opcional | un activo suyo, presentable en varios trámites |
+
+- Precio **por predicado**, cotizado antes de que el titular consienta: pedir cuatro cuesta más que
+  pedir dos, y esa es la palanca que desincentiva pedir de más.
+- Una fuente que no responde **no se cobra**. `unavailable` no es una respuesta vendible.
+- El pago se ata a la pregunta: el memo de la transacción lleva el hash del `sessionId`, auditable
+  sin revelar quién preguntó ni sobre quién.
+- **Pagar no es autorizar.** Un pago sin consentimiento del titular no emite nada.
+- El costo de fuente se registra por adaptador, para poder sustituir proveedores sin tocar el precio
+  de cara al cliente.
+- El contrato comercial prohíbe reconstruir identidad, reutilizar la presentación o pedir predicados
+  que la finalidad no necesita.
 
 ### Requisitos operativos antes de producción
 

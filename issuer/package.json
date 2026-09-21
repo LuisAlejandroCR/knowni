@@ -1,0 +1,17 @@
+{
+  "name": "@knowni/issuer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The issuance service: the only process that holds a provider key, queries a registry and signs answers.",
+  "exports": { ".": "./src/service.ts" },
+  "scripts": {
+    "start": "node --experimental-strip-types src/main.ts",
+    "test": "node --test --experimental-strip-types \"test/**/*.spec.ts\""
+  },
+  "dependencies": {
+    "@knowni/attestation": "*",
+    "@knowni/core": "*",
+    "@knowni/sources": "*"
+  }
+}

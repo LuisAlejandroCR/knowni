@@ -146,3 +146,12 @@ nativo y prohíbe cualquier atajo de servidor.
 - **Expo Router 4 no declara todas sus dependencias.** `expo export` falla con `Unable to resolve
   module query-string` hasta instalarlo a mano, y antes de eso pide `expo-asset`. `npx expo install
   --fix` no lo resuelve. Comprobado el 2026-09-20 con expo 52.0.49 y expo-router 4.0.22.
+
+- **Metro no lee los `paths` de tsconfig.** Un paquete del monorepo que no está instalado desde el
+  registro necesita `watchFolders` más `resolver.extraNodeModules`, y además
+  `nodeModulesPaths` + `disableHierarchicalLookup` para que el código de fuera de `app/` encuentre
+  `@babel/runtime`. Comprobado el 2026-09-20 con expo 52.
+- **`expo-crypto` no se puede importar bajo `node --test`:** arrastra `expo-modules-core`, que es
+  TypeScript dentro de `node_modules`, y el stripper de Node se niega. La binding nativa vive en un
+  archivo aparte para que la criptografía siga siendo comprobable en Node.
+

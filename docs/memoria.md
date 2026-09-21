@@ -489,6 +489,7 @@ a usar `Buffer` en el dominio. La regla deja de depender de que alguien se acuer
 | 2026-09-20 | Pruebas reorganizadas en `unit · fuzz · invariant` con sufijo `.spec.ts`, como pide la constitución. Los tres fuzz nuevos encontraron un fallo real: una firma ausente o malformada hacía **lanzar** a `verifyResults` en vez de devolver `bad_signature`. Corregido. 249 pruebas |
 | 2026-09-20 | App B2: ocho pantallas en Expo con fixtures, tipos limpios y bundle de iOS generado. `app/` queda **fuera** de los workspaces de la raíz para que el dominio siga instalándose sin dependencias — D-24 |
 | 2026-09-20 | App B3: el dominio entra en el teléfono. `@noble` produce **los mismos bytes** que `node:crypto` —hay prueba cruzada— y el bundle de Hermes contiene los dominios de firma del protocolo. Las pantallas 02 y 05 dejan de leer fixtures |
+| 2026-09-20 | App B4: la pantalla del verificador ejecuta `acceptAnswer` de verdad, con el estado de revocación y la política como controles en pantalla. La 08 lee el `unavailable` que **firmó el emisor**, no un texto fijo |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

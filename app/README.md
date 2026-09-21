@@ -26,6 +26,7 @@ dominio entra por `paths` de TypeScript, no por el registro.
 |---|---|
 | Tipos | `npx tsc --noEmit`, sin errores |
 | Empaquetado | `npx expo export --platform ios` produce el bundle |
+| Salud del proyecto | `npx expo-doctor` — 21/21 en SDK 57 |
 | Sin red | ninguna pantalla importa `fetch` ni un cliente |
 | Criptografía | `@noble` produce los mismos bytes que `node:crypto` — prueba cruzada |
 | Aceptación | política, notas, idempotencia y replay, probados en `app/test` |

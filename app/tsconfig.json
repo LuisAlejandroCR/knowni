@@ -5,9 +5,20 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
-      "@knowni/core": ["../core/src/index.ts"],
-      "@knowni/attestation": ["../attestation/src/index.ts"]
-    }
+      "@knowni/core": [
+        "../core/src/index.ts"
+      ],
+      "@knowni/attestation": [
+        "../attestation/src/index.ts"
+      ]
+    },
+    "types": [
+      "node",
+      "react"
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

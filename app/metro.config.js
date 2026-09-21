@@ -16,8 +16,7 @@ config.resolver.extraNodeModules = {
 };
 config.resolver.sourceExts = [...config.resolver.sourceExts, "ts", "tsx"];
 // Files outside app/ are transpiled by the same Babel runtime, and it is
-// installed here — so resolution from up there has to point back down.
+// installed here, so resolution from up there has to find app/node_modules.
 config.resolver.nodeModulesPaths = [path.join(app, "node_modules")];
-config.resolver.disableHierarchicalLookup = true;
 
 module.exports = config;

@@ -1,58 +1,83 @@
-// consentimiento.tsx: screen 03 — consulting is not sharing.
-// Nothing is pre-selected: a consent the subject did not tick is a consent
-// they did not give, and the button says so until they do.
+// consentimiento.tsx: screen 03 — what will be consulted, and with what data.
+// Nothing is pre-ticked, and the document is typed here because it travels to
+// the issuer and to nobody else.
 
-import { Link, router } from "expo-router";
-import { useState } from "react";
+import { router } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
-import { CONSENTS } from "../src/fixtures.ts";
+import { Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+
+const SOURCES = [
+  { id: "registraduria", title: "Registraduría", needs: "Número de documento" },
+  { id: "sicaac", title: "SICAAC · insolvencia", needs: "Número de documento" },
+  { id: "listas", title: "Procuraduría, Contraloría y Contaduría", needs: "Número de documento" },
+  { id: "vehiculo", title: "RUNT y SIMIT", needs: "Placa y documento del propietario" },
+] as const;
 
 export default function Consentimiento() {
-  const [granted, setGranted] = useState<readonly string[]>([]);
-  const all = granted.length === CONSENTS.length;
+  const flow = useFlow();
+  const needsPlate = flow.consented.includes("vehiculo");
+  const ready =
+    flow.consented.length > 0 &&
+    flow.subject.documentNumber.length >= 5 &&
+    (!needsPlate || flow.subject.plate.length >= 5);
 
   return (
     <Screen>
       <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Tu autorización" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-        <Label>02 / Obtén tus credenciales</Label>
+        <Steps current={2} />
         <Title>Consultar no es{"\n"}compartir.</Title>
         <Body>
-          El emisor y su proveedor reciben los datos necesarios para consultar. El comprador no
-          consulta las fuentes.
+          El emisor consulta con estos datos. La contraparte no los recibe y no consulta nada.
         </Body>
+
         <Card>
-          {CONSENTS.map((consent) => {
-            const on = granted.includes(consent.source);
+          {SOURCES.map((source) => {
+            const on = flow.consented.includes(source.id);
             return (
-              <Pressable
-                key={consent.source}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: on }}
-                onPress={() =>
-                  setGranted((current) =>
-                    on ? current.filter((s) => s !== consent.source) : [...current, consent.source],
-                  )
-                }
-              >
-                <Row icon={<Text>{on ? "✓" : "□"}</Text>} title={consent.source} scope={consent.needs} />
-              </Pressable>
+              <Row
+                key={source.id}
+                icon={<Text>{on ? "✓" : "□"}</Text>}
+                title={source.title}
+                scope={source.needs}
+                onPress={() => toggleConsent(source.id)}
+              />
             );
           })}
         </Card>
-        <Note>Solo para esta emisión y finalidad.{"\n"}Sin fotos de tu documento.</Note>
+
+        <Field
+          label="Número de documento"
+          value={flow.subject.documentNumber}
+          onChangeText={(text) => setSubject({ documentNumber: text.replace(/\D/g, "") })}
+          placeholder="1020304050"
+          keyboardType="number-pad"
+        />
+        {needsPlate ? (
+          <Field
+            label="Placa del vehículo"
+            value={flow.subject.plate}
+            onChangeText={(text) => setSubject({ plate: text.toUpperCase().replace(/[^A-Z0-9]/g, "") })}
+            placeholder="ABC123"
+          />
+        ) : null}
+
+        {flow.error === undefined ? null : <Note>{flow.error}</Note>}
+        <Note>Solo para esta emisión y finalidad. Sin fotos de tu documento.</Note>
       </ScrollView>
       <Footer>
-        {all ? (
-          <Link href="/emision" asChild>
-            <Button>Autorizar y consultar</Button>
-          </Link>
-        ) : (
-          <Button disabled>Selecciona qué autorizas</Button>
-        )}
+        <Button
+          disabled={!ready || flow.busy}
+          onPress={() => {
+            router.push("/emision");
+            void issue();
+          }}
+        >
+          {ready ? "Autorizar y consultar" : "Selecciona qué autorizas"}
+        </Button>
       </Footer>
-      <DemoStamp>CONSENTIMIENTOS SIN PRESELECCIONAR</DemoStamp>
+      <DemoStamp>CONSULTA REAL A LAS FUENTES AUTORIZADAS</DemoStamp>
     </Screen>
   );
 }

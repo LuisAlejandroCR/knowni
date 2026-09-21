@@ -4,24 +4,24 @@
 
 import { Link, router } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
-import { currentSession } from "../src/domain/session.ts";
+import { useFlow } from "../src/domain/flow.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Solicitud() {
-  const session = currentSession();
+  const session = useFlow();
 
   // A request that did not verify is not shown as a question: the screen says
   // what happened and offers no way to answer it.
-  if (session.state.status === "refused") {
+  if (session.requestState.status === "refused") {
     return (
       <Screen>
         <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Solicitud" />
         <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
           <Label>No se puede responder</Label>
           <Title>Esta solicitud{"\n"}no es válida.</Title>
-          <Body>{session.state.explanation}</Body>
+          <Body>{session.requestState.explanation}</Body>
         </ScrollView>
         <Footer>
           <Link href="/" asChild>
@@ -37,7 +37,7 @@ export default function Solicitud() {
     <Screen>
       <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Nueva solicitud" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-        <Label>01 / Entiende la solicitud</Label>
+        <Steps current={1} />
         <Title>¿Qué necesitan{"\n"}saber de ti?</Title>
         <Card>
           <Text style={{ ...typography.heading }}>{REQUEST.counterparty}</Text>

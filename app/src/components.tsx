@@ -3,7 +3,7 @@
 // stay one product rather than eight interpretations of it.
 
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 
@@ -32,11 +32,20 @@ export function Brand() {
   );
 }
 
-export function Badge({ children }: { readonly children: ReactNode }) {
+// A badge with an onPress is a control, and a control has to be reachable:
+// 44 px of target and a role, or it is decoration pretending to be a button.
+export function Badge({ children, onPress }: { readonly children: ReactNode; onPress?: () => void }) {
+  if (onPress === undefined) {
+    return (
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>{children}</Text>
+      </View>
+    );
+  }
   return (
-    <View style={styles.badge}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={[styles.badge, styles.badgeTappable]}>
       <Text style={styles.badgeText}>{children}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -64,21 +73,28 @@ export function Row({
   title,
   scope,
   trailing,
+  onPress,
 }: {
   icon?: ReactNode;
   title: string;
   scope?: string;
   trailing?: ReactNode;
+  onPress?: () => void;
 }) {
+  const Wrapper = onPress === undefined ? View : Pressable;
   return (
-    <View style={styles.row}>
+    <Wrapper
+      accessibilityRole={onPress === undefined ? undefined : "button"}
+      onPress={onPress}
+      style={[styles.row, onPress !== undefined && styles.rowTappable]}
+    >
       {icon === undefined ? null : <View style={styles.icon}>{icon}</View>}
       <View style={styles.rowBody}>
         <Text style={styles.rowTitle}>{title}</Text>
         {scope ? <Text style={styles.rowScope}>{scope}</Text> : null}
       </View>
       {trailing}
-    </View>
+    </Wrapper>
   );
 }
 
@@ -111,6 +127,54 @@ export function Button({
     >
       <Text style={[styles.buttonText, isSecondary && styles.buttonTextSecondary]}>{children}</Text>
     </Pressable>
+  );
+}
+
+// Four steps, named, with the current one marked. A person who cannot tell
+// where they are in a flow cannot tell what is about to happen next.
+export function Steps({ current }: { readonly current: 1 | 2 | 3 | 4 }) {
+  const names = ["Solicitud", "Autorización", "Consulta", "Revisión"];
+  return (
+    <View style={styles.steps} accessibilityLabel={`Paso ${current} de 4: ${names[current - 1]}`}>
+      {names.map((name, index) => {
+        const state = index + 1 === current ? "on" : index + 1 < current ? "done" : "next";
+        return (
+          <View key={name} style={styles.step}>
+            <View style={[styles.stepBar, state === "next" ? styles.stepBarNext : styles.stepBarOn]} />
+            <Text style={[styles.stepText, state === "on" && styles.stepTextOn]}>{`${index + 1}. ${name}`}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+export function Field({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  keyboardType,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  keyboardType?: "default" | "number-pad";
+}) {
+  return (
+    <View style={{ marginBottom: 12 }}>
+      <Text style={styles.label}>{label.toUpperCase()}</Text>
+      <TextInput
+        accessibilityLabel={label}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        keyboardType={keyboardType ?? "default"}
+        autoCapitalize="characters"
+        style={styles.input}
+      />
+    </View>
   );
 }
 
@@ -149,6 +213,7 @@ const styles = StyleSheet.create({
   brandText: { fontSize: 25, letterSpacing: -1.5, fontWeight: "800", color: color.ink },
   badge: { backgroundColor: "#e9eee6", paddingHorizontal: 9, paddingVertical: 5, borderRadius: radius.pill },
   badgeText: { fontSize: 11, fontWeight: "700", color: color.inkSoft },
+  badgeTappable: { minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
   label: { ...type.label, color: "#5d6b60", marginBottom: 4 },
   title: { ...type.title, color: color.ink, marginVertical: space.sm },
   body: { ...type.body, color: color.inkSoft, marginBottom: space.md },
@@ -170,6 +235,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e8ece5",
   },
+  rowTappable: { minHeight: 44 },
   rowBody: { flex: 1 },
   rowTitle: { ...type.body, fontWeight: "700", color: color.ink },
   rowScope: { ...type.small, color: "#647267", marginTop: 3 },
@@ -197,6 +263,23 @@ const styles = StyleSheet.create({
   buttonDisabled: { backgroundColor: "#dde4d7" },
   buttonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
   buttonTextSecondary: { color: "#294c3e" },
+  steps: { flexDirection: "row", gap: 6, paddingVertical: 10 },
+  step: { flex: 1 },
+  stepBar: { height: 4, borderRadius: 3, marginBottom: 5 },
+  stepBarOn: { backgroundColor: "#698447" },
+  stepBarNext: { backgroundColor: "#dfe7d8" },
+  stepText: { fontSize: 10, color: color.inkFaint },
+  stepTextOn: { color: color.deep, fontWeight: "700" },
+  input: {
+    borderWidth: 1,
+    borderColor: color.line,
+    backgroundColor: color.card,
+    borderRadius: radius.button,
+    paddingHorizontal: 14,
+    minHeight: 48,
+    fontSize: 16,
+    color: color.ink,
+  },
   footer: { paddingHorizontal: space.lg, paddingBottom: space.md, gap: space.xs },
   demo: { fontSize: 10, color: color.inkFaint, textAlign: "center", paddingBottom: 8 },
 });

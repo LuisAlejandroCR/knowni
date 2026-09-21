@@ -176,9 +176,10 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Modo avión y logs sanitizados | **Corre.** El recorrido se completa con `fetch` desactivado y la cadena caída; ningún log lleva documento, nombre, salario ni cuenta |
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
-| App iOS / Android | **En construcción, bloque 4 de 5.** El recorrido completo corre en el bundle: solicitud firmada, respuestas verificadas, aceptación con política de revocación y replay rechazado. Nunca ejecutada en un teléfono — [`app/`](app/README.md) |
+| App iOS / Android | **Recorrido real, bloque 5 de 5 pendiente.** La app consulta fuentes reales a través del servicio de emisión y verifica las respuestas en el teléfono. Nunca ejecutada en un dispositivo físico — [`app/`](app/README.md) |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
+| Servicio de emisión | **Corre.** Única llave de proveedor, consentimiento por fuente y respuestas firmadas — [`issuer/`](issuer/README.md) |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |
 | Ejecución en un teléfono físico | **No.** Ninguna |
 

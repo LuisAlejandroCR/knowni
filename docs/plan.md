@@ -97,10 +97,10 @@ scraping, evasión de CAPTCHA ni un portal humano como API de producción.
 | [Truora](https://dev.truora.com/docs/) | Identidad y checks de personas, empresas y vehículos en LATAM | Respaldo de Croma y onboarding con consentimiento | Configurar checks sin antecedentes penales ni web/media; revisar fuentes por país |
 | [Incode](https://developer.incode.com/general-reference/government-verification-sources/) | Documento, biometría y validación contra registros gubernamentales | Prueba de posesión del documento y liveness | Evaluación biométrica, residencia de datos, retención y costo |
 | DataCrédito Experian / TransUnion | Información financiera y crediticia regulada | Solo cuando el perfil requiera información crediticia explícita | Consentimiento de Ley 1266, contrato y revisión legal; nunca convertir score en identidad |
-| [Belvo](https://developers.belvo.com/es/apis/belvoopenapispec/incomes/listincomes) | Movimientos e ingresos bancarios consentidos, según institución y país | Alternativa para solvencia de personas sin PILA representativa | Confirmar cobertura bancaria colombiana en contrato; devolver banda, no transacciones |
-| Prometeo / Finerio Connect | Conectividad bancaria y validación de cuentas | Alternativa futura de open finance | Confirmar instituciones colombianas, acceso a movimientos y términos del caso de uso |
+| [Belvo](https://developers.belvo.com/) | Brasil, México y Chile — **Colombia no aparece** en su OpenAPI (2026-09-21) | Solo vuelve si ventas entrega lista contractual de bancos colombianos | Confirmar cobertura antes de citarlo como alternativa |
+| Prometeo / Finerio Connect | Conectividad bancaria. Prometeo: documentación tras login y cobertura CO sin confirmar. Finerio: entidad contractual en Colombia | `cashflow`, que es una credencial distinta del IBC | Confirmar bancos, sandbox y método de autorización |
 | Operadores PILA: SOI, Aportes en Línea, MiPlanilla, Simple, SuAporte | Liquidación y certificados del operador | Evidencia directa de aportes e IBC | Acuerdo B2B, autorización del titular y estrategia multioperador |
-| [SuAporte APIs](https://www.suaporte.com.co/aportantes/) | APIs documentadas para aportantes y autorizaciones | Spike prioritario de integración PILA | Comprobar si expone aportes históricos del cotizante, no solo gestión del aportante |
+| [SuAporte](https://www.suaporte.com.co/aportantes/) | Swagger abierto: gestión de aportantes y generación de planilla | **Del lado de quien paga**, no del cotizante. No responde historial por titular | Solo si ofrecen autorización delegada del cotizante |
 
 Ningún agregador se declara sustituto universal de otro. El adapter registra `provider`,
 `authority`, `dataset`, `retrievedAt` y `coverage`; la credencial declara la autoridad que originó
@@ -125,6 +125,20 @@ la evidencia, no solamente el intermediario que la transportó.
 | SECOP / Datos Abiertos | contratos y proveedores del Estado | datasets con API pública para hechos empresariales, nunca perfilado personal |
 | OFAC y Naciones Unidas | sanciones internacionales | descarga oficial versionada, hash y fecha; resolución conservadora de identidad |
 
+### Ruta al IBC, en orden (D-29)
+
+| Prioridad | Fuente | Qué aporta | Estado |
+|---|---|---|---|
+| 1 | **Aportes en Línea** | histórico PILA; su política ya contempla entregarlo a terceros para validar experiencia laboral | conversación comercial pendiente |
+| 2 | **Agildata** (manual 2019) | IBC por periodo, promedio de 3 meses, días cotizados, con autorización del titular | vigencia sin confirmar; no entra al roadmap |
+| 3 | **UGPP / VUE — Estado Único de Cuenta** | cuatro meses de aportes, entregados al titular | **construible hoy**: documento aportado, no API |
+| 4 | **Finerio Connect · Bancolombia Open Banking** | entradas bancarias consentidas | alimenta `cashflow`, no sustituye el IBC |
+
+Lo que se pide a un proveedor de IBC es el **resultado reducido** —periodos cotizados, banda de IBC,
+último periodo, cobertura de la fuente— y nunca el PDF, el empleador, la EPS ni el salario exacto.
+Y una pregunta decide la cobertura: **cómo se distingue "sin registros en este operador" de "sin
+aportes"**, porque una persona puede tener planillas en varios operadores.
+
 ### Lo que queda fuera
 
 - antecedentes penales generales, búsquedas web y redes sociales;
@@ -132,7 +146,11 @@ la evidencia, no solamente el intermediario que la transportó.
 - inferir ingreso desde afiliación ADRES/RUAF;
 - puntaje agregado de “confianza” o “riesgo humano”;
 - scraping de portales, CAPTCHA solving o reuso de credenciales del ciudadano;
-- consultar desde la contraparte: toda fuente se usa durante emisión y con autorización.
+- consultar desde la contraparte: toda fuente se usa durante emisión y con autorización;
+- intermediarios que consultan por documento en la URL y devuelven el certificado completo, sin
+  autorización delegada ni límite de finalidad — el expediente que el producto existe para no
+  entregar;
+- reusar las credenciales del ciudadano en el portal de un operador para consultar por él.
 
 ## Estrategia construible
 
@@ -150,15 +168,26 @@ una segunda fuente comercial solo cuando su cobertura esté comprobada.
 5. El wallet crea una presentación ligada al reto. El verificador la valida sin llamar a la fuente.
 6. `AnchorPort` publica solo una raíz/recibo; si la red falla, la validación criptográfica sigue.
 
-### Modelo comercial inicial
+### Modelo comercial
 
-- **B2B por verificación emitida**, no venta de expedientes ni de datos.
-- La organización paga fuentes, emisión, verificación y soporte; el titular no paga por ejercer su
-  derecho a demostrar un dato propio.
-- Paquetes por perfil (`lease`, `vehicle-sale`, `supplier-onboarding`) comparten el mismo motor.
-- Costos de fuente se registran por adaptador para poder sustituir proveedores y proteger margen.
-- El contrato comercial prohíbe reconstruir identidad, reutilizar la presentación o solicitar
-  predicados no necesarios para la finalidad.
+**Paga quien pregunta.** La contraparte compra una verificación atada a una solicitud; el titular no
+paga por ejercer su derecho a demostrar un dato propio. Ver `memoria.md` D-26.
+
+| Producto | Pagador | Qué compra |
+|---|---|---|
+| Verificación vinculada | la contraparte | una respuesta atada a `sessionId`, audiencia y finalidad |
+| Credencial reutilizable | el titular, opcional | un activo suyo, presentable en varios trámites |
+
+- Precio **por predicado**, cotizado antes de que el titular consienta: pedir cuatro cuesta más que
+  pedir dos, y esa es la palanca que desincentiva pedir de más.
+- Una fuente que no responde **no se cobra**. `unavailable` no es una respuesta vendible.
+- El pago se ata a la pregunta: el memo de la transacción lleva el hash del `sessionId`, auditable
+  sin revelar quién preguntó ni sobre quién.
+- **Pagar no es autorizar.** Un pago sin consentimiento del titular no emite nada.
+- El costo de fuente se registra por adaptador, para poder sustituir proveedores sin tocar el precio
+  de cara al cliente.
+- El contrato comercial prohíbe reconstruir identidad, reutilizar la presentación o pedir predicados
+  que la finalidad no necesita.
 
 ### Requisitos operativos antes de producción
 

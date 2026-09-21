@@ -25,7 +25,27 @@ export interface IdentityClaim {
   readonly attestedAt: number; // unix seconds
 }
 
-export type IncomeBasis = "social_security" | "credit_bureau" | "payroll" | "declared";
+// Three different facts that a single "income" would quietly merge:
+//
+//   contribution_base  what was declared as the base for social-security
+//                      contributions. A floor, and a declaration — not what
+//                      anyone was paid and not what they have.
+//   verified_income    what an employer or a tax document says was paid.
+//   cashflow           what actually arrived in a consented account.
+//
+// They answer different questions and they are wrong in different directions,
+// so each one is its own basis and a relying party names which it accepts.
+export type IncomeBasis = "contribution_base" | "verified_income" | "cashflow";
+
+// What each basis does NOT say, travelling with the claim so a counterparty
+// cannot widen it by reading it generously.
+export const BASIS_DOES_NOT_ESTIMATE: Record<IncomeBasis, string> = {
+  contribution_base:
+    "Base declarada para aportes. No estima ingreso neto, liquidez ni probabilidad de pago.",
+  verified_income:
+    "Pago laboral o tributario observado. No prueba liquidez actual ni continuidad.",
+  cashflow: "Entradas observadas en una cuenta consentida. No prueba empleo ni aportes.",
+};
 
 export interface IncomeClaim {
   readonly kind: "income";
@@ -34,6 +54,11 @@ export interface IncomeClaim {
   readonly monthlyMinor: number; // e.g. COP cents
   readonly currency: string; // ISO 4217
   readonly basis: IncomeBasis;
+  // How many periods had data, and over how many the source looked: "one good
+  // month" and "a year of them" stop looking identical. How many are enough is
+  // the relying party's threshold, not the source's.
+  readonly periodsObserved: number;
+  readonly periodsWindow: number;
   readonly attestedAt: number;
 }
 

@@ -27,6 +27,7 @@ const params = {
   expectedSubjectRef: REF,
   jurisdiction: "CO",
   acceptedBases: ["insolvency_proceeding"] as const,
+  minPeriodsObserved: 6,
   nowUnix: NOW,
   maxAgeSeconds: 86_400,
 };

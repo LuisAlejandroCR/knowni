@@ -28,7 +28,9 @@ export const income: IncomeClaim = {
   subjectRef: { hex: SUBJECT_REF },
   monthlyMinor: 481_230_000,
   currency: "COP",
-  basis: "social_security",
+  basis: "contribution_base",
+  periodsObserved: 12,
+  periodsWindow: 12,
   attestedAt: NOW - DAY,
 };
 

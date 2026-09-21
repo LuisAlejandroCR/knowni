@@ -36,7 +36,7 @@ test("the income claim names its basis, so a landlord knows what they accepted",
   const result = await source.fetch(subject, NOW);
   assert.equal(
     result.status === "claimed" && result.claim.kind === "income" ? result.claim.basis : undefined,
-    "social_security",
+    "contribution_base",
   );
 });
 
@@ -117,6 +117,8 @@ test("neither claim carries anything the predicate does not read", async () => {
     "jurisdiction",
     "kind",
     "monthlyMinor",
+    "periodsObserved",
+    "periodsWindow",
     "subjectRef",
   ]);
 });

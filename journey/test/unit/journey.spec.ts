@@ -112,7 +112,8 @@ test("a tenant proves four things and the agency learns nothing else", async () 
       currency: "COP",
       nowUnix: NOW,
       maxAgeSeconds: 30 * DAY,
-      acceptedBases: ["social_security"],
+      acceptedBases: ["contribution_base"],
+    minPeriodsObserved: 6,
     },
     formality: {
       nowMonth: NOW_MONTH,
@@ -153,7 +154,7 @@ test("a tenant proves four things and the agency learns nothing else", async () 
     "420000000",
     "4200000",
     "COP",
-    "social_security",
+    "contribution_base",
     "202509",
     SUBJECT.subjectRef,
   ]) {
@@ -179,7 +180,8 @@ test("the outcome anchors on any registered chain, and opens only for the tenant
       currency: "COP",
       nowUnix: NOW,
       maxAgeSeconds: 30 * DAY,
-      acceptedBases: ["social_security"],
+      acceptedBases: ["contribution_base"],
+    minPeriodsObserved: 6,
     },
     formality: { nowMonth: NOW_MONTH, maxMonthsSinceLastContribution: 2, minMonthsContributedLast12: 6 },
     standing: { acceptedListSetRoot: snapshotRoot, nowUnix: NOW, maxAgeSeconds: 7 * DAY },

@@ -28,7 +28,8 @@ const request: VerificationRequest = {
     currency: "COP",
     nowUnix: NOW,
     maxAgeSeconds: 30 * DAY,
-    acceptedBases: ["social_security"],
+    acceptedBases: ["contribution_base"],
+  minPeriodsObserved: 6,
   },
   formality: {
     nowMonth: 202_509,

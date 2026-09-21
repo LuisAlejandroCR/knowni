@@ -475,6 +475,120 @@ el límite, ni el número consultado ni el nombre que devuelve la Procuraduría.
 *Lo que cuesta:* la app deja de funcionar sola. Sin el emisor corriendo dice que no lo encontró y no
 consulta nada — que es la respuesta honesta, no un fallback inventado.
 
+### D-26 — Paga quien pregunta; pagar no es autorizar · 2026-09-21
+
+El modelo pasa a cobro por consulta con wallet. La pregunta que decide el producto no es cómo se
+cobra, sino **a quién**, y hay dos respuestas posibles con consecuencias opuestas.
+
+*Decisión: dos productos, dos pagadores.*
+
+| Producto | Quién paga | Qué compra |
+|---|---|---|
+| **Verificación vinculada a una solicitud** | la contraparte que pregunta | una respuesta atada a `sessionId`, audiencia y finalidad, que sirve una vez |
+| **Credencial reutilizable** | el titular, si quiere | un activo suyo que presenta en diez trámites sin volver a consultar |
+
+*Los roles, por tipo de contrato:*
+
+| Contrato | Paga | Prueba |
+|---|---|---|
+| Arrendamiento | arrendador o inmobiliaria | arrendatario y codeudor |
+| Compraventa de vehículo | comprador | vendedor y el activo |
+| Crédito | prestamista | solicitante |
+| Proveedor B2B | empresa compradora | proveedor |
+| Empleo o plataforma | empleador o marketplace | candidato o trabajador |
+
+*Por qué no al revés.* Si paga quien prueba, la contraparte pide de más porque no le cuesta nada, y
+el producto se vuelve *"paga para demostrar que mereces"* — el mismo peaje que hoy cobra el estudio
+de arrendamiento, con una app encima. Con la contraparte pagando, el precio por predicado es lo que
+desincentiva pedir más de lo necesario, que es exactamente el comportamiento que el producto existe
+para cambiar.
+
+*La regla que protege al titular:* **pagar no es autorizar**. Quien paga compra el derecho a
+preguntar; solo el titular puede consentir que se consulte. Un pago sin consentimiento no emite
+nada, y un consentimiento revocado detiene la consulta aunque esté pagada.
+
+*Tres reglas del cobro:*
+
+1. **Se cotiza antes de consentir.** El precio sale por predicado y el pagador ve el total antes de
+   que se llame a una sola fuente.
+2. **Una fuente que no responde no se cobra.** `unavailable` no es una respuesta vendible, y
+   cobrarla crearía el incentivo de no arreglar la fiabilidad de las fuentes.
+3. **El pago se ata a la pregunta.** La transacción lleva en el memo el hash del `sessionId`, así
+   que un tercero puede comprobar que ese pago corresponde a esa consulta y a ninguna otra, sin
+   aprender quién preguntó ni sobre quién.
+
+*Supuesto de mercado sin verificar:* en Colombia el estudio de arrendamiento se le suele trasladar
+al arrendatario vía aseguradora. Si eso se confirma, el argumento comercial es sustituir ese cobro,
+no sumarse a él. Va a `verificacion.md` como pendiente.
+
+### D-27 — Privy firma, Freighter firma, y ninguno envía · 2026-09-21
+
+*Verificado en la documentación el 2026-09-21:* Privy clasifica Stellar en **nivel 2 — firmar**, no
+enviar; enviar solo está en nivel 3 (Ethereum, Solana, Tempo, Tron). Freighter tiene apps de iOS y
+Android e integra con una app móvil por **WalletConnect**, no por la API de la extensión.
+
+*Decisión:* un `PayerWalletPort` con tres adaptadores —Privy, Freighter y la llave del dispositivo—
+y el envío a Horizon en código propio, que ya existe desde el día 5. Ninguno de los dos wallets
+envía, así que el camino común no es una concesión: es el único que hay.
+
+*Y el saldo no es una función del wallet.* Un saldo en Stellar es público: se lee de Horizon por
+`accountId`. Una sola ruta de código lo muestra para los tres, y una cuenta sin fondear se lee
+vacía en vez de como error.
+
+*La línea que no se cruza:* Privy solo para **quien paga**. Un proveedor de login sabe quién entró y
+cuándo; ponerlo del lado del titular le entrega a un tercero el rastro de quién demostró qué, que es
+justo lo que el producto existe para no dejar. El titular sigue con llaves en el dispositivo.
+
+*Sobre el aviso:* Kapso revende la Cloud API de Meta, igual que Twilio o 360dialog, así que la
+capacidad es la de Meta y lo que se elige es la demo. El mensaje avisa y **no informa** — ni
+veredicto, ni contraparte, ni finalidad —, porque un WhatsApp se lee en una pantalla bloqueada y
+termina en el backup de otro teléfono. El teléfono es PII nueva: va por petición, con
+consentimiento aparte, y no se guarda junto a la consulta.
+
+### D-28 — Tres evidencias, tres credenciales; `solvency` las estaba mezclando · 2026-09-21
+
+Un IBC, una nómina y un movimiento bancario responden preguntas distintas y se equivocan en
+direcciones distintas. Meterlos en un solo `income` con un `basis` decorativo era dejar que una
+contraparte leyera "cotizó sobre X" como "tiene X disponible".
+
+| Evidencia | Qué dice | Qué **no** dice |
+|---|---|---|
+| `contribution_base` | base declarada para aportes (PILA) | ingreso neto, liquidez, probabilidad de pago |
+| `verified_income` | pago laboral o tributario observado | liquidez actual, continuidad |
+| `cashflow` | entradas en una cuenta consentida | empleo, aportes |
+
+*En código:* `IncomeBasis` pasa a ser esas tres, `BASIS_DOES_NOT_ESTIMATE` viaja con cada una, y el
+reclamo gana `periodsObserved` y `periodsWindow` — un mes bueno deja de parecerse a un año de ellos.
+
+*Y el predicado se vuelve estricto:* una lista `acceptedBases` vacía **no acepta nada**, porque una
+contraparte que no nombró qué evidencia toma no hizo una pregunta. Cuántos periodos son suficientes
+lo fija quien pregunta, en `minPeriodsObserved`, no la fuente.
+
+### D-29 — Ruta de acceso al IBC: institucional primero, documental como piso · 2026-09-21
+
+*Verificado el 2026-09-21:* Belvo publica Brasil, México y Chile — **Colombia no aparece** en su
+spec. Prometeo tiene la documentación tras login y su cobertura colombiana no está confirmada.
+SuAporte sí publica Swagger, pero sus dos APIs —`Gestión de Aportantes` y `Generador de Planilla`—
+son del lado de **quien paga** la planilla, no de quien quiere demostrar lo que cotizó.
+
+*Orden de trabajo, con lo que cada cosa aporta:*
+
+1. **Aportes en Línea** — tiene el histórico y su política ya contempla entregar historial PILA a
+   terceros para validar experiencia laboral. Es la conversación comercial prioritaria, y lo que se
+   pide es el resultado reducido: periodos cotizados, banda de IBC y último periodo. Nunca el PDF.
+2. **Agildata** — un manual de 2019 describe exactamente el adaptador que falta: IBC por periodo,
+   promedio de tres meses, días cotizados y acceso bajo autorización del titular. La evidencia es un
+   manual alojado por un tercero, así que **no entra al roadmap** hasta identificar quién lo opera.
+3. **UGPP / VUE, Estado Único de Cuenta** — no es API: el titular pide el documento y lo aporta.
+   Es el único camino construible hoy sin contrato, con su límite escrito: cuatro meses, documento
+   aportado, y hay que confirmar cómo se verifica su autenticidad.
+4. **Finerio Connect o Bancolombia Open Banking** — alimentan `cashflow`, que es otra credencial, no
+   un sustituto del IBC.
+
+*Lo que no se integra:* CoreSoft —consulta por documento en la URL, devuelve el expediente completo
+y no muestra autorización delegada—, SuAporte con credenciales reutilizadas del ciudadano, y
+cualquier proveedor de open finance sin cobertura colombiana confirmada por contrato.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -509,6 +623,9 @@ consulta nada — que es la respuesta honesta, no un fallback inventado.
 | 2026-09-20 | App B4: la pantalla del verificador ejecuta `acceptAnswer` de verdad, con el estado de revocación y la política como controles en pantalla. La 08 lee el `unavailable` que **firmó el emisor**, no un texto fijo |
 | 2026-09-21 | App al SDK 57 de Expo (router 57, React Native 0.86.3, React 19.2.3). `expo-doctor` 21/21, tipos limpios, 9 pruebas y bundle de iOS con el dominio dentro. La corrida del usuario en su teléfono destapó el desajuste de versiones que el bundle verde no veía |
 | 2026-09-21 | MVP real: workspace `issuer/` — el único proceso con llave de proveedor. La app manda una consulta autorizada y verifica en el teléfono lo que le devuelven. Se acaban las fixtures en el recorrido: documento y placa se escriben, el consentimiento decide qué se consulta — D-25 |
+| 2026-09-21 | Modelo comercial: paga quien pregunta, y pagar no autoriza. El titular solo paga si quiere una credencial reutilizable — D-26 |
+| 2026-09-21 | Pago comprobado contra Horizon antes de consultar, aviso por WhatsApp sin veredicto, y wallet del pagador detrás de un puerto con Privy y Freighter. Faltan cuatro llaves; cada una ausente apaga su función — D-27 |
+| 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: Aportes en Línea primero, UGPP como piso documental, open finance como credencial aparte — D-29 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -48,13 +48,20 @@ export interface SolvencyParams {
   readonly nowUnix: number;
   readonly maxAgeSeconds: number;
   readonly acceptedBases: readonly IncomeClaim["basis"][];
+  // How many periods with data the relying party requires. Theirs to set and
+  // public, like the obligation itself.
+  readonly minPeriodsObserved: number;
 }
 
 export function proveSolvency(claim: IncomeClaim, params: SolvencyParams): SolvencyTier {
   const admissible =
     claim.subjectRef.hex === params.expectedSubjectRef &&
     claim.currency === params.currency &&
+    // An empty list accepts nothing: a relying party that named no basis has
+    // not said what evidence it would take.
+    params.acceptedBases.length > 0 &&
     params.acceptedBases.includes(claim.basis) &&
+    claim.periodsObserved >= params.minPeriodsObserved &&
     withinAge(claim.attestedAt, params.nowUnix, params.maxAgeSeconds);
 
   if (!admissible) return SolvencyTier.NONE;

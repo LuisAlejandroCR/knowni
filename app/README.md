@@ -45,3 +45,20 @@ dominio entra por `paths` de TypeScript, no por el registro.
 | `/acuse` | 06 Acuse | Enviar no es firmar |
 | `/verificador` | 07 Verificador | Integridad y frescura, sin expediente |
 | `/degradado` | 08 Degradación | Falta una respuesta ≠ no cumple |
+
+## Correrlo contra fuentes reales
+
+```bash
+# terminal 1 — el emisor, con la llave
+npm start --workspace @knowni/issuer
+
+# terminal 2 — la app
+cd app && npm start
+```
+
+Sin el emisor corriendo, la app **no inventa respuestas**: dice que no encontró al emisor y no
+consulta nada. Con él, el recorrido es real de punta a punta — Registraduría, SICAAC, las tres
+listas y RUNT/SIMIT — y las respuestas llegan firmadas y se verifican en el teléfono.
+
+En un dispositivo físico, `localhost` es el teléfono: hay que apuntar
+`EXPO_PUBLIC_ISSUER_URL=http://<ip-del-portátil>:8787` antes de `npm start`.

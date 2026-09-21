@@ -6,7 +6,8 @@ import { Link } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
-import { currentSession, PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
+import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
+import { useFlow } from "../src/domain/flow.ts";
 import { verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
 import { color, type as typography } from "../src/theme.ts";
 
@@ -19,15 +20,19 @@ const LABEL: Record<RevocationSetting, string> = {
 };
 
 export default function Verificador() {
-  const session = currentSession();
+  const session = useFlow();
   const [revocation, setRevocation] = useState<RevocationSetting>("live");
   const [policy, setPolicy] = useState<PolicySetting>("strict");
 
   // A new presentation id per combination, so switching a control is a new
   // answer arriving and not a replay of the previous one.
+  // Nothing to verify until the issuer has answered: the screen says so
+  // instead of running an acceptance over an empty envelope.
   const view = useMemo(
     () =>
-      verifyOnDevice(
+      session.results === undefined
+        ? undefined
+        : verifyOnDevice(
         session.signed,
         session.results,
         `demo-${revocation}-${policy}`,
@@ -37,6 +42,24 @@ export default function Verificador() {
       ),
     [session, revocation, policy],
   );
+
+  if (view === undefined) {
+    return (
+      <Screen>
+        <TopBar left={<Brand />} right={<Badge>Verificador</Badge>} />
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
+          <Title>Sin respuestas{"\n"}que verificar.</Title>
+          <Body>El titular todavía no ha compartido nada con esta contraparte.</Body>
+        </ScrollView>
+        <Footer>
+          <Link href="/" asChild>
+            <Button>Volver</Button>
+          </Link>
+        </Footer>
+        <DemoStamp>ACEPTACIÓN REAL · SIN ENVOLTORIO TODAVÍA</DemoStamp>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

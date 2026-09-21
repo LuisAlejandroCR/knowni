@@ -4,13 +4,14 @@
 
 import { Link, router } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
-import { answerText, currentSession, PREDICATE_LABEL } from "../src/domain/session.ts";
+import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
+import { useFlow } from "../src/domain/flow.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
-  const { answers } = currentSession();
+  const { answers } = useFlow();
 
   // No verified answers means nothing to show. A screen that renders what it
   // could not check is a screen that can be lied to.
@@ -36,7 +37,7 @@ export default function Revision() {
     <Screen>
       <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Antes de compartir" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-        <Label>03 / Revisa tu respuesta</Label>
+        <Steps current={4} />
         <Title>Esto es lo que{"\n"}recibirán.</Title>
         <Body>{`${REQUEST.counterparty}\nSolo para esta ${REQUEST.purposeLabel.toLowerCase()}.`}</Body>
         <Card>

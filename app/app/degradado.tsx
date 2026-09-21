@@ -6,14 +6,16 @@ import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { DEGRADED } from "../src/fixtures.ts";
-import { answerText, currentSession, PREDICATE_LABEL } from "../src/domain/session.ts";
+import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
+import { useFlow } from "../src/domain/flow.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Degradado() {
   // The missing answers are read from the verified envelope, not invented for
   // the screen: "unavailable" is what the issuer signed, and it is not "false".
-  const missing = (currentSession().answers ?? []).filter((answer) => answer.value === "unavailable");
-  const answered = (currentSession().answers ?? []).filter((answer) => answer.value !== "unavailable");
+  const flow = useFlow();
+  const missing = (flow.answers ?? []).filter((answer) => answer.value === "unavailable");
+  const answered = (flow.answers ?? []).filter((answer) => answer.value !== "unavailable");
 
   return (
     <Screen>

@@ -6,6 +6,7 @@
 
 import { createIssuerService } from "./service.ts";
 import { createMemoryRequestQuota, DEFAULT_MAX_PER_MINUTE } from "./access.ts";
+import { createMemoryIssuanceCache, DEFAULT_CACHE_MAX_ENTRIES } from "./cache.ts";
 import { notifierFromEnv } from "./notify.ts";
 import { nodeSignatures } from "@knowni/attestation/node";
 
@@ -27,6 +28,11 @@ if (accessKeys.length === 0) {
   process.exit(2);
 }
 const maxPerMinute = Number(process.env.KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE ?? String(DEFAULT_MAX_PER_MINUTE));
+const cacheMaxEntries = Number(process.env.KNOWNI_ISSUER_CACHE_MAX_ENTRIES ?? String(DEFAULT_CACHE_MAX_ENTRIES));
+if (!Number.isSafeInteger(cacheMaxEntries) || cacheMaxEntries < 1) {
+  console.error("KNOWNI_ISSUER_CACHE_MAX_ENTRIES must be a positive integer.");
+  process.exit(2);
+}
 
 const seed = process.env.KNOWNI_ISSUER_SEED
   ? Uint8Array.from(Buffer.from(process.env.KNOWNI_ISSUER_SEED, "hex"))
@@ -61,9 +67,11 @@ createIssuerService({
   notifier,
   access: { keys: new Set(accessKeys) },
   requestQuota: createMemoryRequestQuota(maxPerMinute),
+  issuanceCache: createMemoryIssuanceCache(cacheMaxEntries),
 }).listen(port, () => {
   console.log(`issuer listening on http://localhost:${port}`);
   console.log(`payments: ${payments === undefined ? "off (no treasury account)" : payments.destination}`);
   console.log(`notifications: ${notifier.channel}`);
   console.log(`relying parties: ${accessKeys.length}, ${maxPerMinute}/min each`);
+  console.log(`issuance cache: memory, max ${cacheMaxEntries} entries`);
 });

@@ -18,6 +18,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | `core/` no importa ningún SDK ni declara dependencias | `core/test/no-vendor-imports.test.ts` | 2026-09-20 |
 | La misma verificación ancla en dos cadenas sin cambiar nada por encima del registro | `anchoring/test/registry.test.ts` | 2026-09-20 |
 | Node 22 ejecuta TypeScript sin paso de compilación; `enum` no, `const` sí | ejecutado | 2026-09-20 |
+| Un retry idéntico reutiliza el sobre firmado sin repetir Croma ni el aviso; sujetos distintos bajo el mismo `paymentRef` no comparten entrada | `issuer/test/unit/cache.spec.ts` e `issue-cache.spec.ts` | 2026-09-22 |
 
 ## Verificado en otra parte, no aquí
 

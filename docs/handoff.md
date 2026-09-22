@@ -12,8 +12,8 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **302 del dominio** + **28 de la app**, verdes localmente; CI pendiente del último push |
-| Ramas | solo `main`; 25 PRs integrados |
+| Pruebas | **310 del dominio** + **28 de la app**, verdes localmente; CI pendiente del PR de caché |
+| Ramas | `main` contiene los PR #29 y #30; caché preparado en `issuer-response-cache` |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
 
@@ -62,7 +62,8 @@ un archivo compartido.
 
 | Agente | Toma | Archivos | Estado |
 |---|---|---|---|
-| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/{plan,memoria,handoff}.md` | PR #29 abierto; coordinador terminado y probado, CI pendiente del último push |
+| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/{plan,memoria,handoff}.md` | PR #29 y PR #30 fusionados; CI verde |
+| Codex · caché | Bloque 1 — caché idempotente y single-flight | `issuer/src/{cache,service,main}.ts`, tests del emisor, `.env.example`, `issuer/README.md`, docs compartidos | Implementado y verificado en `issuer-response-cache`; PR directo contra `main` pendiente |
 | Esta sesión | Bloqueo de autenticidad UGPP (research, ver bloque 3) — D-32 | `docs/verificacion.md`, `docs/memoria.md` | **Cerrado.** Sin mecanismo público; queda documentado, no bloqueado por falta de investigación |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
@@ -72,9 +73,8 @@ por esos mismos archivos.
 
 ## Siguientes bloques, en orden
 
-1. **Caché en `issuer/`**: una pregunta idéntica repetida —mismo `paymentRef`— vuelve a gastar la
-   cuota de Croma en vez de servir la respuesta ya emitida. Llaves y cuota por contraparte ya están
-   resueltas — D-31.
+1. **Fusionar el caché del emisor**: implementación volátil y single-flight terminada — D-34.
+   Después queda persistencia compartida para operar más de una réplica.
 2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
    transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se

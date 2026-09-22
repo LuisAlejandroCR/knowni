@@ -104,6 +104,9 @@ nativo y prohíbe cualquier atajo de servidor.
   lo que permitió probar Stellar y Croma sin red y sin key.
 - Separar `degraded` de `failed` desde la primera línea. Heredado del proyecto ZK anterior; ya son dos
   proyectos seguidos y no ha fallado una vez.
+- `2026-09-22` — Derivar claves de idempotencia desde todos los campos que cambian una respuesta,
+  pero guardar solo un HMAC. Un identificador público de pago puede omitir al sujeto precisamente
+  por privacidad; reutilizarlo como clave interna habría mezclado respuestas de personas distintas.
 
 ## 5. ¿Qué no se volvería a hacer?
 
@@ -134,6 +137,8 @@ nativo y prohíbe cualquier atajo de servidor.
       inferencia que nadie pidió` → tema propuesto: `what-a-false-reads-as`
 - [ ] `El caso de uso con el que se arranca se cuela en la definición del producto y termina como
       una unión cerrada en el dominio` → tema propuesto: `first-use-case-leaks-into-the-domain`
+- [ ] `Una clave pública útil para pago no necesariamente identifica una operación idempotente;
+      derivar la clave interna completa y no reversible` → tema propuesto: `idempotency-keys-are-private`
 
 ## Verify
 

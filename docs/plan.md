@@ -270,6 +270,28 @@ Secuencia de implementación:
 
 ## Fases
 
+### Bloque activo — caché idempotente del emisor
+
+El caché evita repetir una consulta pagada cuando la contraparte reintenta porque perdió la
+respuesta. Guarda únicamente el sobre ya reducido y firmado; nunca respuestas de Croma, documento,
+placa, teléfono ni credenciales. No reemplaza la persistencia de pagos ni extiende la vigencia de
+una respuesta.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| C1 | La clave liga contraparte, sujeto, activo, consentimientos, solicitud y `paymentTx`, pero en memoria solo existe un HMAC opaco | test de cambios por campo y barrido de PII en claves |
+| C2 | Dos sujetos bajo el mismo `paymentRef` nunca comparten una respuesta | prueba con documentos distintos |
+| C3 | Un retry pagado solo acierta con el mismo hash de transacción; omitirlo o cambiarlo no obtiene el resultado cacheado | tests de replay y ausencia de pago |
+| C4 | Un acierto devuelve exactamente el sobre firmado y `chargedMinor`, sin llamar Horizon, Croma ni notificador otra vez | contador de puertos inyectados |
+| C5 | Solicitudes idénticas concurrentes comparten una sola promesa; Croma se consulta una vez | prueba concurrente con barrera |
+| C6 | Fallos de pago o emisión no quedan cacheados | primera llamada falla, segunda vuelve a ejecutar |
+| C7 | La entrada expira con el sobre firmado y nunca sobrevive su `expiresAt` | reloj inyectado y prueba de frontera |
+| C8 | El tamaño tiene un límite configurable; desalojar una entrada no expone ni altera otra | prueba de capacidad y variable documentada |
+
+Orden del handler: autenticar y aplicar cuota → validar cuerpo/consentimiento → derivar clave opaca →
+resolver una sola operación de pago/emisión → responder. Un cache hit sigue exigiendo una llave de
+contraparte válida y consume cuota HTTP, pero no vuelve a gastar Horizon, Croma ni WhatsApp.
+
 ### F0 — Cerrar la entrega de hackathon
 
 - corregir suite y cifras documentadas;

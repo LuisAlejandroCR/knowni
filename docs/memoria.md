@@ -638,8 +638,8 @@ ni siquiera llega a esa comprobación.
 Croma — `KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE` limita cada llave (20/min por defecto), con ventanas
 en memoria por llave, nunca compartidas entre contrapartes.
 
-*Lo que queda fuera de este cambio:* cachear una pregunta idéntica repetida no está resuelto — sigue
-siendo el ítem de caché de `docs/handoff.md`.
+*Lo que quedaba fuera de este cambio:* cachear una pregunta idéntica repetida. Quedó resuelto luego
+como caché volátil y single-flight en D-35; la persistencia entre procesos sigue separada.
 
 ### D-32 — El EUC de UGPP no trae verificación pública; el camino documental espera a un humano · 2026-09-21
 
@@ -717,6 +717,22 @@ la forma correcta para una lista que crece. Es una dependencia nativa nueva y no
 el criterio A12, así que la elige el titular. Hasta entonces `app/src/domain/verifier.ts` sigue con
 el ledger en memoria y lo dice en su comentario; el cambio es un argumento.
 
+### D-35 — La idempotencia liga al sujeto sin convertirlo en identificador · 2026-09-22
+
+*El error evitado:* `paymentRef` liga contraparte, finalidad, reto, parámetros y predicados, pero no
+al sujeto. Es correcto para el pago y la privacidad; es insuficiente como clave de caché. Dos
+personas respondiendo la misma solicitud podrían compartir referencia y recibir el sobre ajeno.
+
+*Decisión:* la clave de emisión es un HMAC con la semilla secreta del emisor sobre contraparte,
+documento, activo, consentimientos, `paymentRef` y `paymentTx`. Solo el digest vive en memoria. No se
+guarda cédula, placa, teléfono, llave de acceso ni payload de Croma, y el mismo conjunto bajo otra
+contraparte produce otra clave.
+
+*Semántica:* entradas idénticas concurrentes comparten una promesa. Solo el productor comprueba el
+pago, consulta Croma, firma y notifica; los retries esperan el mismo resultado. Un fallo no se
+cachea. La entrada expira exactamente con el sobre firmado y el proceso limita cuántas conserva.
+El caché sigue siendo volátil: persistencia y coordinación entre réplicas permanecen pendientes.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -760,6 +776,7 @@ el ledger en memoria y lo dice en su comentario; el cambio es un argumento.
 | 2026-09-21 | Investigado el bloqueo de autenticidad del EUC de UGPP: ningún mecanismo público de verificación en las fuentes primarias de UGPP, y el propio emisor declara que el documento no es una certificación válida para trámites de prestaciones económicas. `needs_human_review` queda como la respuesta correcta, no un pendiente — D-32 |
 | 2026-09-21 | Pago móvil portable: la cotización publica activo, destino y monto; Privy firma el hash, Freighter el sobre, y Horizon recibe solo el XDR firmado. El emisor deja de aceptar un activo distinto por coincidencia numérica — D-33 |
 | 2026-09-22 | `NullifierStore` entra como puerto y `createPersistentNullifierLedger` hidrata el conjunto gastado al arrancar, para que un reinicio de la app deje de devolver una presentación ya gastada. `claim` sigue síncrono a propósito; la escritura es lo que trailea. Falta elegir el almacén del dispositivo — D-34 |
+| 2026-09-22 | Caché idempotente del emisor: HMAC por contraparte/sujeto/pregunta/pago, single-flight, expiración con la firma y tamaño acotado. Un retry no vuelve a gastar Horizon, Croma ni WhatsApp — D-35 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

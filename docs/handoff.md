@@ -12,8 +12,8 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **309 del dominio** + **28 de la app**, verdes en CI (Node 22 y 24) |
-| Ramas | solo `main`; 25 PRs integrados |
+| Pruebas | **317 del dominio** + **28 de la app**, verdes en CI (Node 22 y 24) |
+| Ramas | solo `main`; 30 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
 
@@ -63,10 +63,10 @@ un archivo compartido.
 
 | Agente | Toma | Archivos | Estado |
 |---|---|---|---|
-| Codex | Bloque 1 — caché de respuestas en `issuer/` | `issuer/src/{cache,main,service}.ts`, `issuer/test/unit/{cache,issue-cache}.spec.ts`, `docs/*` | **En curso**, worktree `knowni-issuer-cache` (rama `issuer-response-cache`), sin commitear |
-| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
+| Codex | Bloque 1 — caché idempotente y single-flight en `issuer/` — D-35 | `issuer/src/{cache,main,service}.ts`, tests del emisor, `.env.example`, `issuer/README.md` | **Cerrado.** PR #31 |
+| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` — D-33 | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
 | Esta sesión | Llave y cuota en `/issue` — D-31 · bloqueo de autenticidad UGPP — D-32 | `issuer/src/access.ts`, `docs/{verificacion,memoria}.md` | **Cerrados.** PR #27 y #28 mergeados |
-| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 | `attestation/src/acceptance.ts`, `app/src/domain/verifier.ts` | **Cerrado.** El puerto y el ledger hidratado están probados; falta elegir el almacén del dispositivo |
+| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 | `attestation/src/acceptance.ts`, `app/src/domain/verifier.ts` | **Cerrado.** PR #32. Falta elegir el almacén del dispositivo |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
 **Mientras Codex tenga `issuer/src/{cache,main,service}.ts` sin commitear, nadie más entra ahí.** El
@@ -75,9 +75,9 @@ son los pagos gastados (`issuer/src/payments.ts`, espera a que el caché aterric
 
 ## Siguientes bloques, en orden
 
-1. **Caché en `issuer/`**: una pregunta idéntica repetida —mismo `paymentRef`— vuelve a gastar la
-   cuota de Croma en vez de servir la respuesta ya emitida. Llaves y cuota por contraparte ya están
-   resueltas — D-31.
+1. **Persistencia del caché del emisor**: el caché idempotente y single-flight ya corre — D-35 —,
+   pero es volátil y por proceso; entre réplicas no se comparte.
+   Después queda persistencia compartida para operar más de una réplica.
 2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
    transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se

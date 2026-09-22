@@ -61,6 +61,7 @@ notifications: none
 | Fuentes | `CROMA_API_KEY` | el servicio **no arranca** |
 | Identidad del emisor | `KNOWNI_ISSUER_SEED` | se genera una por arranque, y lo emitido antes deja de verificar |
 | Cobro | `KNOWNI_TREASURY_ACCOUNT` + `KNOWNI_PAYMENT_ASSET_ISSUER` | se responde sin cobrar si no hay tesoro; con tesoro incompleto no arranca |
+| Caché | `KNOWNI_ISSUER_CACHE_MAX_ENTRIES` | usa 1000 entradas en memoria por defecto |
 | Aviso | `KAPSO_*` o `META_*` | no se envía nada, y se reporta como `none` |
 
 ## Pago
@@ -70,6 +71,13 @@ busca en Horizon y tiene que estar exitoso, llevar el `paymentRef` como `MEMO_HA
 la cuenta del tesoro en el activo USDC configurado y cubrir el monto publicado por `/quote`. XLM u
 otro activo con el mismo número no sirve. Una transacción paga **una** pregunta; un pago rechazado
 sigue disponible, para que nadie quede cobrado por una consulta que no se hizo.
+
+## Reintentos e idempotencia
+
+Una respuesta exitosa reducida y firmada vive en memoria hasta su propia expiración. La clave es un
+HMAC que liga contraparte, sujeto, activo, consentimientos, pregunta y transacción; no contiene PII
+recuperable. Dos retries idénticos —también si llegan a la vez— comparten pago, consulta, firma y
+aviso. Los errores nunca se guardan. Reiniciar el proceso vacía el caché: no sustituye persistencia.
 
 ## Aviso
 

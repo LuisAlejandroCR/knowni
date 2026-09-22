@@ -13,6 +13,7 @@ import {
   type SpentPayments,
 } from "./payments.ts";
 import { checkAccess, createMemoryRequestQuota, type AccessPolicy, type RequestQuota } from "./access.ts";
+import { createMemoryIssuanceCache, issuanceCacheKey, type IssuanceCache } from "./cache.ts";
 import { noNotifier, type Notifier } from "./notify.ts";
 import { sha256Hash } from "@knowni/core/node";
 import type { SessionRequest } from "@knowni/core";
@@ -41,6 +42,23 @@ export interface IssuerOptions {
   // party, "anyone with the URL" is not a caller this service recognizes.
   readonly access?: AccessPolicy;
   readonly requestQuota?: RequestQuota;
+  readonly issuanceCache?: IssuanceCache<IssuanceResponse>;
+}
+
+export interface IssuanceResponse {
+  readonly results: ReturnType<typeof attestResults>;
+  readonly chargedMinor: number;
+}
+
+class IssueHttpError extends Error {
+  readonly statusCode: number;
+  readonly responseBody: Readonly<Record<string, string>>;
+
+  constructor(statusCode: number, responseBody: Readonly<Record<string, string>>) {
+    super("issuance refused");
+    this.statusCode = statusCode;
+    this.responseBody = responseBody;
+  }
 }
 
 export interface IssueRequestBody {
@@ -202,6 +220,7 @@ export function createIssuerService(options: IssuerOptions) {
   const spent = options.spentPayments ?? createMemorySpentPayments();
   const notifier = options.notifier ?? noNotifier;
   const quota = options.requestQuota ?? createMemoryRequestQuota();
+  const cache = options.issuanceCache ?? createMemoryIssuanceCache<IssuanceResponse>();
 
   return createServer(async (request, response) => {
     if (request.method === "OPTIONS") return send(response, 204, {});
@@ -241,11 +260,12 @@ export function createIssuerService(options: IssuerOptions) {
       // Checked before the body is even read: an unrecognized or throttled
       // caller never reaches consent, payment or a single call to Croma.
       const keyHeader = request.headers["x-knowni-access-key"];
+      const callerKey = typeof keyHeader === "string" ? keyHeader : undefined;
       const access =
         options.access === undefined
           ? { status: "refused" as const, reason: "missing_key" as const }
           : checkAccess(
-              typeof keyHeader === "string" ? keyHeader : undefined,
+              callerKey,
               options.access,
               quota,
               Math.floor(Date.now() / 1000),
@@ -253,6 +273,7 @@ export function createIssuerService(options: IssuerOptions) {
       if (access.status === "refused") {
         return send(response, access.reason === "rate_limited" ? 429 : 401, { error: access.reason });
       }
+      if (callerKey === undefined) return send(response, 401, { error: "missing_key" });
 
       const body = (await readBody(request)) as IssueRequestBody | undefined;
       if (body === undefined || typeof body.documentNumber !== "string" || body.request === undefined) {
@@ -261,42 +282,59 @@ export function createIssuerService(options: IssuerOptions) {
       if (!Array.isArray(body.consented) || body.consented.length === 0) {
         return send(response, 400, { error: "consent_missing" });
       }
-      // Paid before consulted: the sources cost money and a question nobody
-      // paid for is a question nobody asked.
-      if (options.payments !== undefined) {
-        if (typeof body.paymentTx !== "string") {
-          return send(response, 402, { error: "payment_required" });
-        }
-        const predicates = predicatesOf(body.consented);
-        const expected = paymentRef(body.request, predicates);
-        const expectedQuote = quote(body.request, predicates, Math.floor(Date.now() / 1000));
-        if (expectedQuote.status !== "quoted") return send(response, 400, { error: expectedQuote.reason });
-        const paid = await verifyPayment(
-          body.paymentTx,
-          expected,
-          {
-            ...options.payments,
-            minAmountStroops: quotedAmountStroops(expectedQuote.quote.totalMinor, options.payments),
-          },
-          spent,
-        );
-        if (paid.status === "refused") {
-          return send(response, 402, { error: "payment_refused", reason: paid.reason });
-        }
-      }
-
+      const nowUnix = Math.floor(Date.now() / 1000);
+      const predicates = predicatesOf(body.consented);
+      const expected = paymentRef(body.request, predicates);
+      const key = issuanceCacheKey(options.seed, {
+        accessKey: callerKey,
+        documentKind: body.documentKind,
+        documentNumber: body.documentNumber,
+        plate: body.plate,
+        consented: body.consented,
+        paymentRef: expected,
+        paymentTx: body.paymentTx,
+      });
       try {
-        const nowUnix = Math.floor(Date.now() / 1000);
-        const { answers, results } = await issueAnswers(options, body, nowUnix);
-        // The notice says an answer is ready and nothing more; a failure to
-        // send it is not a failure to issue.
-        if (typeof body.notifyPhone === "string" && body.notifyPhone !== "") {
-          void notifier.notify(body.notifyPhone, results.sessionId);
-        }
-        // Only answers that came back are billed; an unavailable source is
-        // not charged for.
-        return send(response, 200, { results, chargedMinor: chargeableMinor(answers) });
-      } catch {
+        const resolved = await cache.resolve(key, nowUnix, async () => {
+          // Paid before consulted: the sources cost money and a question nobody
+          // paid for is a question nobody asked. Only the producer reaches here;
+          // identical concurrent retries await it instead of spending twice.
+          if (options.payments !== undefined) {
+            if (typeof body.paymentTx !== "string") {
+              throw new IssueHttpError(402, { error: "payment_required" });
+            }
+            const expectedQuote = quote(body.request, predicates, nowUnix);
+            if (expectedQuote.status !== "quoted") {
+              throw new IssueHttpError(400, { error: expectedQuote.reason });
+            }
+            const paid = await verifyPayment(
+              body.paymentTx,
+              expected,
+              {
+                ...options.payments,
+                minAmountStroops: quotedAmountStroops(expectedQuote.quote.totalMinor, options.payments),
+              },
+              spent,
+            );
+            if (paid.status === "refused") {
+              throw new IssueHttpError(402, { error: "payment_refused", reason: paid.reason });
+            }
+          }
+
+          const { answers, results } = await issueAnswers(options, body, nowUnix);
+          // The notice says an answer is ready and nothing more; a failure to
+          // send it is not a failure to issue. A cache hit never sends it twice.
+          if (typeof body.notifyPhone === "string" && body.notifyPhone !== "") {
+            void notifier.notify(body.notifyPhone, results.sessionId);
+          }
+          return {
+            value: { results, chargedMinor: chargeableMinor(answers) },
+            expiresAt: results.expiresAt,
+          };
+        });
+        return send(response, 200, resolved.value);
+      } catch (error) {
+        if (error instanceof IssueHttpError) return send(response, error.statusCode, error.responseBody);
         // Nothing from a provider crosses this boundary, not even in a 500.
         return send(response, 502, { error: "issuance_failed" });
       }

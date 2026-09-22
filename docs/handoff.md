@@ -12,8 +12,8 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **310 del dominio** + **28 de la app**, verdes localmente; CI pendiente del PR de caché |
-| Ramas | `main` contiene los PR #29 y #30; caché preparado en `issuer-response-cache` |
+| Pruebas | **317 del dominio** + **28 de la app**, verdes en CI (Node 22 y 24) |
+| Ramas | solo `main`; 30 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
 
@@ -43,6 +43,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-31 | `/issue` exige llave de contraparte y límite por minuto, antes de pago y antes de Croma; sin llave el emisor no arranca |
 | D-32 | El EUC de UGPP no trae verificación pública ni es certificación según su propio emisor; `needs_human_review` es la respuesta correcta, no un pendiente |
 | D-33 | La cotización nombra monto, destino y activo; otro activo nunca paga por coincidencia numérica |
+| D-34 | El conjunto gastado sobrevive al proceso: `NullifierStore` es puerto y `claim` sigue síncrono a propósito |
 
 ## Lo que bloquea, y de quién depende
 
@@ -55,25 +56,27 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | UGPP como fallback documental | requiere operación humana, precio y SLA; sin ellos permanece en `needs_human_review` y fuera del flujo automático — D-29/D-32 |
 | Si existe API de IBC con autorización delegada | conversación con Aportes en Línea |
 
-## Coordinación en curso — 2026-09-21, tarde
+## Coordinación en curso — 2026-09-22
 
 Tres agentes tocando el repo a la vez. Para no chocar, cada uno anota aquí qué toma antes de tocar
 un archivo compartido.
 
 | Agente | Toma | Archivos | Estado |
 |---|---|---|---|
-| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/{plan,memoria,handoff}.md` | PR #29 y PR #30 fusionados; CI verde |
-| Codex · caché | Bloque 1 — caché idempotente y single-flight | `issuer/src/{cache,service,main}.ts`, tests del emisor, `.env.example`, `issuer/README.md`, docs compartidos | Implementado y verificado en `issuer-response-cache`; PR directo contra `main` pendiente |
-| Esta sesión | Bloqueo de autenticidad UGPP (research, ver bloque 3) — D-32 | `docs/verificacion.md`, `docs/memoria.md` | **Cerrado.** Sin mecanismo público; queda documentado, no bloqueado por falta de investigación |
+| Codex | Bloque 1 — caché idempotente y single-flight en `issuer/` — D-35 | `issuer/src/{cache,main,service}.ts`, tests del emisor, `.env.example`, `issuer/README.md` | **Cerrado.** PR #31 |
+| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` — D-33 | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
+| Esta sesión | Llave y cuota en `/issue` — D-31 · bloqueo de autenticidad UGPP — D-32 | `issuer/src/access.ts`, `docs/{verificacion,memoria}.md` | **Cerrados.** PR #27 y #28 mergeados |
+| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 | `attestation/src/acceptance.ts`, `app/src/domain/verifier.ts` | **Cerrado.** PR #32. Falta elegir el almacén del dispositivo |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
-**Mientras `issuer/service.ts`, `issuer/payments.ts` o `issuer/main.ts` tengan cambios sin commitear
-de Codex, el bloque 1 (caché) y el 5 (`NullifierLedger`/pagos persistidos) esperan** — los dos pasan
-por esos mismos archivos.
+**Mientras Codex tenga `issuer/src/{cache,main,service}.ts` sin commitear, nadie más entra ahí.** El
+bloque 5 se parte por eso: **5a** es el `NullifierLedger` (`attestation/` + `app/`, libre) y **5b**
+son los pagos gastados (`issuer/src/payments.ts`, espera a que el caché aterrice).
 
 ## Siguientes bloques, en orden
 
-1. **Fusionar el caché del emisor**: implementación volátil y single-flight terminada — D-34.
+1. **Persistencia del caché del emisor**: el caché idempotente y single-flight ya corre — D-35 —,
+   pero es volátil y por proceso; entre réplicas no se comparte.
    Después queda persistencia compartida para operar más de una réplica.
 2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
    transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
@@ -81,7 +84,10 @@ por esos mismos archivos.
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
    todo o nada.
-5. **`NullifierLedger` y pagos gastados con persistencia**, que hoy viven en memoria.
+5. **Pagos gastados con persistencia** (5b), que hoy viven en memoria en `issuer/src/payments.ts`.
+   ~~5a, el `NullifierLedger`~~ **resuelto en el mecanismo — D-34**: el puerto y el ledger hidratado
+   están probados; lo que queda es **elegir el almacén del dispositivo**, que es del titular porque
+   es una dependencia nativa nueva y no se ejerce sin el criterio A12.
 
 ## Lo que no se hace, y no es negociable
 

@@ -45,6 +45,65 @@ export function createMemoryNullifierLedger(): NullifierLedger {
   };
 }
 
+export interface NullifierEntry {
+  readonly nullifier: string;
+  readonly presentationId: string;
+}
+
+// Where a spent set outlives the process. A port, not a dependency: this
+// workspace never learns what a phone, a file or a database is.
+export interface NullifierStore {
+  load(): Promise<readonly NullifierEntry[]>;
+  append(entry: NullifierEntry): Promise<void>;
+}
+
+export interface PersistentLedgerOptions {
+  // A write that never lands means a spent presentation comes back after a
+  // restart. It is a degradation, so it is reported rather than swallowed.
+  readonly onWriteError?: (error: unknown, entry: NullifierEntry) => void;
+}
+
+// Hydrated once, then decided in memory: `claim` stays synchronous —
+// `acceptAnswer` consumes the nullifier in one step and an await there would
+// open the window this ledger exists to close. The write is what trails.
+export async function createPersistentNullifierLedger(
+  store: NullifierStore,
+  options: PersistentLedgerOptions = {},
+): Promise<NullifierLedger> {
+  const onWriteError = options.onWriteError ?? (() => {});
+  const claimed = new Map<string, string>();
+  for (const entry of await store.load()) {
+    // First write wins: a store that somehow holds the same nullifier twice
+    // must not let the later entry relabel what was already spent.
+    if (!claimed.has(entry.nullifier)) claimed.set(entry.nullifier, entry.presentationId);
+  }
+
+  return {
+    claim(nullifier, presentationId) {
+      const previous = claimed.get(nullifier);
+      if (previous !== undefined) return previous === presentationId ? "idempotent" : "replayed";
+      claimed.set(nullifier, presentationId);
+      const entry = { nullifier, presentationId };
+      void store.append(entry).catch((error: unknown) => onWriteError(error, entry));
+      return "claimed";
+    },
+  };
+}
+
+// The binding a process uses before it has real storage. Named for what it
+// is, so nobody reads a memory-backed ledger as a persisted one.
+export function createMemoryNullifierStore(seed: readonly NullifierEntry[] = []): NullifierStore {
+  const entries: NullifierEntry[] = [...seed];
+  return {
+    async load() {
+      return [...entries];
+    },
+    async append(entry) {
+      entries.push(entry);
+    },
+  };
+}
+
 export type AcceptanceFailure =
   | PresentationFailure
   | "revocation_unknown"

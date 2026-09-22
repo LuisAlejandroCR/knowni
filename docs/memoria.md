@@ -691,6 +691,32 @@ son un error, no una ruta gratuita.
 *Límite honesto:* los contratos están cubiertos sin red, pero faltan las llaves para una firma real
 con Privy/WalletConnect y una transacción USDC testnet. Eso permanece en `verificacion.md`.
 
+### D-34 — El conjunto gastado sobrevive al proceso, y el almacén es un puerto · 2026-09-22
+
+*El hueco:* `createMemoryNullifierLedger` vive en el proceso. En el teléfono del verificador eso
+significa que **al reiniciar la app el conjunto gastado queda vacío**, y una presentación ya gastada
+vuelve a aceptarse. D-22 dice que el nullifier se gasta una sola vez; en memoria esa regla dura lo
+que dure el proceso.
+
+*Decisión:* `NullifierStore` entra como puerto —`load` y `append`, ambos asíncronos— y
+`createPersistentNullifierLedger(store)` hidrata una vez al arrancar y luego decide en memoria.
+`attestation/` sigue sin saber qué es un teléfono, un archivo ni una base: D-23 no se toca.
+
+*Por qué `claim` sigue siendo síncrono:* `acceptAnswer` consume el nullifier en un solo paso — D-22.
+Un `await` ahí abre exactamente la ventana que el ledger existe para cerrar, así que la decisión se
+toma contra el mapa hidratado y **lo que va detrás es la escritura**, no la decisión.
+
+*Lo que se reporta en vez de tragarse:* si `append` falla, el reclamo ya vale en este proceso pero se
+perderá en el próximo arranque. Eso es una degradación y sale por `onWriteError`, no en silencio.
+Una escritura fallida nunca convierte un `replayed` en un `claimed` dentro del proceso.
+
+*Lo que falta, y de quién depende:* elegir el almacén del dispositivo. `expo-secure-store` ya es peer
+dependency **no instalada** de `@privy-io/expo`, pero está pensado para secretos y tiene tope de
+tamaño por valor: un conjunto que crece no cabe ahí. `@react-native-async-storage/async-storage` es
+la forma correcta para una lista que crece. Es una dependencia nativa nueva y no se puede ejercer sin
+el criterio A12, así que la elige el titular. Hasta entonces `app/src/domain/verifier.ts` sigue con
+el ledger en memoria y lo dice en su comentario; el cambio es un argumento.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -733,6 +759,7 @@ con Privy/WalletConnect y una transacción USDC testnet. Eso permanece en `verif
 | 2026-09-21 | Cierra el hueco del traspaso: `POST /issue` exige una llave de contraparte y un límite por minuto antes de leer el cuerpo, de cobrar o de llamar a Croma. Sin llave configurada el emisor no arranca — D-31. 300 pruebas |
 | 2026-09-21 | Investigado el bloqueo de autenticidad del EUC de UGPP: ningún mecanismo público de verificación en las fuentes primarias de UGPP, y el propio emisor declara que el documento no es una certificación válida para trámites de prestaciones económicas. `needs_human_review` queda como la respuesta correcta, no un pendiente — D-32 |
 | 2026-09-21 | Pago móvil portable: la cotización publica activo, destino y monto; Privy firma el hash, Freighter el sobre, y Horizon recibe solo el XDR firmado. El emisor deja de aceptar un activo distinto por coincidencia numérica — D-33 |
+| 2026-09-22 | `NullifierStore` entra como puerto y `createPersistentNullifierLedger` hidrata el conjunto gastado al arrancar, para que un reinicio de la app deje de devolver una presentación ya gastada. `claim` sigue síncrono a propósito; la escritura es lo que trailea. Falta elegir el almacén del dispositivo — D-34 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -131,13 +131,29 @@ la evidencia, no solamente el intermediario que la transportó.
 |---|---|---|---|
 | 1 | **Aportes en Línea** | histórico PILA; su política ya contempla entregarlo a terceros para validar experiencia laboral | conversación comercial pendiente |
 | 2 | **Agildata** (manual 2019) | IBC por periodo, promedio de 3 meses, días cotizados, con autorización del titular | vigencia sin confirmar; no entra al roadmap |
-| 3 | **UGPP / VUE — Estado Único de Cuenta** | cuatro meses de aportes, entregados al titular | **construible hoy**: documento aportado, no API |
+| 3 | **UGPP / VUE — Estado Único de Cuenta** | cuatro meses de aportes, entregados al titular | ✅ **adaptador escrito** (`sources/src/country/colombia/ugpp.ts`); falta el lector del documento y su comprobación de autenticidad |
 | 4 | **Finerio Connect · Bancolombia Open Banking** | entradas bancarias consentidas | alimenta `cashflow`, no sustituye el IBC |
 
 Lo que se pide a un proveedor de IBC es el **resultado reducido** —periodos cotizados, banda de IBC,
 último periodo, cobertura de la fuente— y nunca el PDF, el empleador, la EPS ni el salario exacto.
 Y una pregunta decide la cobertura: **cómo se distingue "sin registros en este operador" de "sin
 aportes"**, porque una persona puede tener planillas en varios operadores.
+
+### El recorrido documental, tal como quedó construido
+
+1. El titular pide su Estado Único de Cuenta y lo aporta. Knowni no entra a su cuenta ni reusa sus
+   credenciales.
+2. El emisor **comprueba autenticidad** antes de leer nada. Sin esa comprobación el adaptador
+   devuelve `needs_human_review`: un documento que nadie verificó es un PDF, y un PDF no es
+   evidencia.
+3. Se extraen solo periodos e IBC, se calcula la mediana y se descarta el resto.
+4. El reclamo sale con `basis: contribution_base` y `periodsWindow: 4`, así que **nadie puede leerlo
+   como continuidad de doce meses**.
+5. El documento original se elimina; lo que queda es una referencia del código de verificación que
+   no lo contiene.
+
+Lo que falta para encenderlo: el lector del documento y la comprobación de autenticidad —firma
+electrónica, QR o código contra la fuente—, que es la pregunta abierta en `verificacion.md`.
 
 ### Lo que queda fuera
 

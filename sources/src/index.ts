@@ -26,6 +26,9 @@ export { RUNT_VEHICLE_PATH, SIMIT_PATH, createVehicleStandingSource } from "./co
 export type { PilaClient, PilaContribution, PilaOptions } from "./country/colombia/pila.ts";
 export { createPilaFormalitySource, createPilaIncomeSource } from "./country/colombia/pila.ts";
 
+export type { UgppOptions, UgppPeriod, UgppStatement } from "./country/colombia/ugpp.ts";
+export { UGPP_WINDOW_MONTHS, createUgppContributionSource, statementRef } from "./country/colombia/ugpp.ts";
+
 export type { ListScreeningOptions } from "./country/colombia/listas.ts";
 export { CO_DEFAULT_LISTS, createListScreeningSource } from "./country/colombia/listas.ts";
 

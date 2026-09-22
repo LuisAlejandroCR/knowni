@@ -626,6 +626,7 @@ cualquier proveedor de open finance sin cobertura colombiana confirmada por cont
 | 2026-09-21 | Modelo comercial: paga quien pregunta, y pagar no autoriza. El titular solo paga si quiere una credencial reutilizable — D-26 |
 | 2026-09-21 | Pago comprobado contra Horizon antes de consultar, aviso por WhatsApp sin veredicto, y wallet del pagador detrás de un puerto con Privy y Freighter. Faltan cuatro llaves; cada una ausente apaga su función — D-27 |
 | 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: Aportes en Línea primero, UGPP como piso documental, open finance como credencial aparte — D-29 |
+| 2026-09-21 | Camino documental UGPP escrito: el titular aporta el estado de cuenta, el emisor comprueba autenticidad antes de leerlo y solo sobreviven periodos e IBC. Sin comprobación no hay reclamo, y la ventana de cuatro meses viaja con la cifra |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

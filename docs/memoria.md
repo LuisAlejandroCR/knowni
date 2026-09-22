@@ -634,6 +634,33 @@ en memoria por llave, nunca compartidas entre contrapartes.
 *Lo que queda fuera de este cambio:* cachear una pregunta idéntica repetida no está resuelto — sigue
 siendo el ítem de caché de `docs/handoff.md`.
 
+### D-32 — El EUC de UGPP no trae verificación pública; el camino documental espera a un humano · 2026-09-21
+
+*Lo investigado:* si el Estado Único de Cuenta trae código de verificación, QR o firma electrónica
+que `checkAuthenticity` (el puerto que ya exige `sources/src/country/colombia/ugpp.ts`) pudiera
+comprobar sin depender de una persona. Revisadas las dos fuentes primarias de UGPP —la página del
+EUC y la Ventanilla Única (`vue.gov.co`)— y el único manual público de UGPP con la palabra
+"verificación" (`storm_web_manual.pdf`, que resultó ser de un sistema distinto, para operadores que
+le reportan a UGPP, no para el ciudadano).
+
+*Lo que no apareció:* ningún mecanismo público de verificación. El documento se describe solo como
+"enviado al correo registrado" — sin código, sin QR, sin portal de terceros documentado.
+
+*Lo que sí apareció, y pesa más:* la propia página de UGPP dice del EUC que "no es una certificación
+válida para trámites de prestaciones económicas" y remite al Ministerio de Salud para eso. Un
+documento que su propio emisor no reconoce como certificación no es candidato a verificación
+automática — sería construir una comprobación técnica sobre una fuente que UGPP mismo no respalda
+para este uso.
+
+*Decisión:* el camino documental UGPP no cierra `checkAuthenticity` con una llamada automática. Con
+la evidencia disponible hoy, `needs_human_review` —que el adaptador ya devuelve cuando la
+comprobación falla— es el estado correcto, no un placeholder temporal. Reabrir esto solo si UGPP
+publica un mecanismo propio o si una conversación comercial con UGPP (no encontrada en fuente
+pública) entrega uno.
+
+*Lo que no cambia:* el bloque 3 de `docs/handoff.md` sigue bloqueado, pero ahora con una razón
+verificada en vez de una pregunta abierta.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -674,6 +701,7 @@ siendo el ítem de caché de `docs/handoff.md`.
 | 2026-09-21 | Camino documental UGPP escrito: el titular aporta el estado de cuenta, el emisor comprueba autenticidad antes de leerlo y solo sobreviven periodos e IBC. Sin comprobación no hay reclamo, y la ventana de cuatro meses viaja con la cifra |
 | 2026-09-21 | Privy entra como login y wallet del pagador: passkey, sesión de 15 minutos atada al dispositivo y firma Stellar por hash crudo, comprobada en el SDK instalado — D-30. Cierre de sesión documentado en `docs/handoff.md` |
 | 2026-09-21 | Cierra el hueco del traspaso: `POST /issue` exige una llave de contraparte y un límite por minuto antes de leer el cuerpo, de cobrar o de llamar a Croma. Sin llave configurada el emisor no arranca — D-31. 300 pruebas |
+| 2026-09-21 | Investigado el bloqueo de autenticidad del EUC de UGPP: ningún mecanismo público de verificación en las fuentes primarias de UGPP, y el propio emisor declara que el documento no es una certificación válida para trámites de prestaciones económicas. `needs_human_review` queda como la respuesta correcta, no un pendiente — D-32 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -12,7 +12,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **302 del dominio** + **25 de la app**, verdes localmente; CI pendiente del PR |
+| Pruebas | **302 del dominio** + **28 de la app**, verdes localmente; CI pendiente del último push |
 | Ramas | solo `main`; 25 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
@@ -62,7 +62,7 @@ un archivo compartido.
 
 | Agente | Toma | Archivos | Estado |
 |---|---|---|---|
-| Codex | Bloque 2 — pago de punta a punta | `app/src/domain/wallet-{privy,freighter,port}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/plan.md` | PR #29 abierto; constructor, firma y envío probados sin red |
+| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/{plan,memoria,handoff}.md` | PR #29 abierto; coordinador terminado y probado, CI pendiente del último push |
 | Esta sesión | Bloqueo de autenticidad UGPP (research, ver bloque 3) — D-32 | `docs/verificacion.md`, `docs/memoria.md` | **Cerrado.** Sin mecanismo público; queda documentado, no bloqueado por falta de investigación |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 

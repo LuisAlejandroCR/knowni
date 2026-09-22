@@ -31,7 +31,7 @@ dominio entra por `paths` de TypeScript, no por el registro.
 | Criptografía | `@noble` produce los mismos bytes que `node:crypto` — prueba cruzada |
 | Aceptación | política, notas, idempotencia y replay, probados en `app/test` |
 | Login | passkey con Privy; sesión de 15 min atada al dispositivo |
-| Pago | construye `PAYMENT + MEMO_HASH`, firma por hash con Privy o por sobre con Freighter y envía a Horizon |
+| Pago | coordina cotización → firma → Horizon → emisión; nunca consulta fuentes si el pago falla |
 
 **No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto.
 Tampoco se ha hecho una firma real con Privy o WalletConnect: faltan sus llaves. El motor sí está

@@ -7,7 +7,8 @@ import type { SessionRequest } from "@knowni/core";
 import { createMemoryRegistry, verifyResults } from "@knowni/attestation";
 import { fromHex } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
-import type { PaymentTerms } from "./stellar-payment.ts";
+import { payQuote, type PaymentTerms } from "./stellar-payment.ts";
+import type { PayerWalletPort } from "./wallet-port.ts";
 
 // Set with EXPO_PUBLIC_ISSUER_URL. The default points at a service running on
 // the same machine, which is what `npm start` in issuer/ gives you.
@@ -34,7 +35,12 @@ export interface IssuerQuote {
 }
 
 export type QuoteOutcome =
-  | { readonly status: "quoted"; readonly quote: IssuerQuote; readonly payment?: PaymentTerms }
+  | {
+      readonly status: "quoted";
+      readonly quote: IssuerQuote;
+      readonly paymentRequired: boolean;
+      readonly payment?: PaymentTerms;
+    }
   | { readonly status: "failed"; readonly reason: string };
 
 // Measured, not guessed: a four-source issuance took 83 s on 2026-09-21,
@@ -42,11 +48,11 @@ export type QuoteOutcome =
 // timeout would abort every real consultation.
 const TIMEOUT_MS = 180_000;
 
-async function call(url: string, init?: RequestInit): Promise<Response | undefined> {
+async function call(url: string, init?: RequestInit, fetchImpl: typeof fetch = fetch): Promise<Response | undefined> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    return await fetch(url, { ...init, signal: controller.signal });
+    return await fetchImpl(url, { ...init, signal: controller.signal });
   } catch {
     return undefined;
   } finally {
@@ -85,23 +91,42 @@ export async function requestQuote(
   request: SessionRequest,
   predicates: readonly string[],
   baseUrl = ISSUER_URL,
+  fetchImpl: typeof fetch = fetch,
 ): Promise<QuoteOutcome> {
   const response = await call(`${baseUrl}/quote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ request, predicates }),
-  });
+  }, fetchImpl);
   if (response === undefined) return { status: "failed", reason: "No pudimos obtener la cotización." };
   const body = (await response.json().catch(() => undefined)) as
-    | { quote?: IssuerQuote; payment?: PaymentTerms; error?: string }
+    | { quote?: IssuerQuote; paymentRequired?: boolean; payment?: PaymentTerms; error?: string }
     | undefined;
   if (!response.ok || body?.quote === undefined) {
     return { status: "failed", reason: body?.error ?? "La cotización no es válida." };
   }
-  return { status: "quoted", quote: body.quote, payment: body.payment };
+  if (typeof body.paymentRequired !== "boolean") {
+    return { status: "failed", reason: "La cotización no declaró si requiere pago." };
+  }
+  if (body.paymentRequired && body.payment === undefined) {
+    return { status: "failed", reason: "El emisor exige pago pero no publicó términos válidos." };
+  }
+  if (body.payment !== undefined && body.payment.paymentRef !== body.quote.paymentRef) {
+    return { status: "failed", reason: "La referencia de pago no coincide con la cotización." };
+  }
+  return {
+    status: "quoted",
+    quote: body.quote,
+    paymentRequired: body.paymentRequired,
+    payment: body.payment,
+  };
 }
 
-export async function requestIssuance(input: IssuanceInput, baseUrl = ISSUER_URL): Promise<IssuanceOutcome> {
+export async function requestIssuance(
+  input: IssuanceInput,
+  baseUrl = ISSUER_URL,
+  fetchImpl: typeof fetch = fetch,
+): Promise<IssuanceOutcome> {
   const response = await call(`${baseUrl}/issue`, {
     method: "POST",
     headers: {
@@ -109,7 +134,7 @@ export async function requestIssuance(input: IssuanceInput, baseUrl = ISSUER_URL
       ...(ACCESS_KEY === undefined ? {} : { "X-Knowni-Access-Key": ACCESS_KEY }),
     },
     body: JSON.stringify(input),
-  });
+  }, fetchImpl);
   if (response === undefined) {
     return { status: "failed", reason: "No pudimos hablar con el emisor. No se consultó ninguna fuente." };
   }
@@ -126,6 +151,50 @@ export async function requestIssuance(input: IssuanceInput, baseUrl = ISSUER_URL
   const body = (await response.json().catch(() => undefined)) as { results?: AttestedResults } | undefined;
   if (body?.results === undefined) return { status: "failed", reason: "El emisor respondió algo ilegible." };
   return { status: "issued", results: body.results };
+}
+
+const SOURCE_PREDICATE: Readonly<Record<string, string>> = {
+  registraduria: "personhood",
+  sicaac: "capacity",
+  listas: "sanctions",
+  vehiculo: "assetStanding",
+};
+
+export type PaidIssuanceOutcome =
+  | { readonly status: "issued"; readonly results: AttestedResults; readonly paymentTx?: string }
+  | { readonly status: "failed"; readonly stage: "quote" | "payment" | "issuance"; readonly reason: string };
+
+// The payer-facing coordinator has one ordering: quote, pay if required, then
+// issue. A failed signature or chain submission can never spend a Croma call.
+export async function requestPaidIssuance(
+  input: IssuanceInput,
+  wallet: PayerWalletPort,
+  options: { readonly baseUrl?: string; readonly horizonUrl?: string; readonly fetchImpl?: typeof fetch } = {},
+): Promise<PaidIssuanceOutcome> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const predicates = input.consented
+    .map((source) => SOURCE_PREDICATE[source])
+    .filter((predicate): predicate is string => predicate !== undefined);
+  const quoted = await requestQuote(input.request, predicates, options.baseUrl ?? ISSUER_URL, fetchImpl);
+  if (quoted.status === "failed") return { status: "failed", stage: "quote", reason: quoted.reason };
+
+  let paymentTx: string | undefined;
+  if (quoted.paymentRequired) {
+    const paid = await payQuote({
+      terms: quoted.payment!,
+      expiresAt: quoted.quote.expiresAt,
+      wallet,
+      horizonUrl: options.horizonUrl,
+      fetchImpl,
+    });
+    if (paid.status === "failed") return { status: "failed", stage: "payment", reason: paid.reason };
+    paymentTx = paid.txHash;
+  }
+
+  const issued = await requestIssuance({ ...input, paymentTx }, options.baseUrl ?? ISSUER_URL, fetchImpl);
+  return issued.status === "issued"
+    ? { ...issued, paymentTx }
+    : { status: "failed", stage: "issuance", reason: issued.reason };
 }
 
 // Verified on the phone before anything is displayed: the service signs, and

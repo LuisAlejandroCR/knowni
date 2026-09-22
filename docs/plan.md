@@ -252,6 +252,7 @@ emisor. No añade custodia, contrato Soroban, activo distinto de XLM ni persiste
 | P6 | Rechazo de wallet, cotización vencida, saldo/cuenta ausente, rechazo de Horizon y caída de red son resultados distintos | matriz de pruebas de errores tipados |
 | P7 | Ningún log ni error expone firma, XDR completo, llave de contraparte o respuesta cruda de Horizon | revisión de código y tests de serialización pública |
 | P8 | El módulo es portable a Expo: no importa `node:crypto`, `Buffer` ni `@stellar/stellar-sdk` | typecheck de `app/` y prueba de imports |
+| P9 | Un coordinador ejecuta `quote → pago → issue`; nunca llama `/issue` si falló firma o Horizon, y solo omite pago cuando `/quote` declara el cobro desactivado | prueba de secuencia HTTP completa y de downgrade |
 
 La moneda comercial y el activo de red no se infieren entre sí. `/quote` debe publicar términos de
 pago completos; si cobra USDC, incluye código e emisor del activo. El emisor rechaza otro activo,

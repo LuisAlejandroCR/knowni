@@ -683,6 +683,11 @@ Croma. En este piloto el activo de cobro es USDC configurado; XLM no es sustitut
 Freighter recibe el sobre sin firmar. Antes de enviarlo, la app comprueba que Freighter devolvió el
 mismo cuerpo de transacción con al menos una firma. Ninguna ruta conserva seed, firma o XDR.
 
+*El orden es parte de la seguridad:* el cliente ejecuta `quote → firma → Horizon → issue`. Si la
+wallet o la red rechazan, `/issue` no se llama y Croma no se consulta. Omitir el pago solo es válido
+cuando `/quote` declara explícitamente `paymentRequired: false`; términos ausentes con cobro activo
+son un error, no una ruta gratuita.
+
 *Límite honesto:* los contratos están cubiertos sin red, pero faltan las llaves para una firma real
 con Privy/WalletConnect y una transacción USDC testnet. Eso permanece en `verificacion.md`.
 

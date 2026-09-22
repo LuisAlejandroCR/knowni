@@ -5,11 +5,13 @@
 export interface PayerWalletPort {
   readonly id: "privy" | "freighter" | "device";
   readonly label: string;
+  readonly signingMethod: "raw_hash" | "envelope" | "unsupported";
   // Present once connected. A wallet with no account id is a wallet that has
   // not been connected yet, not an empty one.
   accountId(): Promise<string | undefined>;
   connect(): Promise<string | undefined>;
-  // Takes an unsigned transaction envelope and returns it signed, base64 XDR.
+  // The payload follows signingMethod: a hex transaction hash for Privy or an
+  // unsigned base64 envelope for Freighter. The caller validates the result.
   signTransaction(unsignedXdr: string): Promise<string | undefined>;
   disconnect(): Promise<void>;
 }
@@ -48,6 +50,7 @@ export function createDeviceWallet(accountIdValue: string): PayerWalletPort {
   return {
     id: "device",
     label: "Llave de este dispositivo",
+    signingMethod: "unsupported",
     accountId: async () => connected,
     connect: async () => {
       connected = accountIdValue;

@@ -35,12 +35,18 @@ const seed = process.env.KNOWNI_ISSUER_SEED
 // No treasury account means no charging: the service answers for free rather
 // than collecting into an account nobody named.
 const treasury = process.env.KNOWNI_TREASURY_ACCOUNT;
+const paymentAssetIssuer = process.env.KNOWNI_PAYMENT_ASSET_ISSUER;
+if (treasury !== undefined && paymentAssetIssuer === undefined) {
+  console.error("KNOWNI_PAYMENT_ASSET_ISSUER is required when payments are enabled.");
+  process.exit(2);
+}
 const payments =
   treasury === undefined
     ? undefined
     : {
         destination: treasury,
         minAmountStroops: BigInt(process.env.KNOWNI_MIN_PAYMENT_STROOPS ?? "1"),
+        asset: { type: "credit" as const, code: "USDC", issuer: paymentAssetIssuer! },
         horizonUrl: process.env.STELLAR_HORIZON_URL,
       };
 

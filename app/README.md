@@ -1,13 +1,13 @@
 <!-- app/README.md
      Cómo correr el wallet de Knowni y qué hace hoy: ocho pantallas del diseño
-     del día 8 con fixtures, sin red. Se distingue de design/day-08/README.md,
+     del día 8 y los límites reales de emisión y pago. Se distingue de design/day-08/README.md,
      que aprueba el diseño y no explica cómo ejecutarlo. -->
 
 # @knowni/app
 
 El wallet, en Expo. **Bloque 4 de 5:** las ocho pantallas, con el dominio corriendo dentro.
 La solicitud se verifica en el dispositivo, las respuestas se comprueban antes de mostrarse y la
-aceptación aplica la política de revocación que elija la contraparte. Sin una sola llamada de red.
+aceptación aplica la política de revocación que elija la contraparte.
 
 ```bash
 cd app
@@ -27,12 +27,15 @@ dominio entra por `paths` de TypeScript, no por el registro.
 | Tipos | `npx tsc --noEmit`, sin errores |
 | Empaquetado | `npx expo export --platform ios` produce el bundle |
 | Salud del proyecto | `npx expo-doctor` — 21/21 en SDK 57 |
-| Sin red | ninguna pantalla importa `fetch` ni un cliente |
+| Emisión | el cliente llama solo al emisor; las pantallas nunca llaman una fuente |
 | Criptografía | `@noble` produce los mismos bytes que `node:crypto` — prueba cruzada |
 | Aceptación | política, notas, idempotencia y replay, probados en `app/test` |
 | Login | passkey con Privy; sesión de 15 min atada al dispositivo |
+| Pago | construye `PAYMENT + MEMO_HASH`, firma por hash con Privy o por sobre con Freighter y envía a Horizon |
 
 **No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto.
+Tampoco se ha hecho una firma real con Privy o WalletConnect: faltan sus llaves. El motor sí está
+probado contra ambos contratos con Horizon y wallets inyectados; no se presenta eso como corrida real.
 
 ## Las pantallas
 

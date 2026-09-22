@@ -17,6 +17,7 @@ export function createFreighterWallet(bridge: WalletConnectBridge | undefined): 
   return {
     id: "freighter",
     label: "Ya tengo wallet (Freighter)",
+    signingMethod: "envelope",
     accountId: async () => account,
     async connect() {
       if (bridge === undefined) return undefined;

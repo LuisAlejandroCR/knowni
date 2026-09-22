@@ -21,8 +21,39 @@ export interface PaymentPolicy {
   // Where the money must land. A payment to somewhere else is not a payment.
   readonly destination: string;
   readonly minAmountStroops: bigint;
+  readonly asset?: PaymentAsset;
   readonly horizonUrl?: string;
   readonly fetchImpl?: typeof fetch;
+}
+
+export type PaymentAsset =
+  | { readonly type: "native" }
+  | { readonly type: "credit"; readonly code: string; readonly issuer: string };
+
+export interface PaymentTerms {
+  readonly network: "testnet";
+  readonly destination: string;
+  readonly asset: PaymentAsset;
+  readonly amountStroops: string;
+  readonly paymentRef: string;
+}
+
+export function quotedAmountStroops(totalMinor: number, policy: PaymentPolicy): bigint {
+  const quoted = BigInt(totalMinor) * 100_000n;
+  return quoted > policy.minAmountStroops ? quoted : policy.minAmountStroops;
+}
+
+export function paymentTerms(totalMinor: number, reference: string, currency: string, policy: PaymentPolicy): PaymentTerms {
+  const asset = policy.asset ?? { type: "native" as const };
+  const assetCurrency = asset.type === "native" ? "XLM" : asset.code;
+  if (assetCurrency !== currency) throw new TypeError("payment asset does not match quote currency");
+  return {
+    network: "testnet",
+    destination: policy.destination,
+    asset,
+    amountStroops: quotedAmountStroops(totalMinor, policy).toString(),
+    paymentRef: reference,
+  };
 }
 
 // A transaction pays once. Without this a single payment would buy every
@@ -53,6 +84,8 @@ interface HorizonPayment {
   readonly to?: string;
   readonly amount?: string;
   readonly asset_type?: string;
+  readonly asset_code?: string;
+  readonly asset_issuer?: string;
 }
 
 const toStroops = (amount: string): bigint => {
@@ -94,7 +127,16 @@ export async function verifyPayment(
   const memoHex = Buffer.from(transaction.memo, "base64").toString("hex");
   if (memoHex !== paymentRef) return { status: "refused", reason: "wrong_reference" };
 
-  const toUs = payments.filter((payment) => payment.type === "payment" && payment.to === policy.destination);
+  const expectedAsset = policy.asset ?? { type: "native" as const };
+  const toUs = payments.filter((payment) => {
+    if (payment.type !== "payment" || payment.to !== policy.destination) return false;
+    if (expectedAsset.type === "native") return payment.asset_type === "native";
+    return (
+      payment.asset_type !== "native" &&
+      payment.asset_code === expectedAsset.code &&
+      payment.asset_issuer === expectedAsset.issuer
+    );
+  });
   if (toUs.length === 0) return { status: "refused", reason: "wrong_destination" };
 
   const total = toUs.reduce((sum, payment) => sum + toStroops(payment.amount ?? "0"), 0n);

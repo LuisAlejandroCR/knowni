@@ -16,7 +16,7 @@ npm start --workspace @knowni/issuer
 | Endpoint | Qué hace |
 |---|---|
 | `GET /keys` | La llave pública del emisor. Sin ella, una firma es incomprobable |
-| `POST /quote` | Cotiza por predicado **antes** de que el titular consienta, y devuelve la referencia de pago |
+| `POST /quote` | Cotiza antes del consentimiento y devuelve referencia, destino, activo y monto exactos |
 | `POST /issue` | Recibe una consulta autorizada y pagada, llama a las fuentes y devuelve respuestas firmadas |
 
 ## Por qué es un proceso aparte y no una pantalla
@@ -60,14 +60,15 @@ notifications: none
 |---|---|---|
 | Fuentes | `CROMA_API_KEY` | el servicio **no arranca** |
 | Identidad del emisor | `KNOWNI_ISSUER_SEED` | se genera una por arranque, y lo emitido antes deja de verificar |
-| Cobro | `KNOWNI_TREASURY_ACCOUNT` | se responde sin cobrar |
+| Cobro | `KNOWNI_TREASURY_ACCOUNT` + `KNOWNI_PAYMENT_ASSET_ISSUER` | se responde sin cobrar si no hay tesoro; con tesoro incompleto no arranca |
 | Aviso | `KAPSO_*` o `META_*` | no se envía nada, y se reporta como `none` |
 
 ## Pago
 
 El pago se comprueba **contra la cadena**, no contra un recibo que mande el cliente: `paymentTx` se
 busca en Horizon y tiene que estar exitoso, llevar el `paymentRef` como `MEMO_HASH`, haber llegado a
-la cuenta del tesoro y cubrir el mínimo. Una transacción paga **una** pregunta; un pago rechazado
+la cuenta del tesoro en el activo USDC configurado y cubrir el monto publicado por `/quote`. XLM u
+otro activo con el mismo número no sirve. Una transacción paga **una** pregunta; un pago rechazado
 sigue disponible, para que nadie quede cobrado por una consulta que no se hizo.
 
 ## Aviso

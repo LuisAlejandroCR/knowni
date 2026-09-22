@@ -564,30 +564,37 @@ reclamo gana `periodsObserved` y `periodsWindow` — un mes bueno deja de parece
 contraparte que no nombró qué evidencia toma no hizo una pregunta. Cuántos periodos son suficientes
 lo fija quien pregunta, en `minPeriodsObserved`, no la fuente.
 
-### D-29 — Ruta de acceso al IBC: institucional primero, documental como piso · 2026-09-21
+### D-29 — Ruta de acceso al IBC: integración delegada primero, documento solo como excepción · 2026-09-21
 
 *Verificado el 2026-09-21:* Belvo publica Brasil, México y Chile — **Colombia no aparece** en su
 spec. Prometeo tiene la documentación tras login y su cobertura colombiana no está confirmada.
 SuAporte sí publica Swagger, pero sus dos APIs —`Gestión de Aportantes` y `Generador de Planilla`—
 son del lado de **quien paga** la planilla, no de quien quiere demostrar lo que cotizó.
 
-*Orden de trabajo, con lo que cada cosa aporta:*
+*Orden de producto, con lo que cada cosa aporta:*
 
 1. **Aportes en Línea** — tiene el histórico y su política ya contempla entregar historial PILA a
-   terceros para validar experiencia laboral. Es la conversación comercial prioritaria, y lo que se
-   pide es el resultado reducido: periodos cotizados, banda de IBC y último periodo. Nunca el PDF.
+   terceros para validar experiencia laboral. Es la ruta principal, condicionada a contrato y
+   autorización delegada. Se pide el resultado reducido: periodos cotizados, banda de IBC, último
+   periodo y cobertura del operador. Nunca el PDF.
 2. **Agildata** — un manual de 2019 describe exactamente el adaptador que falta: IBC por periodo,
    promedio de tres meses, días cotizados y acceso bajo autorización del titular. La evidencia es un
    manual alojado por un tercero, así que **no entra al roadmap** hasta identificar quién lo opera.
-3. **UGPP / VUE, Estado Único de Cuenta** — no es API: el titular pide el documento y lo aporta.
-   Es el único camino construible hoy sin contrato, con su límite escrito: cuatro meses, documento
-   aportado, y hay que confirmar cómo se verifica su autenticidad.
+3. **UGPP / VUE, Estado Único de Cuenta** — no es API ni certificación verificable públicamente.
+   Solo puede entrar como fallback asistido: el titular aporta el documento, una persona revisa su
+   procedencia y el resultado conserva `needs_human_review`. Tiene costo operativo, cubre apenas
+   cuatro meses y no habilita emisión automática ni es el piso del MVP.
 4. **Finerio Connect o Bancolombia Open Banking** — alimentan `cashflow`, que es otra credencial, no
    un sustituto del IBC.
 
 *Lo que no se integra:* CoreSoft —consulta por documento en la URL, devuelve el expediente completo
 y no muestra autorización delegada—, SuAporte con credenciales reutilizadas del ciudadano, y
 cualquier proveedor de open finance sin cobertura colombiana confirmada por contrato.
+
+*Consecuencia operativa:* si Aportes en Línea u otro operador no ofrece autorización delegada, el
+predicado `contribution_base` queda `unavailable`. Knowni no rellena ese hueco convirtiendo un PDF
+sin verificación pública en evidencia automática. Un piloto puede habilitar la revisión manual de
+UGPP con precio, SLA y responsabilidad humana explícitos; no puede presentarla como API.
 
 ### D-30 — Passkey es la puerta; el proveedor sostiene la cuenta, no la llave · 2026-09-21
 
@@ -661,6 +668,24 @@ pública) entrega uno.
 *Lo que no cambia:* el bloque 3 de `docs/handoff.md` sigue bloqueado, pero ahora con una razón
 verificada en vez de una pregunta abierta.
 
+### D-33 — La cotización nombra el activo; un número no nombra dinero · 2026-09-21
+
+*El hueco encontrado al cerrar el pago móvil:* `pricing.ts` decía USDC, mientras el verificador de
+Horizon sumaba cualquier operación enviada al tesoro y el cliente no recibía ni destino ni activo.
+Una cantidad de XLM —o de un activo basura con el mismo decimal— podía parecer el precio en USDC.
+
+*Decisión:* `/quote` publica términos completos: red, destino, activo (código e emisor), monto en la
+unidad mínima y `paymentRef`. La app no infiere uno de otro: construye exactamente esos términos.
+El emisor vuelve a derivar el precio desde la solicitud y exige el mismo activo antes de consultar
+Croma. En este piloto el activo de cobro es USDC configurado; XLM no es sustituto implícito.
+
+*Firma sin custodia:* Privy recibe el hash de la base de firma y la app adjunta su firma decorada;
+Freighter recibe el sobre sin firmar. Antes de enviarlo, la app comprueba que Freighter devolvió el
+mismo cuerpo de transacción con al menos una firma. Ninguna ruta conserva seed, firma o XDR.
+
+*Límite honesto:* los contratos están cubiertos sin red, pero faltan las llaves para una firma real
+con Privy/WalletConnect y una transacción USDC testnet. Eso permanece en `verificacion.md`.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -697,11 +722,12 @@ verificada en vez de una pregunta abierta.
 | 2026-09-21 | MVP real: workspace `issuer/` — el único proceso con llave de proveedor. La app manda una consulta autorizada y verifica en el teléfono lo que le devuelven. Se acaban las fixtures en el recorrido: documento y placa se escriben, el consentimiento decide qué se consulta — D-25 |
 | 2026-09-21 | Modelo comercial: paga quien pregunta, y pagar no autoriza. El titular solo paga si quiere una credencial reutilizable — D-26 |
 | 2026-09-21 | Pago comprobado contra Horizon antes de consultar, aviso por WhatsApp sin veredicto, y wallet del pagador detrás de un puerto con Privy y Freighter. Faltan cuatro llaves; cada una ausente apaga su función — D-27 |
-| 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: Aportes en Línea primero, UGPP como piso documental, open finance como credencial aparte — D-29 |
+| 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: integración delegada primero, UGPP solo como excepción manual, open finance como credencial aparte — D-29 |
 | 2026-09-21 | Camino documental UGPP escrito: el titular aporta el estado de cuenta, el emisor comprueba autenticidad antes de leerlo y solo sobreviven periodos e IBC. Sin comprobación no hay reclamo, y la ventana de cuatro meses viaja con la cifra |
 | 2026-09-21 | Privy entra como login y wallet del pagador: passkey, sesión de 15 minutos atada al dispositivo y firma Stellar por hash crudo, comprobada en el SDK instalado — D-30. Cierre de sesión documentado en `docs/handoff.md` |
 | 2026-09-21 | Cierra el hueco del traspaso: `POST /issue` exige una llave de contraparte y un límite por minuto antes de leer el cuerpo, de cobrar o de llamar a Croma. Sin llave configurada el emisor no arranca — D-31. 300 pruebas |
 | 2026-09-21 | Investigado el bloqueo de autenticidad del EUC de UGPP: ningún mecanismo público de verificación en las fuentes primarias de UGPP, y el propio emisor declara que el documento no es una certificación válida para trámites de prestaciones económicas. `needs_human_review` queda como la respuesta correcta, no un pendiente — D-32 |
+| 2026-09-21 | Pago móvil portable: la cotización publica activo, destino y monto; Privy firma el hash, Freighter el sobre, y Horizon recibe solo el XDR firmado. El emisor deja de aceptar un activo distinto por coincidencia numérica — D-33 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

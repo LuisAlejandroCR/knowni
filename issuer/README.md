@@ -16,7 +16,7 @@ npm start --workspace @knowni/issuer
 | Endpoint | Qué hace |
 |---|---|
 | `GET /keys` | La llave pública del emisor. Sin ella, una firma es incomprobable |
-| `POST /quote` | Cotiza antes del consentimiento y devuelve referencia, destino, activo y monto exactos |
+| `POST /quote` | Cotiza antes del consentimiento; declara si cobra y devuelve referencia, destino, activo y monto exactos |
 | `POST /issue` | Recibe una consulta autorizada y pagada, llama a las fuentes y devuelve respuestas firmadas |
 
 ## Por qué es un proceso aparte y no una pantalla

@@ -226,6 +226,7 @@ export function createIssuerService(options: IssuerOptions) {
       try {
         return send(response, 200, {
           quote: result.quote,
+          paymentRequired: options.payments !== undefined,
           payment:
             options.payments === undefined
               ? undefined

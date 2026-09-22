@@ -30,6 +30,7 @@ dominio entra por `paths` de TypeScript, no por el registro.
 | Sin red | ninguna pantalla importa `fetch` ni un cliente |
 | Criptografía | `@noble` produce los mismos bytes que `node:crypto` — prueba cruzada |
 | Aceptación | política, notas, idempotencia y replay, probados en `app/test` |
+| Login | passkey con Privy; sesión de 15 min atada al dispositivo |
 
 **No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto.
 

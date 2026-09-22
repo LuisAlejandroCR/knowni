@@ -42,12 +42,16 @@ test("without its key a wallet connects to nothing instead of pretending", async
 
 test("a configured wallet connects, signs and disconnects through the same port", async () => {
   const privy = createPrivyWallet({
-    login: async () => ({ address: ACCOUNT }),
-    signStellarTransaction: async (xdr) => `${xdr}-firmado`,
+    loginWithPasskey: async () => true,
+    stellarAddress: async () => ACCOUNT,
+    createStellarWallet: async () => undefined,
+    signRawHash: async (_address: string, hash: string) => `${hash}ff`,
     logout: async () => {},
   });
   assert.equal(await privy.connect(), ACCOUNT);
-  assert.equal(await privy.signTransaction("AAAA"), "AAAA-firmado");
+  // The hash goes in `0x`-prefixed and the signature comes back bare, which is
+  // what the XDR envelope needs.
+  assert.equal(await privy.signTransaction("ab".repeat(32)), `${"ab".repeat(32)}ff`);
   await privy.disconnect();
   assert.equal(await privy.accountId(), undefined);
 });

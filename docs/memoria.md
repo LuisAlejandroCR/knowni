@@ -589,6 +589,28 @@ son del lado de **quien paga** la planilla, no de quien quiere demostrar lo que 
 y no muestra autorización delegada—, SuAporte con credenciales reutilizadas del ciudadano, y
 cualquier proveedor de open finance sin cobertura colombiana confirmada por contrato.
 
+### D-30 — Passkey es la puerta; el proveedor sostiene la cuenta, no la llave · 2026-09-21
+
+*Comparado el 2026-09-21, contra la documentación de cada uno:* Clerk tiene SDK de Expo y passkeys,
+pero de pago en producción y sus componentes nativos no corren en Expo Go. Auth0 cobra $35/mes por
+500 MAU y su soporte de React Native no aparece en su guía de passkeys. Privy tiene `@privy-io/expo`,
+passkeys en móvil y —lo que decide— **wallet embebida que firma Stellar**.
+
+*Decisión:* Privy, porque login y wallet son el mismo problema para quien paga y partirlos en dos
+proveedores duplica la cuenta y el rastro.
+
+*Verificado en el SDK instalado, no en un blog:* `CurveSigningChainType` incluye `'stellar'`, y
+`@privy-io/expo/extended-chains` expone `useCreateWallet({chainType:"stellar"})` y `useSignRawHash`.
+Firma un **hash crudo**, que es exactamente lo que Stellar firma —el SHA-256 de la base—, así que el
+envío sigue siendo nuestro submitter del día 5.
+
+*La sesión, escrita como regla:* passkey como puerta, magic link **solo** para recuperar —un buzón
+se toma más fácil que un dispositivo—, 15 minutos de vida y atada al dispositivo donde se abrió. En
+la sesión no hay ni una contraseña de ninguna fuente, y hay una prueba que enumera sus campos.
+
+*Lo que no cambia:* el proveedor sabe quién entró y cuándo. Por eso sostiene la **cuenta**, no la
+llave del titular, y la identidad de quien paga no es un secreto del producto — es el punto.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -627,6 +649,7 @@ cualquier proveedor de open finance sin cobertura colombiana confirmada por cont
 | 2026-09-21 | Pago comprobado contra Horizon antes de consultar, aviso por WhatsApp sin veredicto, y wallet del pagador detrás de un puerto con Privy y Freighter. Faltan cuatro llaves; cada una ausente apaga su función — D-27 |
 | 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: Aportes en Línea primero, UGPP como piso documental, open finance como credencial aparte — D-29 |
 | 2026-09-21 | Camino documental UGPP escrito: el titular aporta el estado de cuenta, el emisor comprueba autenticidad antes de leerlo y solo sobreviven periodos e IBC. Sin comprobación no hay reclamo, y la ventana de cuatro meses viaja con la cifra |
+| 2026-09-21 | Privy entra como login y wallet del pagador: passkey, sesión de 15 minutos atada al dispositivo y firma Stellar por hash crudo, comprobada en el SDK instalado — D-30. Cierre de sesión documentado en `docs/handoff.md` |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

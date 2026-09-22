@@ -1,35 +1,42 @@
 // wallet-privy.ts: the Privy adapter of the payer wallet port.
-// Privy classifies Stellar as tier 2 — it signs, it does not submit — so this
-// adapter only signs and the app sends the envelope to Horizon itself.
+// Privy signs Stellar as an extended chain — a raw hash, not an envelope — and
+// Stellar signs the SHA-256 of the signature base, so the two meet exactly.
 
 import type { PayerWalletPort } from "./wallet-port.ts";
 
 export const PRIVY_APP_ID = process.env.EXPO_PUBLIC_PRIVY_APP_ID ?? "";
 
-// The SDK is loaded when the app id exists, so the app builds and runs without
-// a Privy account: a missing key turns the option off instead of crashing.
-export interface PrivyBridge {
-  login(): Promise<{ readonly address: string } | undefined>;
-  signStellarTransaction(xdr: string): Promise<string | undefined>;
-  logout(): Promise<void>;
-}
+// What the React hooks provide, expressed as data so the adapter can be tested
+// under Node, where those hooks cannot run.
+import type { PrivyBridge } from "./wallet-port-bridge.ts";
+export type { PrivyBridge };
 
 export function createPrivyWallet(bridge: PrivyBridge | undefined): PayerWalletPort {
   let account: string | undefined;
+
   return {
     id: "privy",
-    label: "Entrar con correo o teléfono",
+    label: "Entrar con passkey",
     accountId: async () => account,
+
     async connect() {
       if (bridge === undefined) return undefined;
-      const wallet = await bridge.login();
-      account = wallet?.address;
+      if (!(await bridge.loginWithPasskey())) return undefined;
+      // An account that exists is reused; only a first-time payer gets one
+      // created, because a second wallet would split their balance.
+      account = (await bridge.stellarAddress()) ?? (await bridge.createStellarWallet());
       return account;
     },
-    async signTransaction(unsignedXdr) {
+
+    // Takes the transaction hash — not the envelope — because that is what
+    // Stellar signs and what Privy's extended chains accept.
+    async signTransaction(transactionHashHex) {
       if (bridge === undefined || account === undefined) return undefined;
-      return bridge.signStellarTransaction(unsignedXdr);
+      if (!/^[0-9a-f]{64}$/.test(transactionHashHex)) return undefined;
+      const signature = await bridge.signRawHash(account, `0x${transactionHashHex}`);
+      return signature?.replace(/^0x/, "");
     },
+
     async disconnect() {
       account = undefined;
       await bridge?.logout();

@@ -17,6 +17,7 @@ export function createPrivyWallet(bridge: PrivyBridge | undefined): PayerWalletP
   return {
     id: "privy",
     label: "Entrar con passkey",
+    signingMethod: "raw_hash",
     accountId: async () => account,
 
     async connect() {

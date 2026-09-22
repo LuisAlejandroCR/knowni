@@ -12,7 +12,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **300 del dominio** + **20 de la app**, verdes en CI (Node 22 y 24) |
+| Pruebas | **302 del dominio** + **25 de la app**, verdes localmente; CI pendiente del PR |
 | Ramas | solo `main`; 25 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
@@ -38,10 +38,11 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-26 | Paga quien pregunta; **pagar no es autorizar** |
 | D-27 | Privy y Freighter **firman**, no envían; el saldo se lee de Horizon |
 | D-28 | Tres evidencias que no se sustituyen: `contribution_base`, `verified_income`, `cashflow` |
-| D-29 | Ruta al IBC: Aportes en Línea → UGPP documental → open finance como credencial aparte |
+| D-29 | Ruta al IBC: integración delegada con operador; UGPP es fallback manual, no piso automático |
 | D-30 | Passkey es la puerta; el magic link solo recupera; sesión de 15 minutos atada al dispositivo |
 | D-31 | `/issue` exige llave de contraparte y límite por minuto, antes de pago y antes de Croma; sin llave el emisor no arranca |
 | D-32 | El EUC de UGPP no trae verificación pública ni es certificación según su propio emisor; `needs_human_review` es la respuesta correcta, no un pendiente |
+| D-33 | La cotización nombra monto, destino y activo; otro activo nunca paga por coincidencia numérica |
 
 ## Lo que bloquea, y de quién depende
 
@@ -51,7 +52,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | Correr la app en un teléfono físico — criterio **A12** | del titular: `cd app && npm start` |
 | `EXPO_PUBLIC_PRIVY_APP_ID`, `WALLETCONNECT_PROJECT_ID`, `KAPSO_*` o `META_*`, `KNOWNI_TREASURY_ACCOUNT` | llaves pendientes; cada una ausente apaga su función |
 | `KNOWNI_ISSUER_ACCESS_KEYS` y `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | llave pendiente, pero no opcional: sin ella el emisor no arranca — D-31 |
-| Cómo se comprueba la autenticidad del Estado Único de Cuenta de UGPP | **investigado, sigue bloqueado** — sin mecanismo público; D-32 deja `needs_human_review` como respuesta hasta que UGPP publique uno o haya conversación comercial |
+| UGPP como fallback documental | requiere operación humana, precio y SLA; sin ellos permanece en `needs_human_review` y fuera del flujo automático — D-29/D-32 |
 | Si existe API de IBC con autorización delegada | conversación con Aportes en Línea |
 
 ## Coordinación en curso — 2026-09-21, tarde
@@ -61,7 +62,7 @@ un archivo compartido.
 
 | Agente | Toma | Archivos | Estado |
 |---|---|---|---|
-| Codex | Bloque 2 — pago de punta a punta | `app/src/domain/wallet-{privy,freighter,port}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/plan.md` | En curso, worktree `knowni-payment-e2e` (rama `f0-payment-e2e`), sin commitear |
+| Codex | Bloque 2 — pago de punta a punta | `app/src/domain/wallet-{privy,freighter,port}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/plan.md` | PR #29 abierto; constructor, firma y envío probados sin red |
 | Esta sesión | Bloqueo de autenticidad UGPP (research, ver bloque 3) — D-32 | `docs/verificacion.md`, `docs/memoria.md` | **Cerrado.** Sin mecanismo público; queda documentado, no bloqueado por falta de investigación |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
@@ -74,10 +75,10 @@ por esos mismos archivos.
 1. **Caché en `issuer/`**: una pregunta idéntica repetida —mismo `paymentRef`— vuelve a gastar la
    cuota de Croma en vez de servir la respuesta ya emitida. Llaves y cuota por contraparte ya están
    resueltas — D-31.
-2. **Pago de punta a punta**: construir la transacción con el `paymentRef` en el memo, firmarla con
-   Privy (`signRawHash` sobre el hash de la transacción) y enviarla con el submitter propio.
-3. **Lector del Estado Único de Cuenta**: el parseo del PDF sigue sin escribirse. Su comprobación de
-   autenticidad ya no es una pregunta abierta — D-32 la deja en `needs_human_review` por diseño.
+2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
+   transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
+3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se
+   construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
    todo o nada.
 5. **`NullifierLedger` y pagos gastados con persistencia**, que hoy viven en memoria.

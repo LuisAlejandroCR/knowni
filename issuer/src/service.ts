@@ -4,7 +4,14 @@
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { chargeableMinor, paymentRef, quote } from "./pricing.ts";
-import { createMemorySpentPayments, verifyPayment, type PaymentPolicy, type SpentPayments } from "./payments.ts";
+import {
+  createMemorySpentPayments,
+  paymentTerms,
+  quotedAmountStroops,
+  verifyPayment,
+  type PaymentPolicy,
+  type SpentPayments,
+} from "./payments.ts";
 import { checkAccess, createMemoryRequestQuota, type AccessPolicy, type RequestQuota } from "./access.ts";
 import { noNotifier, type Notifier } from "./notify.ts";
 import { sha256Hash } from "@knowni/core/node";
@@ -215,9 +222,18 @@ export function createIssuerService(options: IssuerOptions) {
         return send(response, 400, { error: "invalid_request" });
       }
       const result = quote(body.request, body.predicates, Math.floor(Date.now() / 1000));
-      return result.status === "quoted"
-        ? send(response, 200, { quote: result.quote })
-        : send(response, 400, { error: result.reason });
+      if (result.status !== "quoted") return send(response, 400, { error: result.reason });
+      try {
+        return send(response, 200, {
+          quote: result.quote,
+          payment:
+            options.payments === undefined
+              ? undefined
+              : paymentTerms(result.quote.totalMinor, result.quote.paymentRef, result.quote.currency, options.payments),
+        });
+      } catch {
+        return send(response, 503, { error: "payment_misconfigured" });
+      }
     }
 
     if (request.method === "POST" && request.url?.startsWith("/issue")) {
@@ -250,8 +266,19 @@ export function createIssuerService(options: IssuerOptions) {
         if (typeof body.paymentTx !== "string") {
           return send(response, 402, { error: "payment_required" });
         }
-        const expected = paymentRef(body.request, predicatesOf(body.consented));
-        const paid = await verifyPayment(body.paymentTx, expected, options.payments, spent);
+        const predicates = predicatesOf(body.consented);
+        const expected = paymentRef(body.request, predicates);
+        const expectedQuote = quote(body.request, predicates, Math.floor(Date.now() / 1000));
+        if (expectedQuote.status !== "quoted") return send(response, 400, { error: expectedQuote.reason });
+        const paid = await verifyPayment(
+          body.paymentTx,
+          expected,
+          {
+            ...options.payments,
+            minAmountStroops: quotedAmountStroops(expectedQuote.quote.totalMinor, options.payments),
+          },
+          spent,
+        );
         if (paid.status === "refused") {
           return send(response, 402, { error: "payment_refused", reason: paid.reason });
         }

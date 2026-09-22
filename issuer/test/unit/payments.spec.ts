@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createMemorySpentPayments, verifyPayment } from "../../src/payments.ts";
+import { createMemorySpentPayments, paymentTerms, verifyPayment } from "../../src/payments.ts";
 
 // The anchor from 2026-09-20: a payment to self carrying a 32-byte memo.
 const REAL_TX = "0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161";
@@ -79,6 +79,28 @@ test("money that landed somewhere else, or not enough of it, is refused", async 
     createMemorySpentPayments(),
   );
   assert.deepEqual(short, { status: "refused", reason: "underpaid" });
+});
+
+test("an asset with the same numeric amount cannot substitute the quoted asset", async () => {
+  const usdc = { type: "credit" as const, code: "USDC", issuer: TREASURY };
+  const result = await verifyPayment(
+    REAL_TX,
+    REAL_MEMO_HEX,
+    policy({ asset: usdc, fetchImpl: horizon(okTx, [okPayment]) }),
+    createMemorySpentPayments(),
+  );
+  assert.deepEqual(result, { status: "refused", reason: "wrong_destination" });
+});
+
+test("payment terms keep quote currency, amount and network asset aligned", () => {
+  const terms = paymentTerms(120, REAL_MEMO_HEX, "USDC", {
+    destination: TREASURY,
+    minAmountStroops: 1n,
+    asset: { type: "credit", code: "USDC", issuer: TREASURY },
+  });
+  assert.equal(terms.amountStroops, "12000000");
+  assert.equal(terms.asset.type === "credit" && terms.asset.code, "USDC");
+  assert.throws(() => paymentTerms(120, REAL_MEMO_HEX, "USDC", policy()), /does not match/);
 });
 
 test("a failed transaction never pays", async () => {

@@ -7,6 +7,7 @@ import type { SessionRequest } from "@knowni/core";
 import { createMemoryRegistry, verifyResults } from "@knowni/attestation";
 import { fromHex } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
+import type { PaymentTerms } from "./stellar-payment.ts";
 
 // Set with EXPO_PUBLIC_ISSUER_URL. The default points at a service running on
 // the same machine, which is what `npm start` in issuer/ gives you.
@@ -23,6 +24,17 @@ export interface IssuerIdentity {
 
 export type IssuanceOutcome =
   | { readonly status: "issued"; readonly results: AttestedResults }
+  | { readonly status: "failed"; readonly reason: string };
+
+export interface IssuerQuote {
+  readonly currency: string;
+  readonly totalMinor: number;
+  readonly paymentRef: string;
+  readonly expiresAt: number;
+}
+
+export type QuoteOutcome =
+  | { readonly status: "quoted"; readonly quote: IssuerQuote; readonly payment?: PaymentTerms }
   | { readonly status: "failed"; readonly reason: string };
 
 // Measured, not guessed: a four-source issuance took 83 s on 2026-09-21,
@@ -66,6 +78,27 @@ export interface IssuanceInput {
   readonly plate?: string;
   readonly consented: readonly string[];
   readonly request: SessionRequest;
+  readonly paymentTx?: string;
+}
+
+export async function requestQuote(
+  request: SessionRequest,
+  predicates: readonly string[],
+  baseUrl = ISSUER_URL,
+): Promise<QuoteOutcome> {
+  const response = await call(`${baseUrl}/quote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ request, predicates }),
+  });
+  if (response === undefined) return { status: "failed", reason: "No pudimos obtener la cotización." };
+  const body = (await response.json().catch(() => undefined)) as
+    | { quote?: IssuerQuote; payment?: PaymentTerms; error?: string }
+    | undefined;
+  if (!response.ok || body?.quote === undefined) {
+    return { status: "failed", reason: body?.error ?? "La cotización no es válida." };
+  }
+  return { status: "quoted", quote: body.quote, payment: body.payment };
 }
 
 export async function requestIssuance(input: IssuanceInput, baseUrl = ISSUER_URL): Promise<IssuanceOutcome> {

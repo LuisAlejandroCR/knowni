@@ -131,7 +131,7 @@ la evidencia, no solamente el intermediario que la transportó.
 |---|---|---|---|
 | 1 | **Aportes en Línea** | histórico PILA; su política ya contempla entregarlo a terceros para validar experiencia laboral | conversación comercial pendiente |
 | 2 | **Agildata** (manual 2019) | IBC por periodo, promedio de 3 meses, días cotizados, con autorización del titular | vigencia sin confirmar; no entra al roadmap |
-| 3 | **UGPP / VUE — Estado Único de Cuenta** | cuatro meses de aportes, entregados al titular | ✅ **adaptador escrito** (`sources/src/country/colombia/ugpp.ts`); falta el lector del documento y su comprobación de autenticidad |
+| 3 | **UGPP / VUE — Estado Único de Cuenta** | cuatro meses de aportes, entregados al titular | adaptador escrito; fallback manual con `needs_human_review`, sin verificación pública ni emisión automática — D-32 |
 | 4 | **Finerio Connect · Bancolombia Open Banking** | entradas bancarias consentidas | alimenta `cashflow`, no sustituye el IBC |
 
 Lo que se pide a un proveedor de IBC es el **resultado reducido** —periodos cotizados, banda de IBC,
@@ -139,21 +139,22 @@ Lo que se pide a un proveedor de IBC es el **resultado reducido** —periodos co
 Y una pregunta decide la cobertura: **cómo se distingue "sin registros en este operador" de "sin
 aportes"**, porque una persona puede tener planillas en varios operadores.
 
-### El recorrido documental, tal como quedó construido
+### El fallback documental asistido
 
 1. El titular pide su Estado Único de Cuenta y lo aporta. Knowni no entra a su cuenta ni reusa sus
    credenciales.
-2. El emisor **comprueba autenticidad** antes de leer nada. Sin esa comprobación el adaptador
-   devuelve `needs_human_review`: un documento que nadie verificó es un PDF, y un PDF no es
-   evidencia.
+2. No existe comprobación pública automática. Una persona revisa procedencia y consistencia; el
+   resultado conserva `needs_human_review`: un documento revisado manualmente no se vuelve una
+   certificación ni una API.
 3. Se extraen solo periodos e IBC, se calcula la mediana y se descarta el resto.
 4. El reclamo sale con `basis: contribution_base` y `periodsWindow: 4`, así que **nadie puede leerlo
    como continuidad de doce meses**.
 5. El documento original se elimina; lo que queda es una referencia del código de verificación que
    no lo contiene.
 
-Lo que falta para encenderlo: el lector del documento y la comprobación de autenticidad —firma
-electrónica, QR o código contra la fuente—, que es la pregunta abierta en `verificacion.md`.
+Este fallback solo se enciende si un piloto acepta su precio, SLA y responsabilidad humana. No
+bloquea el MVP ni sustituye el acceso delegado con un operador. Si no existe ese acuerdo operativo,
+`contribution_base` queda `unavailable`.
 
 ### Lo que queda fuera
 
@@ -233,6 +234,38 @@ paga por ejercer su derecho a demostrar un dato propio. Ver `memoria.md` D-26.
 | A12 | Wallet emite una presentación sin red después de recibir credenciales | dispositivo físico en modo avión |
 | A13 | Ningún log contiene documento, nombre, salario, cuenta o payload de proveedor | test de redacción + revisión de logs |
 | A14 | La suite, lint, typecheck y build parten de cero en CI | workflow público en verde |
+
+### Bloque activo — pago móvil Stellar de punta a punta
+
+Este bloque parte de `main` después del PR #27 y no cambia el control de acceso de `/issue`.
+Su alcance termina cuando el teléfono puede convertir una cotización vigente en una transacción
+Stellar firmada y enviada; la validación y consumo del pago siguen siendo responsabilidad del
+emisor. No añade custodia, contrato Soroban, activo distinto de XLM ni persistencia de pagos.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| P1 | La app construye una operación `PAYMENT` en testnet con el activo, monto y destino explícitos de la cotización | prueba XDR con términos conocidos |
+| P2 | `paymentRef` ocupa exactamente los 32 bytes de `MEMO_HASH`; una referencia inválida se rechaza antes de firmar | tests de longitud, hexadecimal y memo decodificado |
+| P3 | La secuencia procede de Horizon y la transacción no se fabrica si la cuenta fuente no existe | tests del cliente Horizon con respuestas controladas |
+| P4 | Privy firma el hash de la base de firma y la app adjunta la firma decorada; Freighter recibe el sobre sin firmar y devuelve el firmado | contract tests de ambos caminos |
+| P5 | La app envía a Horizon únicamente un sobre firmado y devuelve el hash de la red cuando fue aceptado | prueba del cuerpo `application/x-www-form-urlencoded` y respuesta exitosa |
+| P6 | Rechazo de wallet, cotización vencida, saldo/cuenta ausente, rechazo de Horizon y caída de red son resultados distintos | matriz de pruebas de errores tipados |
+| P7 | Ningún log ni error expone firma, XDR completo, llave de contraparte o respuesta cruda de Horizon | revisión de código y tests de serialización pública |
+| P8 | El módulo es portable a Expo: no importa `node:crypto`, `Buffer` ni `@stellar/stellar-sdk` | typecheck de `app/` y prueba de imports |
+
+La moneda comercial y el activo de red no se infieren entre sí. `/quote` debe publicar términos de
+pago completos; si cobra USDC, incluye código e emisor del activo. El emisor rechaza otro activo,
+aunque tenga el mismo número de unidades. XLM solo es válido cuando la cotización lo declara como
+activo nativo: nunca se acepta como sustituto implícito de USDC.
+
+Secuencia de implementación:
+
+1. definir el contrato portable de cotización, firma y resultado de pago;
+2. codificar/decodificar solo el subconjunto XDR necesario para `PAYMENT + MEMO_HASH`;
+3. integrar carga de cuenta y envío con Horizon detrás de un puerto inyectable;
+4. completar los caminos Privy y Freighter sin cambiar la semántica de sus adapters;
+5. conectar el pago al flujo antes de `/issue`, mostrando fallos recuperables;
+6. ejecutar pruebas de app y repositorio, typecheck y build antes de abrir el PR.
 
 ## Fases
 

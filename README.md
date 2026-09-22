@@ -127,8 +127,8 @@ entra como otro adaptador sin tocar un solo predicado.
 - [`retrieval/`](retrieval/) — resolución de entidades para las consultas **por
   nombre** de Croma. **Parcialmente marcado para retirarse** — ver su README.
 - [`anchoring/`](anchoring/) — el puerto de anclaje y sus adaptadores.
-- `app/` — iOS y Android. ⏳ pendiente; el diseño está en
-  `docs/MOBILE.md`.
+- [`app/`](app/README.md) — iOS y Android: emisión verificada y motor de pago Stellar portable.
+  Falta ejecución en teléfono físico y firma real con las wallets configuradas.
 - [`circuits/`](circuits/) — los circuitos Circom. Código fuente; ver estado.
 - [`contracts/knowni-verifier/`](contracts/knowni-verifier/) — el verificador
   Soroban. Código fuente; ver estado.
@@ -140,7 +140,7 @@ Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilaci�
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 249 pruebas (unit · fuzz · invariant)
+npm test      # 302 pruebas (unit · fuzz · invariant)
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
@@ -165,7 +165,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 249 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 302 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
@@ -177,6 +177,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
 | App iOS / Android | **Recorrido real, bloque 5 de 5 pendiente.** La app consulta fuentes reales a través del servicio de emisión y verifica las respuestas en el teléfono. Nunca ejecutada en un dispositivo físico — [`app/`](app/README.md) |
+| Pago móvil | **Implementado y probado sin red.** `/quote` entrega activo, destino y monto; Privy firma el hash, Freighter el sobre y la app envía a Horizon. Falta una firma real y una transacción USDC testnet |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
 | Servicio de emisión | **Corre.** Única llave de proveedor, consentimiento por fuente y respuestas firmadas — [`issuer/`](issuer/README.md) |

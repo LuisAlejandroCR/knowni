@@ -12,7 +12,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **302 del dominio** + **28 de la app**, verdes localmente; CI pendiente del último push |
+| Pruebas | **309 del dominio** + **28 de la app**, verdes en CI (Node 22 y 24) |
 | Ramas | solo `main`; 25 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
@@ -43,6 +43,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-31 | `/issue` exige llave de contraparte y límite por minuto, antes de pago y antes de Croma; sin llave el emisor no arranca |
 | D-32 | El EUC de UGPP no trae verificación pública ni es certificación según su propio emisor; `needs_human_review` es la respuesta correcta, no un pendiente |
 | D-33 | La cotización nombra monto, destino y activo; otro activo nunca paga por coincidencia numérica |
+| D-34 | El conjunto gastado sobrevive al proceso: `NullifierStore` es puerto y `claim` sigue síncrono a propósito |
 
 ## Lo que bloquea, y de quién depende
 
@@ -55,20 +56,22 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | UGPP como fallback documental | requiere operación humana, precio y SLA; sin ellos permanece en `needs_human_review` y fuera del flujo automático — D-29/D-32 |
 | Si existe API de IBC con autorización delegada | conversación con Aportes en Línea |
 
-## Coordinación en curso — 2026-09-21, tarde
+## Coordinación en curso — 2026-09-22
 
 Tres agentes tocando el repo a la vez. Para no chocar, cada uno anota aquí qué toma antes de tocar
 un archivo compartido.
 
 | Agente | Toma | Archivos | Estado |
 |---|---|---|---|
-| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts`, `docs/{plan,memoria,handoff}.md` | PR #29 abierto; coordinador terminado y probado, CI pendiente del último push |
-| Esta sesión | Bloqueo de autenticidad UGPP (research, ver bloque 3) — D-32 | `docs/verificacion.md`, `docs/memoria.md` | **Cerrado.** Sin mecanismo público; queda documentado, no bloqueado por falta de investigación |
+| Codex | Bloque 1 — caché de respuestas en `issuer/` | `issuer/src/{cache,main,service}.ts`, `issuer/test/unit/{cache,issue-cache}.spec.ts`, `docs/*` | **En curso**, worktree `knowni-issuer-cache` (rama `issuer-response-cache`), sin commitear |
+| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
+| Esta sesión | Llave y cuota en `/issue` — D-31 · bloqueo de autenticidad UGPP — D-32 | `issuer/src/access.ts`, `docs/{verificacion,memoria}.md` | **Cerrados.** PR #27 y #28 mergeados |
+| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 | `attestation/src/acceptance.ts`, `app/src/domain/verifier.ts` | **Cerrado.** El puerto y el ledger hidratado están probados; falta elegir el almacén del dispositivo |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
-**Mientras `issuer/service.ts`, `issuer/payments.ts` o `issuer/main.ts` tengan cambios sin commitear
-de Codex, el bloque 1 (caché) y el 5 (`NullifierLedger`/pagos persistidos) esperan** — los dos pasan
-por esos mismos archivos.
+**Mientras Codex tenga `issuer/src/{cache,main,service}.ts` sin commitear, nadie más entra ahí.** El
+bloque 5 se parte por eso: **5a** es el `NullifierLedger` (`attestation/` + `app/`, libre) y **5b**
+son los pagos gastados (`issuer/src/payments.ts`, espera a que el caché aterrice).
 
 ## Siguientes bloques, en orden
 
@@ -81,7 +84,10 @@ por esos mismos archivos.
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
    todo o nada.
-5. **`NullifierLedger` y pagos gastados con persistencia**, que hoy viven en memoria.
+5. **Pagos gastados con persistencia** (5b), que hoy viven en memoria en `issuer/src/payments.ts`.
+   ~~5a, el `NullifierLedger`~~ **resuelto en el mecanismo — D-34**: el puerto y el ledger hidratado
+   están probados; lo que queda es **elegir el almacén del dispositivo**, que es del titular porque
+   es una dependencia nativa nueva y no se ejerce sin el criterio A12.
 
 ## Lo que no se hace, y no es negociable
 

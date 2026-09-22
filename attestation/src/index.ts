@@ -123,12 +123,20 @@ export type {
   AcceptanceInput,
   AcceptanceResult,
   ClaimOutcome,
+  NullifierEntry,
   NullifierLedger,
+  NullifierStore,
+  PersistentLedgerOptions,
   RevocationOracle,
   RevocationPolicy,
   RevocationState,
 } from "./acceptance.ts";
-export { acceptAnswer, createMemoryNullifierLedger } from "./acceptance.ts";
+export {
+  acceptAnswer,
+  createMemoryNullifierLedger,
+  createMemoryNullifierStore,
+  createPersistentNullifierLedger,
+} from "./acceptance.ts";
 
 export type {
   AttestResultsRequest,

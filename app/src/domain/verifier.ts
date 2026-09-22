@@ -21,6 +21,9 @@ const STATE: Record<RevocationSetting, (now: number) => RevocationState> = {
 // One ledger per process, like a counterparty's own spent set. A second
 // presentation of the same answer has to meet the same ledger or the replay
 // check would be theatre.
+// In memory, so the set empties on restart: swap for
+// `createPersistentNullifierLedger(store)` once a device store is chosen — see
+// docs/memoria.md D-34.
 const ledger = createMemoryNullifierLedger();
 
 export interface VerificationView {

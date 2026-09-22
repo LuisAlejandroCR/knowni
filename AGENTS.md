@@ -264,6 +264,9 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 | `CROMA_BASE_URL` | Opcional; default `https://api.croma.run` |
 | `STELLAR_NETWORK` | ⏳ pendiente — `testnet` para la demo |
 | `KNOWNI_ISSUER_SEED` | ⏳ pendiente — firma la raíz publicada |
+| `KNOWNI_ISSUER_ACCESS_KEYS` | ⏳ pendiente — una llave por contraparte, separadas por coma; sin ella el emisor no arranca. Ver D-31 |
+| `KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE` | Opcional; default 20 por llave |
+| `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | ⏳ pendiente — la llave de este app como contraparte, la misma que `KNOWNI_ISSUER_ACCESS_KEYS` reconoce |
 | `JEV_VERCEL_API_KEY` | Vercel AI Gateway, modelo `typesafe-ai/jev`. Solo herramienta de desarrollo: ningún dato de un sujeto sale hacia un modelo |
 
 ## Stack

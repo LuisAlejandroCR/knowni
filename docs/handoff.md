@@ -12,7 +12,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **289 del dominio** + **20 de la app**, verdes en CI (Node 22 y 24) |
+| Pruebas | **300 del dominio** + **20 de la app**, verdes en CI (Node 22 y 24) |
 | Ramas | solo `main`; 25 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
@@ -40,6 +40,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-28 | Tres evidencias que no se sustituyen: `contribution_base`, `verified_income`, `cashflow` |
 | D-29 | Ruta al IBC: Aportes en Línea → UGPP documental → open finance como credencial aparte |
 | D-30 | Passkey es la puerta; el magic link solo recupera; sesión de 15 minutos atada al dispositivo |
+| D-31 | `/issue` exige llave de contraparte y límite por minuto, antes de pago y antes de Croma; sin llave el emisor no arranca |
 
 ## Lo que bloquea, y de quién depende
 
@@ -48,13 +49,15 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | Repositorio público (lo exigen las bases) | del titular; decidir antes si `CLAUDE.md` sale con él |
 | Correr la app en un teléfono físico — criterio **A12** | del titular: `cd app && npm start` |
 | `EXPO_PUBLIC_PRIVY_APP_ID`, `WALLETCONNECT_PROJECT_ID`, `KAPSO_*` o `META_*`, `KNOWNI_TREASURY_ACCOUNT` | llaves pendientes; cada una ausente apaga su función |
+| `KNOWNI_ISSUER_ACCESS_KEYS` y `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | llave pendiente, pero no opcional: sin ella el emisor no arranca — D-31 |
 | Cómo se comprueba la autenticidad del Estado Único de Cuenta de UGPP | sin resolver; bloquea el camino documental |
 | Si existe API de IBC con autorización delegada | conversación con Aportes en Línea |
 
 ## Siguientes bloques, en orden
 
-1. **Llaves, cuota y caché en `issuer/`**: hoy `POST /issue` está abierto y cualquiera con la URL
-   gasta la cuota de Croma. Es el hueco más grande que queda.
+1. **Caché en `issuer/`**: una pregunta idéntica repetida —mismo `paymentRef`— vuelve a gastar la
+   cuota de Croma en vez de servir la respuesta ya emitida. Llaves y cuota por contraparte ya están
+   resueltas — D-31.
 2. **Pago de punta a punta**: construir la transacción con el `paymentRef` en el memo, firmarla con
    Privy (`signRawHash` sobre el hash de la transacción) y enviarla con el submitter propio.
 3. **Lector del Estado Único de Cuenta** y su comprobación de autenticidad.

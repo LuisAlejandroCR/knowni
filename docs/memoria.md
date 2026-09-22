@@ -611,6 +611,29 @@ la sesión no hay ni una contraseña de ninguna fuente, y hay una prueba que enu
 *Lo que no cambia:* el proveedor sabe quién entró y cuándo. Por eso sostiene la **cuenta**, no la
 llave del titular, y la identidad de quien paga no es un secreto del producto — es el punto.
 
+### D-31 — `/issue` exige una llave de contraparte, independiente del pago · 2026-09-21
+
+*El hueco:* `docs/handoff.md` lo marcaba como el más grande que quedaba. Sin `KNOWNI_TREASURY_ACCOUNT`
+—una de las llaves pendientes— `POST /issue` no pedía nada: cualquiera con la URL gastaba la cuota
+real de Croma, sin pagar y sin quedar identificado.
+
+*Decisión:* una llave por contraparte (`KNOWNI_ISSUER_ACCESS_KEYS`, separadas por coma), comprobada
+antes de leer el cuerpo de la petición —antes de consentimiento, antes de pago, antes de tocar
+Croma—. Sin al menos una llave configurada el proceso no arranca, igual que sin `CROMA_API_KEY`: una
+frontera de seguridad no es una función que se apaga sola, se cae cerrada.
+
+*Por qué no basta con el pago:* D-26 ya separa pagar de autorizar. Aquí el mismo principio corre al
+revés — identificar a quien pregunta tampoco depende de que haya pagado. Una llave sin pago sigue
+sin poder consultar (la política de pago, si está activa, se comprueba después); un pago sin llave
+ni siquiera llega a esa comprobación.
+
+*Cuota, no solo identidad:* una llave filtrada o compartida no puede agotar sola el presupuesto de
+Croma — `KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE` limita cada llave (20/min por defecto), con ventanas
+en memoria por llave, nunca compartidas entre contrapartes.
+
+*Lo que queda fuera de este cambio:* cachear una pregunta idéntica repetida no está resuelto — sigue
+siendo el ítem de caché de `docs/handoff.md`.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -650,6 +673,7 @@ llave del titular, y la identidad de quien paga no es un secreto del producto �
 | 2026-09-21 | `solvency` se parte en tres evidencias que no se sustituyen — D-28 — y la ruta al IBC se ordena: Aportes en Línea primero, UGPP como piso documental, open finance como credencial aparte — D-29 |
 | 2026-09-21 | Camino documental UGPP escrito: el titular aporta el estado de cuenta, el emisor comprueba autenticidad antes de leerlo y solo sobreviven periodos e IBC. Sin comprobación no hay reclamo, y la ventana de cuatro meses viaja con la cifra |
 | 2026-09-21 | Privy entra como login y wallet del pagador: passkey, sesión de 15 minutos atada al dispositivo y firma Stellar por hash crudo, comprobada en el SDK instalado — D-30. Cierre de sesión documentado en `docs/handoff.md` |
+| 2026-09-21 | Cierra el hueco del traspaso: `POST /issue` exige una llave de contraparte y un límite por minuto antes de leer el cuerpo, de cobrar o de llamar a Croma. Sin llave configurada el emisor no arranca — D-31. 300 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

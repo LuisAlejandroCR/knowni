@@ -12,6 +12,10 @@ import { appHash, appSignatures } from "./crypto.ts";
 // the same machine, which is what `npm start` in issuer/ gives you.
 export const ISSUER_URL = process.env.EXPO_PUBLIC_ISSUER_URL ?? "http://localhost:8787";
 
+// This app's relying-party key. Without it the service refuses every /issue
+// call rather than answer anyone who finds the URL. See docs/memoria.md D-31.
+const ACCESS_KEY = process.env.EXPO_PUBLIC_ISSUER_ACCESS_KEY;
+
 export interface IssuerIdentity {
   readonly issuerId: string;
   readonly registry: IssuerRegistry;
@@ -67,7 +71,10 @@ export interface IssuanceInput {
 export async function requestIssuance(input: IssuanceInput, baseUrl = ISSUER_URL): Promise<IssuanceOutcome> {
   const response = await call(`${baseUrl}/issue`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(ACCESS_KEY === undefined ? {} : { "X-Knowni-Access-Key": ACCESS_KEY }),
+    },
     body: JSON.stringify(input),
   });
   if (response === undefined) {

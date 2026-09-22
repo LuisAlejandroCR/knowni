@@ -5,6 +5,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { chargeableMinor, paymentRef, quote } from "./pricing.ts";
 import { createMemorySpentPayments, verifyPayment, type PaymentPolicy, type SpentPayments } from "./payments.ts";
+import { checkAccess, createMemoryRequestQuota, type AccessPolicy, type RequestQuota } from "./access.ts";
 import { noNotifier, type Notifier } from "./notify.ts";
 import { sha256Hash } from "@knowni/core/node";
 import type { SessionRequest } from "@knowni/core";
@@ -29,6 +30,10 @@ export interface IssuerOptions {
   readonly payments?: PaymentPolicy;
   readonly spentPayments?: SpentPayments;
   readonly notifier?: Notifier;
+  // Absent means /issue refuses every call: with nobody named as a relying
+  // party, "anyone with the URL" is not a caller this service recognizes.
+  readonly access?: AccessPolicy;
+  readonly requestQuota?: RequestQuota;
 }
 
 export interface IssueRequestBody {
@@ -156,7 +161,7 @@ function send(response: ServerResponse, status: number, body: unknown): void {
   response.writeHead(status, {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, X-Knowni-Access-Key",
   });
   response.end(payload);
 }
@@ -189,6 +194,7 @@ export function createIssuerService(options: IssuerOptions) {
   const publicKey = nodeSignatures.publicKeyOf(options.seed);
   const spent = options.spentPayments ?? createMemorySpentPayments();
   const notifier = options.notifier ?? noNotifier;
+  const quota = options.requestQuota ?? createMemoryRequestQuota();
 
   return createServer(async (request, response) => {
     if (request.method === "OPTIONS") return send(response, 204, {});
@@ -215,6 +221,22 @@ export function createIssuerService(options: IssuerOptions) {
     }
 
     if (request.method === "POST" && request.url?.startsWith("/issue")) {
+      // Checked before the body is even read: an unrecognized or throttled
+      // caller never reaches consent, payment or a single call to Croma.
+      const keyHeader = request.headers["x-knowni-access-key"];
+      const access =
+        options.access === undefined
+          ? { status: "refused" as const, reason: "missing_key" as const }
+          : checkAccess(
+              typeof keyHeader === "string" ? keyHeader : undefined,
+              options.access,
+              quota,
+              Math.floor(Date.now() / 1000),
+            );
+      if (access.status === "refused") {
+        return send(response, access.reason === "rate_limited" ? 429 : 401, { error: access.reason });
+      }
+
       const body = (await readBody(request)) as IssueRequestBody | undefined;
       if (body === undefined || typeof body.documentNumber !== "string" || body.request === undefined) {
         return send(response, 400, { error: "invalid_request" });

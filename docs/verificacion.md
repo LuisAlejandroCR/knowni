@@ -24,6 +24,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | El contrato Soroban compila y su política se sostiene sola: una raíz que nadie registró, un nulificador ya gastado, un `solvency_tier` por debajo del que pidió la contraparte, cada booleano por separado, y un vector plano que no concuerda con las señales nombradas —todos refusados **antes** del emparejamiento | `cargo test` en `contracts/knowni-verifier`: 9 pruebas. El artefacto `wasm32-unknown-unknown` de release se construye: 22 619 bytes. Ninguna prueba Groth16 real verificada — el contrato no ha visto un emparejamiento que dé verdadero | 2026-09-23 |
 
+| Un fichero de caché corrupto —líneas que no parsean, y líneas que parsean y no son entradas— nunca impide que el emisor arranque, y la entrada viva que haya dentro sobrevive | `issuer/test/fuzz/cache-store.fuzz.spec.ts`: 24 formas de estar mal y 300 ficheros mezclados al azar. Sin la validación del adaptador, las cinco pruebas fallan | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

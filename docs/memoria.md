@@ -848,6 +848,20 @@ reescritura va por fichero temporal y `rename`, para que una caída a mitad no d
 temporal, con reinicio real del caché, y el arranque se ejecutó en los dos casos —con fichero
 (persiste, lo dice en el log) y sin él (memoria)—.
 
+### D-40 — Una razón de rechazo que miente manda a arreglar lo que no era · 2026-09-22
+
+*El hallazgo:* el ejercicio real del pago en testnet mostró que un pago que **sí** llegó a la
+tesorería, pero en un activo distinto al cotizado, se rechazaba con `wrong_destination`. Rechazar
+está bien —nunca fue un agujero, el activo se comprobaba—; lo que estaba mal es lo que el `402` le
+dice al pagador: que el dinero fue a otra parte, cuando fue aquí.
+
+*Decisión:* `wrong_asset` entra como razón propia. Si no hubo ningún pago a la tesorería sigue siendo
+`wrong_destination`; si lo hubo y el activo no era el cotizado, es `wrong_asset`. Cambia el cuerpo
+del `402` que ve la contraparte, por eso es decisión y no corrección silenciosa.
+
+*Ejercido sobre la transacción real de la testnet,* la misma `fb64700b…`: preguntando por XLM
+responde `wrong_asset`, preguntando por otra cuenta destino responde `wrong_destination`.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -897,6 +911,7 @@ temporal, con reinicio real del caché, y el arranque se ejecutó en los dos cas
 | 2026-09-22 | Cerrada la ventana de durabilidad del pago: `/issue` espera la escritura del gasto antes de tocar Croma y responde `503` si no aterrizó. Una escritura fallida suelta el reclamo en vez de quemarle la transacción al comprador — D-38. 329 pruebas |
 | 2026-09-22 | El caché de emisiones sobrevive al reinicio en un fichero JSONL append-only, con expiradas descartadas al hidratar. Opcional a propósito: perderlo cuesta una llamada repetida a Croma, no una emisión de más — D-39. 336 pruebas |
 | 2026-09-22 | Ejercido el pago en USDC contra la testnet real: el XDR hecho a mano se acepta en Horizon y el emisor lo verifica de vuelta. Era la pieza sin red más riesgosa del repositorio y no necesitaba llaves de nadie — un activo de prueba propio basta. Detalle en `docs/verificacion.md` |
+| 2026-09-22 | Un pago que llega a la tesorería en el activo equivocado deja de decir `wrong_destination` y dice `wrong_asset`. Salió del ejercicio real, y se comprobó contra la misma transacción — D-40 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

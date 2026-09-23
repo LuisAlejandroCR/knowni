@@ -5,8 +5,17 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { installPlatformCrypto } from "../src/domain/platform.ts";
+import { createDeviceNullifierStore } from "../src/domain/nullifier-store.ts";
+import { hydrateLedger } from "../src/domain/verifier.ts";
 
 installPlatformCrypto();
+
+// Reads the spent set off the device before anything can be accepted against
+// it — D-36. Until it lands the verifier refuses rather than accepting an
+// answer it cannot check for replay.
+void hydrateLedger(createDeviceNullifierStore(), (error) => {
+  console.warn("nullifier write failed; a spent answer may return after a restart", error);
+});
 
 export default function Layout() {
   return (

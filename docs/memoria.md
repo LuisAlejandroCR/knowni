@@ -733,6 +733,32 @@ pago, consulta Croma, firma y notifica; los retries esperan el mismo resultado. 
 cachea. La entrada expira exactamente con el sobre firmado y el proceso limita cuántas conserva.
 El caché sigue siendo volátil: persistencia y coordinación entre réplicas permanecen pendientes.
 
+### D-36 — AsyncStorage guarda el conjunto gastado, y sin leerlo no se acepta nada · 2026-09-22
+
+*La elección, que D-34 dejó abierta:* **`@react-native-async-storage/async-storage`**, no
+`expo-secure-store`. SecureStore está pensado para secretos y tiene tope de tamaño por valor; el
+conjunto gastado **crece** con cada aceptación y no cabe ahí. Además un nullifier no es un secreto:
+es un identificador opaco de una respuesta ya usada, y quien tenga el teléfono ya vio la respuesta.
+Lo que se necesita es durabilidad, no confidencialidad.
+
+*Una llave por nullifier*, no una lista bajo una sola llave: así `append` es una escritura y nunca un
+lee-modifica-escribe que dos aceptaciones concurrentes puedan pisarse. `load` barre el prefijo
+`knowni/nullifier/v1/`.
+
+*Lo que pasa antes de que el disco conteste:* hidratar es asíncrono y `verifyOnDevice` es síncrono.
+Un ledger que todavía no leyó su historia **no puede distinguir un replay de una primera
+presentación**, así que en esa ventana el verificador **rehúsa**, no acepta. Es la misma regla de
+siempre: "no lo sabemos todavía" nunca se convierte en un "sí". `_layout.tsx` hidrata al arrancar,
+junto a `installPlatformCrypto`.
+
+*Dónde vive el módulo nativo:* solo en `app/src/domain/nullifier-store.ts`. `verifier.ts` recibe el
+almacén como argumento, así que sigue corriendo bajo Node en las pruebas y `attestation/` sigue sin
+saber qué es un teléfono — D-23 intacto.
+
+*Lo que sigue sin ejercerse:* nadie ha escrito en el AsyncStorage real. Las pruebas cubren el
+cableado con un almacén falso, incluida una entrada "de una corrida anterior" que se detecta como
+replay. La escritura de verdad espera al criterio A12.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -777,6 +803,7 @@ El caché sigue siendo volátil: persistencia y coordinación entre réplicas pe
 | 2026-09-21 | Pago móvil portable: la cotización publica activo, destino y monto; Privy firma el hash, Freighter el sobre, y Horizon recibe solo el XDR firmado. El emisor deja de aceptar un activo distinto por coincidencia numérica — D-33 |
 | 2026-09-22 | `NullifierStore` entra como puerto y `createPersistentNullifierLedger` hidrata el conjunto gastado al arrancar, para que un reinicio de la app deje de devolver una presentación ya gastada. `claim` sigue síncrono a propósito; la escritura es lo que trailea. Falta elegir el almacén del dispositivo — D-34 |
 | 2026-09-22 | Caché idempotente del emisor: HMAC por contraparte/sujeto/pregunta/pago, single-flight, expiración con la firma y tamaño acotado. Un retry no vuelve a gastar Horizon, Croma ni WhatsApp — D-35 |
+| 2026-09-22 | El conjunto gastado aterriza en el dispositivo con AsyncStorage, una llave por nullifier. Mientras no se haya leído del disco, el verificador rehúsa en vez de aceptar lo que no puede comprobar — D-36 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

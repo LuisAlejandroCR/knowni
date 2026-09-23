@@ -2,8 +2,8 @@
 // Runs the real acceptance — request, binding, evidence, revocation — and turns
 // its outcome into something a person can read without a code.
 
-import type { AttestedResults, RevocationState, SignedRequest } from "@knowni/attestation";
-import { acceptAnswer, createMemoryNullifierLedger } from "@knowni/attestation";
+import type { AttestedResults, NullifierLedger, NullifierStore, RevocationState, SignedRequest } from "@knowni/attestation";
+import { acceptAnswer, createPersistentNullifierLedger } from "@knowni/attestation";
 import type { Disclosure, SessionRequest } from "@knowni/core";
 import { deriveNullifier, sessionId, SolvencyTier } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
@@ -18,13 +18,27 @@ const STATE: Record<RevocationSetting, (now: number) => RevocationState> = {
   revoked: (now) => ({ status: "revoked", checkedAt: now - 30 }),
 };
 
-// One ledger per process, like a counterparty's own spent set. A second
-// presentation of the same answer has to meet the same ledger or the replay
-// check would be theatre.
-// In memory, so the set empties on restart: swap for
-// `createPersistentNullifierLedger(store)` once a device store is chosen — see
-// docs/memoria.md D-34.
-const ledger = createMemoryNullifierLedger();
+// The counterparty's own spent set, read off the device at start-up so it
+// survives a restart — D-34, D-36. Undefined until `hydrateLedger` lands: a
+// ledger that has not read its history cannot tell a replay from a first
+// presentation, so nothing is accepted against it.
+let ledger: NullifierLedger | undefined;
+
+// Called once at start-up, like `installPlatformCrypto`. The store arrives as
+// an argument so this module never imports a native module and stays testable
+// under plain Node.
+export async function hydrateLedger(
+  store: NullifierStore,
+  onWriteError?: (error: unknown) => void,
+): Promise<void> {
+  ledger = await createPersistentNullifierLedger(store, {
+    onWriteError: (error) => onWriteError?.(error),
+  });
+}
+
+export function ledgerReady(): boolean {
+  return ledger !== undefined;
+}
 
 export interface VerificationView {
   readonly accepted: boolean;
@@ -83,6 +97,18 @@ export function verifyOnDevice(
   policy: PolicySetting,
   nowUnix: number,
 ): VerificationView {
+  // Refused, not accepted: without the spent set an answer already used could
+  // pass as new, and "no lo sabemos todavía" never becomes "sí".
+  if (ledger === undefined) {
+    return {
+      accepted: false,
+      idempotent: false,
+      headline: "No se puede aceptar todavía",
+      explanation: "El registro de respuestas ya usadas aún no se ha leído del dispositivo.",
+      notes: [],
+    };
+  }
+
   const outcome = acceptAnswer(appHash, {
     signatures: appSignatures,
     signedRequest: signed,

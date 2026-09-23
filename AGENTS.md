@@ -273,7 +273,7 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 
 | Capa | Tecnología |
 |---|---|
-| App | React Native + Expo (iOS y Android) — ver `docs/MOBILE.md` |
+| App | React Native + Expo (iOS y Android) — ver `docs/MOBILE.md`. `@react-native-async-storage/async-storage` guarda el conjunto gastado del verificador — D-36 |
 | Dominio | TypeScript, sin dependencias, compartido entre app y backend |
 | Prover | Rust sobre UniFFI (Kotlin + Swift) — ⏳ pendiente |
 | Fuentes | Croma REST — `https://api.croma.run` |

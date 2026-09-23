@@ -179,8 +179,8 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | App iOS / Android | **Recorrido real, bloque 5 de 5 pendiente.** La app consulta fuentes reales a través del servicio de emisión y verifica las respuestas en el teléfono. Nunca ejecutada en un dispositivo físico — [`app/`](app/README.md) |
 | Pago móvil | **Implementado y probado sin red.** `/quote` entrega activo, destino y monto; Privy firma el hash, Freighter el sobre y la app envía a Horizon. Falta una firma real y una transacción USDC testnet |
 | Reintentos del emisor | **Corren.** Un HMAC opaco separa contraparte, sujeto, pregunta y pago; retries concurrentes comparten una sola consulta y expiran con el sobre firmado |
-| Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
-| Contrato Soroban | **Compila, y su política está probada.** Nueve pruebas sobre las tres reglas —raíz desconocida, nulificador gastado, predicado incumplido, señales que no concuerdan—, y el `wasm` se construye en CI. Nunca desplegado, y ninguna prueba ZK verificada de verdad |
+| Circuitos Circom | **Compilan.** 10 932 restricciones no lineales; el orden de las señales públicas lo escribe el compilador y CI lo comprueba. Ninguna prueba real generada ni verificada: falta Poseidon para BLS12-381 — ver [`circuits/README.md`](circuits/README.md) |
+| Contrato Soroban | **Compila, y su política está probada.** Once pruebas sobre las tres reglas —raíz desconocida, nulificador gastado, predicado incumplido, señales que no concuerdan— y sobre el orden de señales que emite el compilador de Circom. Nunca desplegado, y ninguna prueba ZK verificada de verdad |
 | Servicio de emisión | **Corre.** Única llave de proveedor, consentimiento por fuente y respuestas firmadas — [`issuer/`](issuer/README.md) |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |
 | Ejecución en un teléfono físico | **No.** Ninguna |

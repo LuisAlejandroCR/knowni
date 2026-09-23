@@ -1115,6 +1115,45 @@ escribió, era **dónde estaba el límite**. Aquí el límite estaba dibujado �
 con su función `parse`— y la validación cayó dentro. En el emisor el límite era una línea en medio de
 un manejador HTTP, y nadie la vio como un límite.
 
+### D-51 — El contrato leía la lista de sanciones del índice equivocado, y solo el compilador podía decirlo · 2026-09-23
+
+*Lo que estaba bloqueado, y por qué no lo estaba:* los circuitos llevaban desde el día 1 sin
+compilar, con el bloqueo anotado como falta de toolchain. `circom` se construye desde fuente con el
+mismo `cargo` que ya compilaba el contrato. Cincuenta y cuatro segundos.
+
+*Lo que apareció al primer intento, que es la razón de todo esto:*
+
+```
+$ circom eligibility.circom --sym
+$ head -13 build/eligibility.sym | cut -d, -f4
+main.personhood  main.solvencyTier  main.formality  main.standing  main.nullifier
+main.issuerRoot  main.sessionId  main.expectedSubjectRef  main.rentMinor
+main.nowMonth  main.maxStaleMonths  main.minMonthsPaid  main.listSetRoot
+```
+
+`listSetRoot` está en el índice **12**. El contrato lo leía del **11**, que es `minMonthsPaid`. La
+comprobación `claimListSetRoot === listSetRoot` —«limpio contra una lista que nadie publicó no es una
+respuesta»— comparaba la instantánea de listas contra un umbral de meses cotizados. El propio
+`lib.rs` avisaba de esto: *«no falla ruidosamente — autoriza la afirmación equivocada»*. Llevaba ahí
+desde que se escribió, y ninguna prueba podía verlo porque todas las pruebas usaban el mismo orden
+inventado que el contrato.
+
+*Decisión:* el orden deja de ser una lectura. `circuits/eligibility.signals.txt` lo escribe la tabla
+de símbolos del compilador, el contrato declara una constante por señal y `test.rs` afirma cada
+constante contra ese fichero. CI recompila el circuito y rechaza un fichero que se haya desviado.
+Poner el índice viejo de vuelta ahora rompe dos pruebas; comprobado.
+
+*El otro hallazgo, que es una trampa y no una buena noticia:* el circuito compila **igual de bien**
+con `-p bls12381` que con `bn128` —mismas 10 932 restricciones no lineales, mismo orden de señales—.
+Eso no significa que sea correcto sobre BLS12-381: las constantes de ronda de Poseidon en circomlib
+son elementos derivados para el campo de BN254, y compiladas contra otro campo siguen siendo *unas*
+constantes, así que el compilador no tiene nada que objetar. El resultado es una permutación que
+nadie analizó. El bloqueo real de los circuitos nunca fue el toolchain: es este, y es silencioso.
+
+*Lo que sigue sin ser cierto:* ninguna prueba Groth16 se ha generado ni verificado. Falta Poseidon
+parametrizado para BLS12-381, y falta que `core/` hashee con él —hoy el puerto `FieldHash` está
+implementado con SHA-256, que es exactamente el cambio que el puerto existe para permitir—.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1176,6 +1215,7 @@ un manejador HTTP, y nadie la vio como un límite.
 | 2026-09-23 | La comprobación de un pago lanzaba una excepción cuando Horizon respondía un monto ilegible o una página que no era una lista. Ahora refusa con la razón que ya existía — D-48 |
 | 2026-09-23 | El adaptador de Horizon fallaba con mensajes de JavaScript —`Cannot convert abc to a BigInt`— donde debía nombrar a Horizon, y un `502` de HTML salía como error de parseo. Primeras pruebas fuzz de `anchoring/` — D-49. 365 pruebas |
 | 2026-09-23 | Fuzz sobre los cuatro adaptadores de Croma: cero hallazgos. Ya validaban y reducían de verdad, a diferencia del emisor y el anclaje. La diferencia no era la disciplina sino dónde estaba dibujado el límite — D-50. 368 pruebas |
+| 2026-09-23 | Los circuitos compilan por primera vez, y la tabla de símbolos delató que el contrato leía `listSetRoot` del índice 11, que es `minMonthsPaid`. El orden de señales deja de ser una lectura: lo escribe el compilador y CI lo comprueba — D-51 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real
@@ -1189,7 +1229,7 @@ menos una vez.
 | Stellar Horizon / RPC | ✅ **ejercido el 2026-09-20**: cuenta creada con friendbot y transacción `0dc0fdf4…` aceptada en el ledger 4783364 |
 | Pago en USDC de punta a punta | ✅ **ejercido el 2026-09-22**: el XDR construido a mano por `stellar-payment.ts` —activo de crédito, `MEMO_HASH`, firma por hash crudo— aceptado por Horizon en `fb64700b…`, y `verifyPayment` lo acepta de vuelta. Con un activo `USDC` emitido para la prueba, porque el USDC de Circle no se puede acuñar. Falta la firma real de Privy, que necesita un app id |
 | Contrato Soroban | ⚠️ **compila desde el 2026-09-23** y sus nueve pruebas corren en CI, con el `wasm` de release construido. Nunca desplegado, y nunca ha verificado una prueba Groth16 real |
-| Circom / snarkjs | ⏳ nunca compilado |
+| Circom / snarkjs | ⚠️ **circom ejercido el 2026-09-23**: `eligibility.circom` compila (10 932 restricciones no lineales) y su tabla de símbolos corrigió el contrato. snarkjs nunca corrido: no hay prueba generada ni verificada, y falta Poseidon para BLS12-381 |
 | Teléfono físico | ⏳ nunca ejecutado |
 
 Ningún número medido aparece en este repositorio.

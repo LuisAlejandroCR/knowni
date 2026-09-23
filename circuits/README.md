@@ -11,15 +11,20 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 
 | Artifact | State |
 |---|---|
-| `eligibility.circom`, `merkle.circom` | **Written.** Source only. |
-| Compiled R1CS / WASM prover | **Not built in this repository.** `circom` is not installed in the environment these were written in. |
-| Trusted setup, proving key | **Not run.** |
-| On-chain verification against Soroban | **Not run.** |
-| The same predicates, evaluated and tested | **Done** — in `core/`, 57 passing tests. |
+| `eligibility.circom`, `merkle.circom` | **Written, and compiled** — 2026-09-23, circom 2.2.3. |
+| Compiled R1CS | **Built.** 10 932 non-linear and 12 212 linear constraints, 8 public inputs, 5 public outputs, 23 194 wires. Not committed: it is generated. |
+| Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
+| WASM prover, trusted setup, proving key | **Not run.** |
+| On-chain verification against Soroban | **Not run.** No real proof has ever been produced or verified. |
+| The same predicates, evaluated and tested | **Done** — in `core/`. |
 
-Nothing in this repository claims a measured proof time, a constraint count
-or a verified on-chain proof. When those exist they go in this table with the
-command that produced them.
+Compiling found one thing, and it is the kind this file warned about: the
+contract read `listSetRoot` from index 11 of the public signal vector. Index
+11 is `minMonthsPaid`. See `docs/memoria.md` D-51.
+
+Nothing here claims a measured proof time or a verified on-chain proof. The
+constraint counts above are from the command in "Building", run on this
+repository.
 
 ## The gap that decides the schedule
 
@@ -40,16 +45,36 @@ exists — but the gadget libraries do not follow automatically:
 - **Do not compile with the default `bn128`.** A BN254 proof cannot be
   verified on Stellar until CAP-0074 lands. Mismatching the curve is the
   failure that looks like everything working until the contract call.
+- **`-p bls12381` compiling is not `-p bls12381` being correct.** Measured
+  2026-09-23: the circuit compiles on both curves, to byte-identical
+  constraint counts and the same signal order. That is the danger, not the
+  good news. circomlib's Poseidon round constants are field elements derived
+  for BN254; compiled against another field they are still *some* constants,
+  so the compiler has nothing to complain about and the result is a
+  permutation nobody analysed. The gap is silent, which is why it is written
+  down here twice.
 
 This is why the architecture keeps the proof system behind a port and ships
 an attested path first. See `docs/ROADMAP.md`.
 
 ## Building, once the toolchain is in place
 
+What was actually run, and what it produced:
+
 ```bash
-# Poseidon parameters for BLS12-381 must be generated first; circomlib's
-# shipped constants are BN254's.
-circom eligibility.circom --r1cs --wasm -p bls12381 -l node_modules/circomlib/circuits
+git clone --depth 1 https://github.com/iden3/circomlib.git
+circom eligibility.circom -l circomlib/circuits -l . --r1cs --sym --output build
+
+# The public signal order, straight from the symbol table. This is what
+# `circuits/eligibility.signals.txt` holds and what CI diffs against.
+head -13 build/eligibility.sym | cut -d, -f4 | sed 's/^main\.//'
+```
+
+The rest still needs the Poseidon parameters for BLS12-381, which circomlib
+does not ship:
+
+```bash
+circom eligibility.circom --r1cs --wasm -p bls12381 -l circomlib/circuits
 
 snarkjs powersoftau new bls12-381 16 pot16_0000.ptau
 snarkjs powersoftau contribute pot16_0000.ptau pot16_0001.ptau --name="first"

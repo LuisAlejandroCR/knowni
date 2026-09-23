@@ -1009,6 +1009,35 @@ generados —JSON roto, anidamiento profundo, llaves del prototipo, cadenas de 2
 fuente y todos reciben un estado que este servicio eligió. El de precios afirma que un total cotizado
 es un número y la suma de sus líneas.
 
+### D-48 — La comprobación de un pago lanzaba donde el protocolo ya tenía una palabra · 2026-09-23
+
+*El hueco:* `verifyPayment` envuelve en `try` **las llamadas** a Horizon, y nada más. Lo que Horizon
+responde se lee después, fuera de la red y fuera del `try`:
+
+| Lo que llega | Lo que pasaba |
+|---|---|
+| `amount: "abc"` | `SyntaxError: Cannot convert abc to a BigInt`, fuera de la función |
+| `amount: "1.5e3"` | lo mismo, por la ruta de la parte decimal |
+| `records: {a:1}` | `TypeError: payments.filter is not a function` |
+
+El pagador que mandó dinero recibía una excepción donde el protocolo ya tiene una respuesta:
+`underpaid`, `wrong_destination`, `unreachable`. Un `502` de un proxy delante de Horizon basta para
+provocarlo; no hace falta un atacante.
+
+*Decisión:* el adaptador lee lo que Horizon **escribe de verdad** y descarta el resto. Un monto es
+`^\d+(\.\d{1,7})?$` —decimal no negativo, siete posiciones—, y el que no lo sea no se cuenta. Una
+página de registros que no es una lista no es una página de registros. Falla cerrado: el total se
+queda corto y el pagador recibe `underpaid`, que es cierto y accionable.
+
+*Por qué el tipo no lo vio:* `HorizonPayment.amount` está declarado `string` y llega de un `as` sobre
+`response.json()`. El compilador creyó la promesa; la red no la cumple. Es el mismo `as` de D-47, en
+el otro extremo del servicio — el disco allá, la red aquí.
+
+*Fijado en `issuer/test/fuzz/payments.fuzz.spec.ts`:* veintitrés montos que no son montos, cinco
+formas de que `records` no sea una lista, y 300 respuestas generadas. La propiedad: toda respuesta
+termina en `paid` o en una razón de la lista cerrada, nunca en una excepción. Y las dos pruebas que
+cuidan el otro lado: 2.5000000 sigue leyéndose al stroop, y varios pagos legibles siguen sumando.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1066,6 +1095,7 @@ es un número y la suma de sus líneas.
 | 2026-09-23 | ESLint con tipos sobre los siete paquetes, dentro de `verify` y de CI: cierra el lint que pedía A14. Encontró un manejador `async` donde Node espera `void` —un rechazo se llevaba el proceso en vez de la petición—, un import muerto y dos pruebas que podían pasar por la razón equivocada — D-44 |
 | 2026-09-23 | El contrato Soroban compila, y nueve pruebas fijan su política —todas rechazadas antes del emparejamiento—. El bloqueo era la máquina, no el código. `Cargo.lock` versionado: `soroban-env-host` pide `ed25519-dalek` sin techo y la 3.0.0 no compila contra él — D-45 |
 | 2026-09-23 | Primeras pruebas fuzz del emisor, y encontraron una cotización cuyo total era la cadena `"0function Object() { [native code] }"`: las tablas de predicados eran objetos literales indexados por lo que manda quien llama. Ahora son `Map` — D-46. 350 pruebas |
+| 2026-09-23 | La comprobación de un pago lanzaba una excepción cuando Horizon respondía un monto ilegible o una página que no era una lista. Ahora refusa con la razón que ya existía — D-48 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

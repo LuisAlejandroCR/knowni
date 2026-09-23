@@ -149,7 +149,14 @@ interface HorizonPayment {
   readonly asset_issuer?: string;
 }
 
-const toStroops = (amount: string): bigint => {
+// Horizon writes an amount as a non-negative decimal with at most seven
+// places. Anything else is not an amount this issuer can read, and reading it
+// anyway is how `BigInt("abc")` threw out of a payment check instead of
+// refusing it: a payer got a crash where the protocol has a word for "no".
+const AMOUNT = /^\d+(\.\d{1,7})?$/;
+
+const toStroops = (amount: unknown): bigint | undefined => {
+  if (typeof amount !== "string" || !AMOUNT.test(amount)) return undefined;
   const [whole = "0", fraction = ""] = amount.split(".");
   return BigInt(whole) * 10_000_000n + BigInt(fraction.padEnd(7, "0").slice(0, 7));
 };
@@ -173,8 +180,10 @@ export async function verifyPayment(
 
     const opsResponse = await fetchImpl(`${horizonUrl}/transactions/${txHash}/payments`);
     if (!opsResponse.ok) return { status: "refused", reason: "unreachable" };
-    const body = (await opsResponse.json()) as { _embedded?: { records?: HorizonPayment[] } };
-    payments = body._embedded?.records ?? [];
+    const body = (await opsResponse.json()) as { _embedded?: { records?: unknown } };
+    const records = body._embedded?.records;
+    // A page of records that is not a list is not a page of records.
+    payments = Array.isArray(records) ? (records as HorizonPayment[]) : [];
   } catch {
     return { status: "refused", reason: "unreachable" };
   }
@@ -207,7 +216,9 @@ export async function verifyPayment(
     return { status: "refused", reason: toDestination.length === 0 ? "wrong_destination" : "wrong_asset" };
   }
 
-  const total = toUs.reduce((sum, payment) => sum + toStroops(payment.amount ?? "0"), 0n);
+  // A payment whose amount cannot be read is not counted: the total falls
+  // short and the payer is told `underpaid`, which is true and actionable.
+  const total = toUs.reduce((sum, payment) => sum + (toStroops(payment.amount) ?? 0n), 0n);
   if (total < policy.minAmountStroops) return { status: "refused", reason: "underpaid" };
 
   // Claimed last, and only once everything else passed: a refused payment

@@ -138,7 +138,7 @@ test("an unanswered predicate does not reveal which issuers the subject uses", (
 
 test("a predicate that was not asked is not answered", () => {
   const { solvency: _dropped, ...withoutSolvency } = request;
-  const d = disclose(withoutSolvency as VerificationRequest);
+  const d = disclose(withoutSolvency);
   assert.equal(d.solvency, "unavailable");
 });
 

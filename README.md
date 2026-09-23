@@ -139,8 +139,8 @@ Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilaci�
 (`app/`) es un proyecto aparte con Expo y dos librerías de criptografía pura.
 
 ```bash
-npm install   # solo enlaza los workspaces entre sí
-npm test      # 327 pruebas (unit · fuzz · invariant)
+npm install    # enlaza los workspaces entre sí; las únicas dependencias son de desarrollo
+npm run verify # lint + typecheck + 343 pruebas (unit · fuzz · invariant)
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):

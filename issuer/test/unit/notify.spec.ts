@@ -24,7 +24,7 @@ test("the message carries no verdict, no counterparty and no purpose", () => {
 test("Kapso gets the phone and the notice, and nothing about the answer", async () => {
   let sent: { url: string; body: string } | undefined;
   const impl = (async (url: string, init: RequestInit) => {
-    sent = { url: String(url), body: String(init.body) };
+    sent = { url: String(url), body: init.body as string };
     return new Response("{}", { status: 200 });
   }) as unknown as typeof fetch;
 

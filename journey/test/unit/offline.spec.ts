@@ -32,9 +32,9 @@ const ROOT_AGE = 86_400;
 // Anything that tries to reach the network during this file fails loudly.
 function withoutNetwork<T>(run: () => T): T {
   const saved = globalThis.fetch;
-  globalThis.fetch = (() => {
+  globalThis.fetch = () => {
     throw new Error("airplane mode: no network available");
-  }) as unknown as typeof fetch;
+  };
   try {
     return run();
   } finally {

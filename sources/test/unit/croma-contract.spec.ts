@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { createCromaClient } from "../../src/providers/croma/client.ts";
 
 const fixture = (name: string): Record<string, unknown> =>
-  JSON.parse(readFileSync(new URL(`../fixtures/croma/${name}`, import.meta.url), "utf8"));
+  JSON.parse(readFileSync(new URL(`../fixtures/croma/${name}`, import.meta.url), "utf8")) as Record<string, unknown>;
 
 const respondWith = (status: number, body: unknown) =>
   (async () =>

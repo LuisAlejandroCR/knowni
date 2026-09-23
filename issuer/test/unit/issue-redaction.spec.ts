@@ -29,7 +29,7 @@ const request = {
 function recording() {
   const written: string[] = [];
   const methods = ["log", "info", "warn", "error", "debug"] as const;
-  const saved = methods.map((name) => [name, console[name]] as const);
+  const saved = methods.map((name) => [name, console[name].bind(console)] as const);
   for (const name of methods) {
     console[name] = ((...args: unknown[]) => {
       written.push(args.map((arg) => (typeof arg === "string" ? arg : JSON.stringify(arg))).join(" "));

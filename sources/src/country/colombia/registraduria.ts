@@ -48,7 +48,7 @@ export function createRegistraduriaPersonhoodSource(client: CromaClient): Source
       const claim: IdentityClaim = {
         kind: "identity",
         jurisdiction: "CO",
-        documentKind: subject.documentKind as IdentityClaim["documentKind"],
+        documentKind: subject.documentKind,
         subjectRef: { hex: subject.subjectRef },
         // "Vigente" as this route can see it: the register holds the number
         // and does not report the holder as deceased.

@@ -17,6 +17,11 @@
   ],
   "scripts": {
     "test": "node --test --experimental-strip-types \"{core,sources,retrieval,anchoring,attestation,issuer,journey}/test/**/*.spec.ts\"",
-    "verify": "npm test"
+    "verify": "npm run typecheck && npm test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "typescript": "^5.9.3"
   }
 }

@@ -884,6 +884,29 @@ dispuestos a esperarla. El único número medido sigue siendo los 83 s de la emi
 *Un adaptador que lanza también lee como `unavailable`:* la excepción se contiene en la tarea, y la
 llamada que se pasó del plazo se deja terminar sola —nadie la espera y nadie se cae por ella—.
 
+### D-42 — Ejecutar TypeScript no es comprobarlo, y el compilador encontró tres cosas · 2026-09-22
+
+*El hueco:* la suite corre con `node --experimental-strip-types`, que **borra** los tipos sin
+mirarlos. Solo `app/` pasaba por `tsc`; el resto del repositorio —`core`, `sources`, `issuer`,
+`journey`— no había visto un compilador nunca. El criterio A14 pide typecheck en CI y no lo había
+para el 90% del código.
+
+*Decisión:* `tsconfig.json` en la raíz, `strict`, sobre los siete paquetes, y `npm run typecheck`
+dentro de `npm run verify` y del job de CI que ya existía.
+
+*Lo que apareció, que es el punto:* once errores, y tres no eran ruido de pruebas.
+
+| Dónde | Qué |
+|---|---|
+| `sources/src/providers/croma/client.ts` | `import type ... from "../types.ts"` apuntaba a un fichero que no existe. Nunca falló porque un `import type` se borra al ejecutar: el compilador es lo único que podía verlo |
+| `journey/.../redaction.invariant.spec.ts` | `createSanctionsSource(client)` con un argumento de menos. La prueba pasaba **por la razón equivocada**: sin la función de hash la fuente se degrada, y la prueba afirmaba `degraded` |
+| `core/test/unit/predicates.spec.ts` | La prueba de "una base que la contraparte no aceptó" usaba `declared`, que no es una base que exista. Ahora usa `cashflow`, que existe y no está aceptada — que es lo que el nombre de la prueba dice |
+
+*Lo demás eran pruebas mintiendo en pequeño:* un `toString("hex")` sobre un `Uint8Array` que lo
+ignora, un campo duplicado por un spread, un `.reason` sobre una unión sin estrechar y un
+`assert.equal(algo.anchor, undefined)` sobre un campo que no existe —ahora comprueba que la clave no
+está, que es lo que quería decir—.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -936,6 +959,7 @@ llamada que se pasó del plazo se deja terminar sola —nadie la espera y nadie 
 | 2026-09-22 | Un pago que llega a la tesorería en el activo equivocado deja de decir `wrong_destination` y dice `wrong_asset`. Salió del ejercicio real, y se comprobó contra la misma transacción — D-40 |
 | 2026-09-22 | Las fuentes se piden en paralelo y con plazo: una lenta ya no cuelga a las otras tres ni al comprador, y la que se pasa responde `unavailable` sin cobrarse — D-41. 339 pruebas |
 | 2026-09-22 | A13 deja de cubrir solo los adaptadores: el servicio HTTP también se comprueba —documento, nombre, placa, teléfono y la llave de la contraparte— con la consola interceptada. No apareció ninguna fuga; la prueba fija la propiedad. 343 pruebas |
+| 2026-09-22 | El repositorio entero pasa por `tsc --strict`, no solo `app/`, y CI lo corre. Encontró un import roto en producción y dos pruebas que pasaban por la razón equivocada — D-42 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

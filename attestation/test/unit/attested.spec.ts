@@ -98,7 +98,8 @@ test("moving a signed root onto another issuer id breaks the signature", () => {
 test("the signed bytes are length-prefixed, so two fields cannot be re-split", () => {
   const a = signedBytes({ issuerId: "ab", root: "cd", issuedAt: 1, size: 1 });
   const b = signedBytes({ issuerId: "a", root: "bcd", issuedAt: 1, size: 1 });
-  assert.notEqual(a.toString("hex"), b.toString("hex"));
+  // `signedBytes` returns a Uint8Array, whose `toString` ignores an encoding.
+  assert.notEqual(Buffer.from(a).toString("hex"), Buffer.from(b).toString("hex"));
 });
 
 test("a valid path into an unsigned tree is not a credential", () => {

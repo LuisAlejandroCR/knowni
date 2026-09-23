@@ -80,7 +80,7 @@ test("a provider that echoes the document number in its error leaks nothing", as
     const results = await Promise.all([
       createRegistraduriaPersonhoodSource(client).fetch(subject, 1_760_000_000),
       createSicaacCapacitySource(client).fetch(subject, 1_760_000_000),
-      createSanctionsSource(client).fetch(subject, 1_760_000_000),
+      createSanctionsSource(client, sha256Hash).fetch(subject, 1_760_000_000),
       createVehicleStandingSource(client).fetch(asset, 1_760_000_000),
     ]);
     for (const result of results) assert.equal(result.status, "degraded");

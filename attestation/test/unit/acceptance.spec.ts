@@ -207,8 +207,7 @@ test("the same presentation twice is idempotent, not a second acceptance", () =>
 test("a different presentation under the same nullifier is a replay", () => {
   const input = inputOf();
   acceptAnswer(sha256Hash, input);
-  assert.deepEqual(acceptAnswer(sha256Hash, {
-      signatures: nodeSignatures, ...input, presentationId: "pres-2" }), {
+  assert.deepEqual(acceptAnswer(sha256Hash, { ...input, presentationId: "pres-2" }), {
     status: "refused",
     reason: "replayed",
   });

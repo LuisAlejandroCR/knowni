@@ -70,8 +70,10 @@ test("solvency bands are multiples of the obligation, not absolute salaries", ()
 });
 
 test("solvency refuses a basis the relying party did not accept", () => {
-  const declared = { ...income, basis: "declared" as const };
-  assert.equal(proveSolvency(declared, solvencyParams), SolvencyTier.NONE);
+  // `cashflow` is a real basis; what it is not is one this relying party named
+  // in `acceptedBases`. That is the refusal under test.
+  const unaccepted = { ...income, basis: "cashflow" as const };
+  assert.equal(proveSolvency(unaccepted, solvencyParams), SolvencyTier.NONE);
 });
 
 test("solvency refuses a currency mismatch rather than comparing raw numbers", () => {

@@ -13,6 +13,7 @@ import {
   type Outcome,
 } from "../../src/commitment.ts";
 import { formality, identity, income, standing } from "../support/fixtures.ts";
+import type { IncomeBasis } from "../../src/claims.ts";
 
 const h = sha256Hash;
 
@@ -52,8 +53,10 @@ test("field encoding is unambiguous across boundaries", () => {
   // Length-prefixed parts: a currency of "CO" with basis "Pdeclared" must not
   // hash the same bytes as "COP" with "declared".
   const salt = randomSalt();
-  const a = commitClaim(h, { ...income, currency: "CO", basis: "declared" }, salt);
-  const b = commitClaim(h, { ...income, currency: "COP", basis: "declared" }, salt);
+  // The basis is deliberately outside its domain: what is under test is the
+  // encoding of the boundary between two fields, not which bases exist.
+  const a = commitClaim(h, { ...income, currency: "CO", basis: "declared" as IncomeBasis }, salt);
+  const b = commitClaim(h, { ...income, currency: "COP", basis: "declared" as IncomeBasis }, salt);
   assert.notEqual(a, b);
 });
 

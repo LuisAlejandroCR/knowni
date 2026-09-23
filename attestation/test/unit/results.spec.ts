@@ -19,6 +19,12 @@ import {
   verifyResults,
   type AttestedAnswer,
 } from "../../src/index.ts";
+import type { ResultsVerification } from "../../src/results.ts";
+
+// A valid verification carries answers, not a reason; asking for the reason is
+// asking why it was refused.
+const reasonOf = (verification: ResultsVerification): string | undefined =>
+  verification.status === "valid" ? undefined : verification.reason;
 import { nodeSignatures } from "../../src/node.ts";
 
 const NOW = 1_760_000_000;
@@ -167,11 +173,11 @@ test("answers do not move to another audience, purpose, challenge or parameters"
 test("expired answers and answers from the future are both refused", () => {
   const { registry, results } = attested();
   assert.equal(
-    verifyResults(sha256Hash, results, { signatures: nodeSignatures, registry, request, nowUnix: NOW + 3_600 }).reason,
+    reasonOf(verifyResults(sha256Hash, results, { signatures: nodeSignatures, registry, request, nowUnix: NOW + 3_600 })),
     "expired",
   );
   assert.equal(
-    verifyResults(sha256Hash, results, { signatures: nodeSignatures, registry, request, nowUnix: NOW - 3_600 }).reason,
+    reasonOf(verifyResults(sha256Hash, results, { signatures: nodeSignatures, registry, request, nowUnix: NOW - 3_600 })),
     "expired",
   );
 });

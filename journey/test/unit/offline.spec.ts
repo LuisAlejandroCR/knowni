@@ -165,7 +165,8 @@ test("an accepted answer needed no anchor, and says so by not carrying one", () 
   const { issuer, counterparty, registry } = issuedBeforehand();
   const signed = signRequest(nodeSignatures, counterparty.privateKeySeed, request);
   const session = attestedSession(signed.request);
-  assert.equal(session.disclosure.anchor, undefined);
+  // Not "the anchor is undefined": the disclosure carries no such field at all.
+  assert.ok(!("anchor" in session.disclosure));
   const results = attestResults(h, nodeSignatures, issuer.privateKeySeed, {
     issuerId: ISSUER,
     request: signed.request,

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": [
+    "core/**/*.ts",
+    "sources/**/*.ts",
+    "retrieval/**/*.ts",
+    "anchoring/**/*.ts",
+    "attestation/**/*.ts",
+    "issuer/**/*.ts",
+    "journey/**/*.ts"
+  ],
+  "exclude": ["**/node_modules/**", "app/**"]
+}

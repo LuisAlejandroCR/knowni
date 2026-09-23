@@ -2,7 +2,7 @@
 // contract — 200, 202 + job polling, 502 upstream — and never throws, never lets a raw payload
 // cross.
 
-import type { SourceFailureReason } from "../types.ts";
+import type { SourceFailureReason } from "../../types.ts";
 
 export const CROMA_BASE_URL = "https://api.croma.run";
 

@@ -24,6 +24,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | El contrato Soroban compila y su política se sostiene sola: una raíz que nadie registró, un nulificador ya gastado, un `solvency_tier` por debajo del que pidió la contraparte, cada booleano por separado, y un vector plano que no concuerda con las señales nombradas —todos refusados **antes** del emparejamiento | `cargo test` en `contracts/knowni-verifier`: 9 pruebas. El artefacto `wasm32-unknown-unknown` de release se construye: 22 619 bytes. Ninguna prueba Groth16 real verificada — el contrato no ha visto un emparejamiento que dé verdadero | 2026-09-23 |
 
+| Ningún cuerpo malformado en `/quote` ni en `/issue` alcanza una fuente, y todos reciben un estado que el servicio eligió; un predicado que nadie publicó no se cotiza, se llame `constructor`, `__proto__` o `PERSONHOOD` | `issuer/test/fuzz/service.fuzz.spec.ts` (120 cuerpos generados contra ambas rutas, con un proveedor que lanza si lo alcanzan) y `pricing.fuzz.spec.ts` | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

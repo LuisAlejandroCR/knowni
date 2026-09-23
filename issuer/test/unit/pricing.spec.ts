@@ -24,7 +24,7 @@ test("asking for more costs more, line by line", () => {
   assert.equal(four.status, "quoted");
   const totalOf = (r: typeof two) => (r.status === "quoted" ? r.quote.totalMinor : 0);
   assert.ok(totalOf(four) > totalOf(two));
-  assert.equal(totalOf(two), PRICE_MINOR.personhood! + PRICE_MINOR.capacity!);
+  assert.equal(totalOf(two), PRICE_MINOR.get("personhood")! + PRICE_MINOR.get("capacity")!);
 });
 
 test("a predicate with no published price is refused, not invented", () => {
@@ -64,7 +64,7 @@ test("an unavailable answer is not charged", () => {
     { predicate: "capacity", value: false },
     { predicate: "sanctions", value: "unavailable" },
   ]);
-  assert.equal(charged, PRICE_MINOR.personhood! + PRICE_MINOR.capacity!);
+  assert.equal(charged, PRICE_MINOR.get("personhood")! + PRICE_MINOR.get("capacity")!);
   // Nothing answered, nothing owed.
   assert.equal(chargeableMinor([{ predicate: "personhood", value: "unavailable" }]), 0);
 });
@@ -72,5 +72,5 @@ test("an unavailable answer is not charged", () => {
 test("a false answer is still an answer, and is charged", () => {
   // Charging only for the answer the asker hoped for would pay the issuer to
   // bias the verdict.
-  assert.equal(chargeableMinor([{ predicate: "capacity", value: false }]), PRICE_MINOR.capacity);
+  assert.equal(chargeableMinor([{ predicate: "capacity", value: false }]), PRICE_MINOR.get("capacity"));
 });

@@ -81,12 +81,12 @@ export interface IssueRequestBody {
   readonly notifyPhone?: string;
 }
 
-const WHAT_IT_DOES_NOT_SAY: Record<string, string> = {
-  personhood: "No dice quién es, ni su edad, ni su domicilio.",
-  capacity: "No afirma capacidad jurídica universal, solo ausencia de insolvencia.",
-  sanctions: "Solo las listas solicitadas, en la fecha consultada.",
-  assetStanding: "Registro y alertas del vehículo. No dice quién es el dueño.",
-};
+const WHAT_IT_DOES_NOT_SAY = new Map<string, string>([
+  ["personhood", "No dice quién es, ni su edad, ni su domicilio."],
+  ["capacity", "No afirma capacidad jurídica universal, solo ausencia de insolvencia."],
+  ["sanctions", "Solo las listas solicitadas, en la fecha consultada."],
+  ["assetStanding", "Registro y alertas del vehículo. No dice quién es el dueño."],
+]);
 
 // A degraded source becomes `unavailable`, never `false`: "no sabemos" y "no
 // cumple" son respuestas distintas y el producto entero depende de no
@@ -97,7 +97,7 @@ function answerOf(predicate: string, source: string, value: boolean | "unavailab
     value,
     source,
     provenance: "observed",
-    doesNotEstimate: WHAT_IT_DOES_NOT_SAY[predicate] ?? "",
+    doesNotEstimate: WHAT_IT_DOES_NOT_SAY.get(predicate) ?? "",
   };
 }
 
@@ -244,15 +244,18 @@ async function readBody(request: IncomingMessage): Promise<unknown> {
 // The predicates a set of consented sources can answer. The price and the
 // payment reference are computed from these, never from what the caller says
 // it is buying.
-const SOURCE_PREDICATE: Record<string, string> = {
-  registraduria: "personhood",
-  sicaac: "capacity",
-  listas: "sanctions",
-  vehiculo: "assetStanding",
-};
+// A `Map` and not an object literal: the caller chooses these keys, and
+// `"constructor"` indexed into an object literal answers with a function,
+// which then priced and hashed as if it were a predicate.
+const SOURCE_PREDICATE = new Map<string, string>([
+  ["registraduria", "personhood"],
+  ["sicaac", "capacity"],
+  ["listas", "sanctions"],
+  ["vehiculo", "assetStanding"],
+]);
 
 export function predicatesOf(consented: readonly string[]): readonly string[] {
-  return consented.map((source) => SOURCE_PREDICATE[source]).filter((p): p is string => p !== undefined);
+  return consented.map((source) => SOURCE_PREDICATE.get(source)).filter((p): p is string => p !== undefined);
 }
 
 export function createIssuerService(options: IssuerOptions) {

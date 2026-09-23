@@ -1087,6 +1087,34 @@ alguien va a decidir si fue la red o fue el código.
 secuencias, siete cuerpos que no son JSON, y 200 combinaciones. Sin el arreglo fallan cuatro de las
 cinco pruebas. La quinta cuida el otro lado: la respuesta que Horizon manda de verdad sigue anclando.
 
+### D-50 — El fuzz de los adaptadores no encontró nada, y eso también es un resultado · 2026-09-23
+
+*Por qué se escribió:* la constitución pide fuzz para todo lo que parsea algo de fuera del proceso, y
+los cuatro adaptadores del perfil de compraventa son literalmente eso: el único sitio del
+repositorio donde la respuesta de un proveedor tiene permiso de existir. Tenían pruebas unitarias
+contra las formas del OpenAPI de Croma; no tenían ninguna contra las formas que Croma nunca manda.
+
+*Qué se fija, que es más que «no lanza»:*
+
+| Propiedad | Por qué esa y no otra |
+|---|---|
+| El resultado es una reclamación o una degradación de la lista cerrada | Es lo que el puerto declara, y nada más puede salir por ahí |
+| Nada de la carga del proveedor aparece en el resultado | Cada carga generada lleva un marcador plantado; si sobrevive, se ve |
+| `attestedAt` es la hora que eligió este proceso | Un sello que escribe el proveedor es un sello que el proveedor controla |
+| Una carga ilegible **nunca** se vuelve un `false` | `degraded` y «no cumple» son respuestas distintas, y el producto entero depende de no confundirlas |
+| Al menos una carga generada produce una reclamación | Sin esto la prueba pasaría degradando siempre, que no demuestra nada |
+
+*El resultado, dicho tal cual:* **cero hallazgos**. 400 cargas generadas por adaptador, más las nueve
+formas que no son un objeto, y los cuatro se comportan. Los adaptadores ya validaban y reducían de
+verdad —comprueban el tipo de cada campo que leen y devuelven `invalid_response` cuando falta—, a
+diferencia de lo que pasaba en el emisor (D-46, D-48) y en el anclaje (D-49), donde el `as` sobre un
+`json()` hacía el trabajo de una validación que no existía.
+
+*Lo que eso significa para leer las otras entradas:* la diferencia no era la disciplina de quien las
+escribió, era **dónde estaba el límite**. Aquí el límite estaba dibujado —un adaptador por pregunta,
+con su función `parse`— y la validación cayó dentro. En el emisor el límite era una línea en medio de
+un manejador HTTP, y nadie la vio como un límite.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1147,6 +1175,7 @@ cinco pruebas. La quinta cuida el otro lado: la respuesta que Horizon manda de v
 | 2026-09-23 | Una línea corrupta en el caché de emisiones impedía arrancar el emisor, justo lo que D-39 decía que no podía pasar. El adaptador ahora valida y reduce lo que lee del disco, como ya hacía con lo que lee de Croma — D-47 |
 | 2026-09-23 | La comprobación de un pago lanzaba una excepción cuando Horizon respondía un monto ilegible o una página que no era una lista. Ahora refusa con la razón que ya existía — D-48 |
 | 2026-09-23 | El adaptador de Horizon fallaba con mensajes de JavaScript —`Cannot convert abc to a BigInt`— donde debía nombrar a Horizon, y un `502` de HTML salía como error de parseo. Primeras pruebas fuzz de `anchoring/` — D-49. 365 pruebas |
+| 2026-09-23 | Fuzz sobre los cuatro adaptadores de Croma: cero hallazgos. Ya validaban y reducían de verdad, a diferencia del emisor y el anclaje. La diferencia no era la disciplina sino dónde estaba dibujado el límite — D-50. 368 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

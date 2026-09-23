@@ -73,6 +73,40 @@ export function createMemorySpentPayments(): SpentPayments {
   };
 }
 
+// Where the spent set outlives the process. A port, not a dependency: this
+// module never learns what a file, a disk or a database is. Mirrors
+// `NullifierStore` in `attestation/` — same hole, same shape. See D-37.
+export interface SpentPaymentStore {
+  load(): Promise<readonly string[]>;
+  append(txHash: string): Promise<void>;
+}
+
+export interface PersistentSpentOptions {
+  // A write that never lands means a transaction already redeemed can be
+  // redeemed again after a restart. It is reported, never swallowed.
+  readonly onWriteError?: (error: unknown, txHash: string) => void;
+}
+
+// Hydrated once at start-up, then decided in memory: `claim` stays synchronous
+// because it is the last step of `verifyPayment` and an await there is exactly
+// the window a double spend needs. The write is what trails.
+export async function createPersistentSpentPayments(
+  store: SpentPaymentStore,
+  options: PersistentSpentOptions = {},
+): Promise<SpentPayments> {
+  const onWriteError = options.onWriteError ?? (() => {});
+  const spent = new Set<string>(await store.load());
+
+  return {
+    claim(txHash) {
+      if (spent.has(txHash)) return false;
+      spent.add(txHash);
+      void store.append(txHash).catch((error: unknown) => onWriteError(error, txHash));
+      return true;
+    },
+  };
+}
+
 interface HorizonTransaction {
   readonly successful?: boolean;
   readonly memo_type?: string;

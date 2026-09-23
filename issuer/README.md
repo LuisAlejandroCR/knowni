@@ -61,6 +61,7 @@ notifications: none
 | Fuentes | `CROMA_API_KEY` | el servicio **no arranca** |
 | Identidad del emisor | `KNOWNI_ISSUER_SEED` | se genera una por arranque, y lo emitido antes deja de verificar |
 | Cobro | `KNOWNI_TREASURY_ACCOUNT` + `KNOWNI_PAYMENT_ASSET_ISSUER` | se responde sin cobrar si no hay tesoro; con tesoro incompleto no arranca |
+| Pagos ya canjeados | `KNOWNI_SPENT_PAYMENTS_FILE` | obligatoria **si se cobra**: un conjunto gastado que muere con el proceso deja que una transacción pague dos veces — D-37 |
 | Caché | `KNOWNI_ISSUER_CACHE_MAX_ENTRIES` | usa 1000 entradas en memoria por defecto |
 | Aviso | `KAPSO_*` o `META_*` | no se envía nada, y se reporta como `none` |
 

@@ -140,7 +140,7 @@ Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilaci�
 
 ```bash
 npm install   # solo enlaza los workspaces entre sí
-npm test      # 317 pruebas (unit · fuzz · invariant)
+npm test      # 327 pruebas (unit · fuzz · invariant)
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
@@ -165,7 +165,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 317 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 327 pruebas (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |

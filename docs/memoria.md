@@ -978,6 +978,37 @@ emparejamiento.
 porque los circuitos siguen sin compilar. El orden de las señales en `signals_match` está fijado
 por `test.rs`, pero solo el circuito puede decir que sea el correcto.
 
+### D-46 — El emisor no tenía pruebas fuzz, y la primera encontró una cotización que no era un número · 2026-09-23
+
+*El hueco:* la constitución pide cobertura **fuzz** para todo módulo que reciba algo de fuera del
+proceso. `issuer/` no tenía ninguna, y es el workspace con la superficie externa más grande: escucha
+en un socket, y `/quote` responde **sin llave de acceso**. Lo que llega ahí son bytes arbitrarios.
+
+*Lo que encontró, y no es pequeño:* las tablas de predicados eran objetos literales indexados por una
+cadena que manda quien llama.
+
+```
+POST /quote  {"predicates": ["constructor"], "request": {…}}
+→ 200 {"status":"quoted", "totalMinor":"0function Object() { [native code] }", …}
+```
+
+`PRICE_MINOR["constructor"]` no es `undefined` —es la función `Object`—, así que la guarda *«un
+predicado sin precio publicado no se cotiza a uno inventado»* lo dejó pasar. El total, declarado
+`number`, salió como una cadena con el código fuente del runtime dentro, y el `paymentRef` que lo
+acompaña es real. El mismo agujero en `predicatesOf` metía una función en la lista de predicados que
+firma la referencia de pago, y en `WHAT_IT_DOES_NOT_SAY`, que es texto que ve el usuario.
+
+*Decisión:* las tres tablas pasan de objeto literal a `Map`. No es estilo: un `Map` no tiene
+prototipo que responda por una llave que nadie escribió. El compilador no podía ver esto —los tipos
+decían `Record<string, number>` y eran ciertos—, y las pruebas de ejemplo tampoco, porque nadie
+escribe `"constructor"` a mano. Solo una entrada arbitraria lo encuentra.
+
+*Lo que queda fijado:* dos ficheros fuzz en `issuer/test/fuzz/`. El del servicio lanza 120 cuerpos
+generados —JSON roto, anidamiento profundo, llaves del prototipo, cadenas de 2 KB— contra `/quote` y
+`/issue` con un proveedor que lanza si alguien lo alcanza: la propiedad es que ninguno llega a una
+fuente y todos reciben un estado que este servicio eligió. El de precios afirma que un total cotizado
+es un número y la suma de sus líneas.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1034,6 +1065,7 @@ por `test.rs`, pero solo el circuito puede decir que sea el correcto.
 | 2026-09-23 | `noUncheckedIndexedAccess` entra en el `tsconfig` de la raíz. Cero errores: el código ya se escribía con esa comprobación en la cabeza, pero nada la exigía — D-43 |
 | 2026-09-23 | ESLint con tipos sobre los siete paquetes, dentro de `verify` y de CI: cierra el lint que pedía A14. Encontró un manejador `async` donde Node espera `void` —un rechazo se llevaba el proceso en vez de la petición—, un import muerto y dos pruebas que podían pasar por la razón equivocada — D-44 |
 | 2026-09-23 | El contrato Soroban compila, y nueve pruebas fijan su política —todas rechazadas antes del emparejamiento—. El bloqueo era la máquina, no el código. `Cargo.lock` versionado: `soroban-env-host` pide `ed25519-dalek` sin techo y la 3.0.0 no compila contra él — D-45 |
+| 2026-09-23 | Primeras pruebas fuzz del emisor, y encontraron una cotización cuyo total era la cadena `"0function Object() { [native code] }"`: las tablas de predicados eran objetos literales indexados por lo que manda quien llama. Ahora son `Map` — D-46. 350 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

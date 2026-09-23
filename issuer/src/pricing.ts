@@ -8,12 +8,16 @@ import type { SessionRequest } from "@knowni/core";
 
 // Minor units of the quoted currency, per predicate. A source that costs the
 // issuer more costs the asker more; the margin is not hidden in an average.
-export const PRICE_MINOR: Record<string, number> = {
-  personhood: 120,
-  capacity: 120,
-  sanctions: 240,
-  assetStanding: 300,
-};
+// A `Map` and not an object literal: the predicate is a string the caller
+// sends, and `PRICE_MINOR["constructor"]` on an object literal answers with a
+// function — which is not `undefined`, so the guard below let it through and
+// the total became a string.
+export const PRICE_MINOR = new Map<string, number>([
+  ["personhood", 120],
+  ["capacity", 120],
+  ["sanctions", 240],
+  ["assetStanding", 300],
+]);
 
 export const CURRENCY = "USDC";
 
@@ -61,7 +65,7 @@ export function quote(
 
   const lines: QuoteLine[] = [];
   for (const predicate of predicates) {
-    const priceMinor = PRICE_MINOR[predicate];
+    const priceMinor = PRICE_MINOR.get(predicate);
     // A predicate with no published price is not quoted at an invented one.
     if (priceMinor === undefined) return { status: "refused", reason: "unknown_predicate" };
     lines.push({ predicate, priceMinor });
@@ -88,5 +92,5 @@ export function chargeableMinor(
 ): number {
   return answers
     .filter((answer) => answer.value !== "unavailable")
-    .reduce((sum, answer) => sum + (PRICE_MINOR[answer.predicate] ?? 0), 0);
+    .reduce((sum, answer) => sum + (PRICE_MINOR.get(answer.predicate) ?? 0), 0);
 }

@@ -7,6 +7,15 @@ import { appendFile, mkdir, readFile, rename, writeFile } from "node:fs/promises
 import { dirname } from "node:path";
 import type { IssuanceCacheStore, StoredCacheEntry } from "./cache.ts";
 
+function asEntry<T>(value: unknown): StoredCacheEntry<T> | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const record = value as Record<string, unknown>;
+  if (typeof record.key !== "string" || record.key === "") return undefined;
+  if (typeof record.expiresAt !== "number" || !Number.isSafeInteger(record.expiresAt)) return undefined;
+  if (!("value" in record)) return undefined;
+  return { key: record.key, expiresAt: record.expiresAt, value: record.value as T };
+}
+
 export function createFileIssuanceCacheStore<T>(path: string): IssuanceCacheStore<T> {
   const write = async (contents: string) => {
     await mkdir(dirname(path), { recursive: true });
@@ -34,11 +43,18 @@ export function createFileIssuanceCacheStore<T>(path: string): IssuanceCacheStor
         if (trimmed === "") continue;
         // A truncated last line is the crash we expect from an append-only
         // file. It costs one repeated answer, so it is skipped, not fatal.
+        let parsed: unknown;
         try {
-          entries.push(JSON.parse(trimmed) as StoredCacheEntry<T>);
+          parsed = JSON.parse(trimmed);
         } catch {
           continue;
         }
+        // A line that parses into something that is not an entry is the same
+        // damage as one that does not parse at all, and costs the same: one
+        // repeated answer. Handing it up unchecked is what turned a single
+        // corrupted byte into an issuer that would not start.
+        const entry = asEntry<T>(parsed);
+        if (entry !== undefined) entries.push(entry);
       }
       return entries;
     },

@@ -262,7 +262,7 @@ export function createIssuerService(options: IssuerOptions) {
   const quota = options.requestQuota ?? createMemoryRequestQuota();
   const cache = options.issuanceCache ?? createMemoryIssuanceCache<IssuanceResponse>();
 
-  return createServer(async (request, response) => {
+  const handle = async (request: IncomingMessage, response: ServerResponse) => {
     if (request.method === "OPTIONS") return send(response, 204, {});
 
     // The registry the wallet resolves the issuer against. Public by design:
@@ -389,5 +389,11 @@ export function createIssuerService(options: IssuerOptions) {
     }
 
     return send(response, 404, { error: "not_found" });
+  };
+
+  // The listener returns void: a rejection that escapes `handle` would land as
+  // an unhandled rejection and take the process down instead of the request.
+  return createServer((request, response) => {
+    void handle(request, response).catch(() => send(response, 500, { error: "internal_error" }));
   });
 }

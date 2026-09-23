@@ -15,7 +15,7 @@ type Scripted = { status: number; body?: unknown; headers?: Record<string, strin
 
 function scriptedFetch(responses: Scripted[]) {
   const calls: { url: string; init: RequestInit }[] = [];
-  const impl = (async (url: string | URL | Request, init: RequestInit = {}) => {
+  const impl = (async (url: string | URL, init: RequestInit = {}) => {
     calls.push({ url: String(url), init });
     const next = responses.shift();
     if (next === undefined) throw new Error("unexpected extra request");

@@ -34,7 +34,7 @@ function sharedStore(): { store: IssuanceCacheStore<string>; lines: StoredCacheE
       lines = [...entries];
     },
   };
-  return { store, get lines() { return lines; } } as never;
+  return { store, get lines() { return lines; } };
 }
 
 // Counts how many times the expensive work actually ran.

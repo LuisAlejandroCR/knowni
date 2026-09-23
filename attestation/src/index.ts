@@ -3,7 +3,7 @@
 // commitment opening, with no network and no chain.
 
 import type { Claim, FieldHash, Salt } from "@knowni/core";
-import { commitClaim, concatBytes, fromHex, hashLeaf, lengthPrefixed, toHex, u64be, utf8, verifyInclusion } from "@knowni/core";
+import { commitClaim, fromHex, hashLeaf, lengthPrefixed, toHex, u64be, utf8, verifyInclusion } from "@knowni/core";
 import type { SignaturePort } from "./signing.ts";
 import type {
   AttestationResult,

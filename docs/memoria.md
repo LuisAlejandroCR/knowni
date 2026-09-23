@@ -921,6 +921,32 @@ igual.
 alguien la hiciera obligatoria para lo que venga después. Los `!` existentes dejan de ser ruido que
 un linter marca como innecesario y pasan a ser lo que siempre quisieron decir.
 
+### D-44 — Un linter con tipos, y lo que encontró que el compilador no miraba · 2026-09-23
+
+*El hueco:* A14 pide lint en CI y no había ninguno. `tsc` comprueba que los tipos cuadren; no
+comprueba que un import siga usándose ni que una promesa acabe esperada por alguien.
+
+*Decisión:* ESLint 9 con `typescript-eslint` en `recommendedTypeChecked` —reglas que leen el
+grafo de tipos, no solo la sintaxis—, sobre los siete paquetes. `app/` conserva el suyo.
+`npm run lint` entra en `npm run verify` y en el job de CI.
+
+*Dos reglas apagadas, por razones del repositorio y no por conveniencia:*
+
+| Regla | Por qué |
+|---|---|
+| `require-await` | Un adaptador implementa un puerto asíncrono. Que el de memoria no tenga a quién esperar no es un error: es lo que hace reemplazable al puerto |
+| `no-floating-promises`, solo en `test/` | `test()` de `node:test` devuelve una promesa que el propio runner espera. Marcarla es ruido en 336 sitios |
+
+*Lo que encontró, que es el punto:*
+
+| Dónde | Qué |
+|---|---|
+| `issuer/src/service.ts` | El manejador de `createServer` era `async`, y Node espera un listener que devuelve `void`. Un rechazo fuera del `try` del camino de emisión no era un `500`: era un unhandled rejection que se lleva el proceso. Ahora se captura y responde `500` |
+| `attestation/src/index.ts` | `concatBytes` importado y nunca usado |
+| `issuer/test/unit/notify.spec.ts` | `String(init.body)` sobre un `BodyInit`: si algún día el cuerpo deja de ser una cadena, la prueba compara contra `[object Object]` y pasa |
+| `sources/test/unit/croma-contract.spec.ts` | Un `JSON.parse` devuelto como `any` a través de la frontera del fixture |
+| `.../redaction.invariant.spec.ts`, `issue-redaction.spec.ts` | Los métodos de `console` se guardaban desligados de `console` para restaurarlos |
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -975,6 +1001,7 @@ un linter marca como innecesario y pasan a ser lo que siempre quisieron decir.
 | 2026-09-22 | A13 deja de cubrir solo los adaptadores: el servicio HTTP también se comprueba —documento, nombre, placa, teléfono y la llave de la contraparte— con la consola interceptada. No apareció ninguna fuga; la prueba fija la propiedad. 343 pruebas |
 | 2026-09-22 | El repositorio entero pasa por `tsc --strict`, no solo `app/`, y CI lo corre. Encontró un import roto en producción y dos pruebas que pasaban por la razón equivocada — D-42 |
 | 2026-09-23 | `noUncheckedIndexedAccess` entra en el `tsconfig` de la raíz. Cero errores: el código ya se escribía con esa comprobación en la cabeza, pero nada la exigía — D-43 |
+| 2026-09-23 | ESLint con tipos sobre los siete paquetes, dentro de `verify` y de CI: cierra el lint que pedía A14. Encontró un manejador `async` donde Node espera `void` —un rechazo se llevaba el proceso en vez de la petición—, un import muerto y dos pruebas que podían pasar por la razón equivocada — D-44 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

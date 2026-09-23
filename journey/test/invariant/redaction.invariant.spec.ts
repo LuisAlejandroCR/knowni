@@ -30,7 +30,7 @@ const asset = { plate: PLATE, ownerDocumentNumber: DOCUMENT, assetRef: "b".repea
 function recording() {
   const written: string[] = [];
   const consoleMethods = ["log", "info", "warn", "error", "debug"] as const;
-  const saved = consoleMethods.map((name) => [name, console[name]] as const);
+  const saved = consoleMethods.map((name) => [name, console[name].bind(console)] as const);
   for (const name of consoleMethods) {
     console[name] = ((...args: unknown[]) => {
       written.push(args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join(" "));

@@ -21,7 +21,7 @@ test("the memo path submits the commitment as exactly 32 bytes", () => {
   return port.anchor({ commitment: COMMITMENT }).then((result) => {
     assert.equal(result.status, "anchored");
     assert.equal(seen?.length, 32);
-    assert.equal(Buffer.from(seen!).toString("hex"), COMMITMENT.hex);
+    assert.equal(Buffer.from(seen).toString("hex"), COMMITMENT.hex);
   });
 });
 

@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
+      - run: npm run lint
       # The suite runs TypeScript by stripping its types, so nothing else here
       # ever asks the compiler whether they are right — criterio A14.
       - run: npm run typecheck

@@ -907,6 +907,20 @@ ignora, un campo duplicado por un spread, un `.reason` sobre una unión sin estr
 `assert.equal(algo.anchor, undefined)` sobre un campo que no existe —ahora comprueba que la clave no
 está, que es lo que quería decir—.
 
+### D-43 — El repositorio ya se escribía como si el índice pudiera no existir · 2026-09-23
+
+*El hueco:* `strict` no cubre el acceso por índice. `levels[i]` y `prev[i]` se tipan como el
+elemento, nunca como `undefined`, aunque el arreglo esté vacío. El código de `core/src/merkle.ts`,
+`core/src/bytes.ts` y los adaptadores ya venía escrito con `!` en cada acceso —la señal de que quien
+lo escribió contaba con la comprobación—, pero nada la exigía. Un acceso nuevo sin `!` habría pasado
+igual.
+
+*Decisión:* `noUncheckedIndexedAccess` en `tsconfig.json`.
+
+*Lo que costó:* cero errores. El repositorio entero ya cumplía la regla; lo que faltaba era que
+alguien la hiciera obligatoria para lo que venga después. Los `!` existentes dejan de ser ruido que
+un linter marca como innecesario y pasan a ser lo que siempre quisieron decir.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -960,6 +974,7 @@ está, que es lo que quería decir—.
 | 2026-09-22 | Las fuentes se piden en paralelo y con plazo: una lenta ya no cuelga a las otras tres ni al comprador, y la que se pasa responde `unavailable` sin cobrarse — D-41. 339 pruebas |
 | 2026-09-22 | A13 deja de cubrir solo los adaptadores: el servicio HTTP también se comprueba —documento, nombre, placa, teléfono y la llave de la contraparte— con la consola interceptada. No apareció ninguna fuga; la prueba fija la propiedad. 343 pruebas |
 | 2026-09-22 | El repositorio entero pasa por `tsc --strict`, no solo `app/`, y CI lo corre. Encontró un import roto en producción y dos pruebas que pasaban por la razón equivocada — D-42 |
+| 2026-09-23 | `noUncheckedIndexedAccess` entra en el `tsconfig` de la raíz. Cero errores: el código ya se escribía con esa comprobación en la cabeza, pero nada la exigía — D-43 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

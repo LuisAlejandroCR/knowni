@@ -16,12 +16,16 @@
 //! bug: a valid proof about a different issuer root, or a session that is
 //! not this one, would otherwise sail through.
 //!
-//! STATUS: source only. Not compiled or deployed from this repository — see
-//! `docs/ROADMAP.md`. `soroban-sdk` is not vendored in the environment this
-//! was written in, and no measured fee or proof-verification time is claimed
-//! anywhere in this repository.
+//! STATUS: compiles, and the policy above is tested in `test.rs`. Never
+//! deployed, and no real Groth16 proof has been verified against it: every
+//! test is refused before the pairing, which is the order this contract
+//! promises. No measured fee or proof-verification time is claimed anywhere
+//! in this repository.
 
 #![no_std]
+
+#[cfg(test)]
+mod test;
 
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype,

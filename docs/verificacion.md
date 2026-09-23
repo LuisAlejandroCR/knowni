@@ -22,6 +22,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Un retry idéntico reutiliza el sobre firmado sin repetir Croma ni el aviso; sujetos distintos bajo el mismo `paymentRef` no comparten entrada | `issuer/test/unit/cache.spec.ts` e `issue-cache.spec.ts` | 2026-09-22 |
 | El camino de pago completo en USDC contra la testnet real: el XDR que construye `app/src/domain/stellar-payment.ts` a mano es aceptado por Horizon, y `verifyPayment` del emisor lo lee de vuelta y lo acepta | Testnet de Stellar. Tres cuentas con friendbot, activo `USDC` emitido para la prueba, pago de 2.5 aceptado en la transacción `fb64700b…`; saldos movidos de 1000.0000000 a 997.5000000 (pagador) y 2.5000000 (tesorería). Las cuatro negativas comprobadas sobre la misma transacción: `already_spent`, `wrong_reference`, `underpaid` y activo distinto. Explorer: <https://stellar.expert/explorer/testnet/tx/fb64700b55ab1094f00fc60c48990c035976c0938036a47f8084990800b836b9> — criterio A10 | 2026-09-22 |
 
+| El contrato Soroban compila y su política se sostiene sola: una raíz que nadie registró, un nulificador ya gastado, un `solvency_tier` por debajo del que pidió la contraparte, cada booleano por separado, y un vector plano que no concuerda con las señales nombradas —todos refusados **antes** del emparejamiento | `cargo test` en `contracts/knowni-verifier`: 9 pruebas. El artefacto `wasm32-unknown-unknown` de release se construye: 22 619 bytes. Ninguna prueba Groth16 real verificada — el contrato no ha visto un emparejamiento que dé verdadero | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |
@@ -116,7 +118,7 @@ repositorio en `main` y la suite en 236 pruebas.
 | "llamada en vivo a Croma, acotada" | Catálogo, sondeo de 16 rutas con cuerpo vacío y un `200` sobre una empresa pública | ✅ exacta |
 | "ningún log lleva documento, nombre, salario ni cuenta" | `journey/test/redaction.test.ts` captura telemetría, sumidero y los cinco métodos de consola | ✅ exacta, con una excepción declarada: el `logError` inyectado sí recibe el error crudo |
 | "circuitos escritos, sin compilar" | No existe `circuits/build/`; nada en el repositorio los ejecuta | ✅ exacta |
-| "contrato Soroban escrito, sin desplegar" | `contracts/knowni-verifier` sin artefactos ni dirección | ✅ exacta |
+| "contrato Soroban escrito, sin desplegar" | `contracts/knowni-verifier` sin dirección. **Desactualizada desde 2026-09-23**: ya compila y sus pruebas corren en CI; el README lo dice así | ⚠️ corregida en el README |
 | "app iOS / Android no escrita" | No existe `app/`. Pero desde el día 8 sí hay diseño aprobado en `design/day-08/` | ⚠️ **corregida en el README**: se añade el diseño |
 | Enlaces de archivo del README | 100 % resuelven a un archivo existente | ✅ exacta |
 | "ninguna llamada sobre una persona real" | Ningún fixture ni bitácora contiene una consulta con documento real | ✅ exacta |

@@ -10,10 +10,16 @@ record that the nullifier is spent.
 
 ## Status
 
-Source only. **Not compiled and not deployed from this repository** —
-`soroban-sdk` is not vendored in the environment it was written in, and the
-`wasm32` target is not installed. No fee, proof-verification time or
-deployment address is claimed anywhere in this repository.
+**Compiles, and its policy is tested. Not deployed.** `cargo test` runs nine
+tests over the three rules below, and the `wasm32-unknown-unknown` release
+artifact is built in CI. No fee, proof-verification time or deployment address
+is claimed anywhere in this repository, and no real Groth16 proof has been
+verified against this contract: every test is refused *before* the pairing,
+which is the order the contract promises.
+
+`Cargo.lock` is committed. `soroban-env-host` asks for `ed25519-dalek
+>= 2.0.0` with no upper bound, and 3.0.0 does not compile against it — an
+unpinned build of this contract fails on a clean machine.
 
 What it is written against:
 [`stellar/soroban-examples/groth16_verifier`](https://github.com/stellar/soroban-examples/tree/main/groth16_verifier),
@@ -39,7 +45,8 @@ without a spent set, one proof rents fifty apartments.
 
 - [ ] The signal order in `signals_match` matches
       `circuits/eligibility.circom` — asserted against a circuit-generated
-      fixture, not by reading.
+      fixture, not by reading. `src/test.rs` pins the order the contract
+      believes in; only the circuit can say it is the right one.
 - [ ] Resource fees measured by simulation (`--send=no`) at realistic sizes.
       Pairing checks are the expensive operation; budget before committing
       to per-transaction verification.

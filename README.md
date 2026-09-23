@@ -131,7 +131,7 @@ entra como otro adaptador sin tocar un solo predicado.
   Falta ejecución en teléfono físico y firma real con las wallets configuradas.
 - [`circuits/`](circuits/) — los circuitos Circom. Código fuente; ver estado.
 - [`contracts/knowni-verifier/`](contracts/knowni-verifier/) — el verificador
-  Soroban. Código fuente; ver estado.
+  Soroban. Compila y sus pruebas corren; sin desplegar.
 
 ### Correrlo
 
@@ -180,7 +180,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Pago móvil | **Implementado y probado sin red.** `/quote` entrega activo, destino y monto; Privy firma el hash, Freighter el sobre y la app envía a Horizon. Falta una firma real y una transacción USDC testnet |
 | Reintentos del emisor | **Corren.** Un HMAC opaco separa contraparte, sujeto, pregunta y pago; retries concurrentes comparten una sola consulta y expiran con el sobre firmado |
 | Circuitos Circom | **Escritos.** Sin compilar — ver [`circuits/README.md`](circuits/README.md) |
-| Contrato Soroban | **Escrito.** Sin compilar ni desplegar |
+| Contrato Soroban | **Compila, y su política está probada.** Nueve pruebas sobre las tres reglas —raíz desconocida, nulificador gastado, predicado incumplido, señales que no concuerdan—, y el `wasm` se construye en CI. Nunca desplegado, y ninguna prueba ZK verificada de verdad |
 | Servicio de emisión | **Corre.** Única llave de proveedor, consentimiento por fuente y respuestas firmadas — [`issuer/`](issuer/README.md) |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |
 | Ejecución en un teléfono físico | **No.** Ninguna |

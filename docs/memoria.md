@@ -935,6 +935,7 @@ llamada que se pasó del plazo se deja terminar sola —nadie la espera y nadie 
 | 2026-09-22 | Ejercido el pago en USDC contra la testnet real: el XDR hecho a mano se acepta en Horizon y el emisor lo verifica de vuelta. Era la pieza sin red más riesgosa del repositorio y no necesitaba llaves de nadie — un activo de prueba propio basta. Detalle en `docs/verificacion.md` |
 | 2026-09-22 | Un pago que llega a la tesorería en el activo equivocado deja de decir `wrong_destination` y dice `wrong_asset`. Salió del ejercicio real, y se comprobó contra la misma transacción — D-40 |
 | 2026-09-22 | Las fuentes se piden en paralelo y con plazo: una lenta ya no cuelga a las otras tres ni al comprador, y la que se pasa responde `unavailable` sin cobrarse — D-41. 339 pruebas |
+| 2026-09-22 | A13 deja de cubrir solo los adaptadores: el servicio HTTP también se comprueba —documento, nombre, placa, teléfono y la llave de la contraparte— con la consola interceptada. No apareció ninguna fuga; la prueba fija la propiedad. 343 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

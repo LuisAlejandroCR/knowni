@@ -30,6 +30,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Ninguna respuesta de Horizon hace lanzar la comprobación de un pago: toda termina en `paid` o en una de las ocho razones de refusal. Un monto que Horizon no pudo haber escrito no se cuenta como dinero | `issuer/test/fuzz/payments.fuzz.spec.ts`: 23 montos inválidos, 5 formas de `records` que no son lista, 300 respuestas generadas. Sin el arreglo fallan 3 de las 5 pruebas | 2026-09-23 |
 | El adaptador de anclaje nunca falla con un mensaje de JavaScript: toda respuesta de Horizon que no sirve produce un error que empieza por `horizon `, y un `502` con cuerpo HTML se reporta como `502` | `anchoring/test/fuzz/stellar-horizon.fuzz.spec.ts`: 14 secuencias inválidas, 7 cuerpos que no son JSON, 200 combinaciones. Sin el arreglo fallan 4 de las 5 pruebas | 2026-09-23 |
 
+| Ninguna carga de Croma hace lanzar a los cuatro adaptadores del perfil de compraventa, ninguna deja rastro de sí misma en el resultado, y una carga ilegible nunca se convierte en una respuesta negativa | `sources/test/fuzz/croma-adapters.fuzz.spec.ts`: 400 cargas generadas por adaptador con un marcador plantado, más 9 formas que no son objeto. **Cero hallazgos** — los adaptadores ya validaban | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

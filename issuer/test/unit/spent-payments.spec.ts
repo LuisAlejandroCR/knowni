@@ -129,6 +129,24 @@ test("a refused payment is never written, so it stays spendable", async () => {
 
 // --- the real filesystem, because this one crosses a process boundary ---
 
+// Dormir un número fijo de milisegundos esperando una escritura que se lanza y
+// no se espera es una carrera: bajo carga no llega. La prueba se queda con la
+// promesa del append y la espera.
+function recording(store: SpentPaymentStore): { store: SpentPaymentStore; writes: Promise<void>[] } {
+  const writes: Promise<void>[] = [];
+  return {
+    store: {
+      load: () => store.load(),
+      append: (txHash) => {
+        const write = store.append(txHash);
+        writes.push(write);
+        return write;
+      },
+    },
+    writes,
+  };
+}
+
 async function withTempDir(run: (dir: string) => Promise<void>): Promise<void> {
   const dir = await mkdtemp(join(tmpdir(), "knowni-spent-"));
   try {
@@ -142,9 +160,10 @@ test("on a real disk, a spend written by one process is read by the next", async
   await withTempDir(async (dir) => {
     const path = join(dir, "spent.log");
 
-    const first = await createPersistentSpentPayments(createFileSpentPaymentStore(path));
+    const disk = recording(createFileSpentPaymentStore(path));
+    const first = await createPersistentSpentPayments(disk.store);
     assert.equal(first.claim(TX), true);
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await Promise.all(disk.writes);
 
     const second = await createPersistentSpentPayments(createFileSpentPaymentStore(path));
     assert.equal(second.claim(TX), false);
@@ -157,9 +176,10 @@ test("a file that does not exist yet is an empty set, not a failure", async () =
     // Nested on purpose: the first start-up should not need the directory to
     // exist either.
     const path = join(dir, "state", "spent.log");
-    const spent = await createPersistentSpentPayments(createFileSpentPaymentStore(path));
+    const disk = recording(createFileSpentPaymentStore(path));
+    const spent = await createPersistentSpentPayments(disk.store);
     assert.equal(spent.claim(TX), true);
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await Promise.all(disk.writes);
     assert.match(await readFile(path, "utf8"), new RegExp(TX));
   });
 });

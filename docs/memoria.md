@@ -789,6 +789,32 @@ pruebas escriben y releen un fichero de verdad en un directorio temporal, y el a
 los tres casos —cobrando sin fichero (rechaza, `exit 2`), cobrando con fichero (arranca) y sin cobrar
 (arranca en memoria y lo dice).
 
+### D-38 — La escritura del gasto cierra antes de tocar Croma, y si falla suelta el reclamo · 2026-09-22
+
+*El hueco que dejó D-37:* `claim` decide en memoria y lanza la escritura sin esperarla. Entre el
+reclamo y el aterrizaje del `append` hay una ventana: si el proceso muere ahí y la escritura falló,
+la transacción vuelve a ser canjeable. Estrecha —el append son milisegundos y después vienen hasta
+83 s de Croma—, pero la feature entera de D-37 existe para que una transacción no pague dos veces.
+
+*Decisión:* `SpentPayments` gana `settled?(): Promise<void>` —opcional, porque el almacén en memoria
+no tiene nada que esperar— y `/issue` lo espera **después** de que `verifyPayment` devuelva `paid` y
+**antes** de `issueAnswers`, que es lo que gasta cuota de Croma. Si rechaza, el emisor responde
+`503 payment_not_durable` y no consulta ninguna fuente. `claim` sigue síncrono: el `await` está en el
+handler, no en la decisión, así que la ventana del doble gasto no se reabre.
+
+*La sub-decisión que D-37 dejó abierta — qué pasa con el pago cuando el disco falla:* **se suelta el
+reclamo**. Quemarle la transacción a un comprador por un error de disco transitorio es peor que la
+ventana que esto reabre, que exige peticiones concurrentes *y* disco fallando a la vez. El invariante
+"una emisión por transacción" se mantiene porque **no hubo emisión**: la escritura es lo que hace
+real al gasto, y sin gasto real no hay respuesta firmada. Esto cambia la prueba de D-37 que decía lo
+contrario.
+
+*Las escrituras no rechazan solas:* el fallo se guarda y solo sale por `settled()`. Un llamador que
+nunca pregunta si aterrizó no puede tumbar el proceso con un `unhandledRejection`.
+
+*Ejercido:* un almacén cuyo `append` falla produce `503` y **cero llamadas a Croma** —el contador de
+llamadas al proveedor es la prueba—, y la transacción vuelve a ser reclamable después.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -835,6 +861,7 @@ los tres casos —cobrando sin fichero (rechaza, `exit 2`), cobrando con fichero
 | 2026-09-22 | Caché idempotente del emisor: HMAC por contraparte/sujeto/pregunta/pago, single-flight, expiración con la firma y tamaño acotado. Un retry no vuelve a gastar Horizon, Croma ni WhatsApp — D-35 |
 | 2026-09-22 | El conjunto gastado aterriza en el dispositivo con AsyncStorage, una llave por nullifier. Mientras no se haya leído del disco, el verificador rehúsa en vez de aceptar lo que no puede comprobar — D-36 |
 | 2026-09-22 | Los pagos canjeados sobreviven al reinicio del emisor en un fichero append-only, y cobrar sin ese fichero deja de ser posible: el proceso no arranca. Ejercido contra el disco real y contra el arranque real — D-37 |
+| 2026-09-22 | Cerrada la ventana de durabilidad del pago: `/issue` espera la escritura del gasto antes de tocar Croma y responde `503` si no aterrizó. Una escritura fallida suelta el reclamo en vez de quemarle la transacción al comprador — D-38. 329 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

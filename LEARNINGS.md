@@ -161,3 +161,11 @@ nativo y prohíbe cualquier atajo de servidor.
   borran `node_modules` y el lock, y se cierra con `npx expo-doctor` en verde —21/21 en SDK 57—
   antes de dar la app por buena. Comprobado el 2026-09-20 sobre expo 52 y el 2026-09-21 sobre
   expo 57.0.24, expo-router 57.0.22, react-native 0.86.3 y react 19.2.3.
+
+- **Un SDK con módulos nativos no declara sus peers como dependencias instalables.** `@privy-io/expo`
+  necesita `expo-application` y `react-native-webview`, y sin ellas el bundle **se genera igual**:
+  `tsc`, las pruebas y `expo export` pasan, y la app crashea fuera de Expo Go. Lo único que lo
+  detecta es `npx expo-doctor`, así que correrlo entra en la verificación de cualquier cambio que
+  toque dependencias — no solo al subir de SDK. Comprobado el 2026-09-22 con expo 57.0.24 y
+  `@privy-io/expo` 0.74.3.
+

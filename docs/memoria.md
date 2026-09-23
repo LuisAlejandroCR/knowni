@@ -947,6 +947,37 @@ grafo de tipos, no solo la sintaxis—, sobre los siete paquetes. `app/` conserv
 | `sources/test/unit/croma-contract.spec.ts` | Un `JSON.parse` devuelto como `any` a través de la frontera del fixture |
 | `.../redaction.invariant.spec.ts`, `issue-redaction.spec.ts` | Los métodos de `console` se guardaban desligados de `console` para restaurarlos |
 
+### D-45 — El contrato dejó de ser código que nadie había compilado · 2026-09-23
+
+*El bloqueo, y lo que resultó ser:* el contrato llevaba desde el día 1 escrito y sin compilar,
+anotado como *bloqueado por el entorno*: WSL sin compilador de C. Nunca fue una decisión técnica,
+era una máquina. En un contenedor Linux con `cargo` y `gcc` el bloqueo no existe.
+
+*Lo primero que apareció al compilar:* `soroban-env-host` pide `ed25519-dalek >= 2.0.0`, **sin
+techo**. Cargo resuelve 3.0.0, que cambió `CryptoRng`, y el host no compila contra ella. No es un
+error del contrato y no se arregla leyéndolo: se arregla fijando la resolución. `Cargo.lock`
+queda versionado —lo contrario de lo que se hizo el 2026-09-22, cuando se borró el que había
+dejado un build fallido—. Un contrato es un artefacto reproducible, no una librería.
+
+*Decisión:* `cargo test` y `cargo build --release --target wasm32-unknown-unknown` entran en CI,
+como un job propio. El `wasm` se construye en cada PR; nadie lo despliega.
+
+*Nueve pruebas, todas sobre la política, que es donde caen los ataques.* Ninguna necesita una
+prueba válida, y eso es exactamente lo que afirman: el contrato rechaza **antes** del
+emparejamiento.
+
+| Qué se prueba | Por qué importa |
+|---|---|
+| Raíz que nadie registró → `UnknownIssuerRoot` | Una prueba válida sobre una raíz que el propio atacante publicó verifica perfectamente |
+| Nulificador ya gastado → `NullifierAlreadySpent`, y nada queda anclado | Sin conjunto gastado, una prueba arrienda cincuenta apartamentos |
+| `solvency_tier` por debajo del pedido, y cada booleano por separado | Un predicado que se comprueba en bloque esconde cuál faltaba |
+| El vector plano que no concuerda con las señales nombradas → `InvalidProof` | Es el bug que la estructura nombrada existe para evitar, reintroducido por la fontanería |
+| Una raíz registrada guarda el ledger en que llegó | La revocación es republicar sin la hoja, no borrar historia |
+
+*Lo que sigue sin ser cierto:* el contrato nunca ha verificado una prueba Groth16 de verdad,
+porque los circuitos siguen sin compilar. El orden de las señales en `signals_match` está fijado
+por `test.rs`, pero solo el circuito puede decir que sea el correcto.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1002,6 +1033,7 @@ grafo de tipos, no solo la sintaxis—, sobre los siete paquetes. `app/` conserv
 | 2026-09-22 | El repositorio entero pasa por `tsc --strict`, no solo `app/`, y CI lo corre. Encontró un import roto en producción y dos pruebas que pasaban por la razón equivocada — D-42 |
 | 2026-09-23 | `noUncheckedIndexedAccess` entra en el `tsconfig` de la raíz. Cero errores: el código ya se escribía con esa comprobación en la cabeza, pero nada la exigía — D-43 |
 | 2026-09-23 | ESLint con tipos sobre los siete paquetes, dentro de `verify` y de CI: cierra el lint que pedía A14. Encontró un manejador `async` donde Node espera `void` —un rechazo se llevaba el proceso en vez de la petición—, un import muerto y dos pruebas que podían pasar por la razón equivocada — D-44 |
+| 2026-09-23 | El contrato Soroban compila, y nueve pruebas fijan su política —todas rechazadas antes del emparejamiento—. El bloqueo era la máquina, no el código. `Cargo.lock` versionado: `soroban-env-host` pide `ed25519-dalek` sin techo y la 3.0.0 no compila contra él — D-45 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real
@@ -1014,7 +1046,7 @@ menos una vez.
 | Croma REST | ✅ **ejercido el 2026-09-20**: `/catalog` (200), 16 rutas sondeadas con cuerpo vacío (400/404) y `/co/rues/entities-by-name/v1` (200) sobre una empresa pública. Ninguna llamada sobre una persona |
 | Stellar Horizon / RPC | ✅ **ejercido el 2026-09-20**: cuenta creada con friendbot y transacción `0dc0fdf4…` aceptada en el ledger 4783364 |
 | Pago en USDC de punta a punta | ✅ **ejercido el 2026-09-22**: el XDR construido a mano por `stellar-payment.ts` —activo de crédito, `MEMO_HASH`, firma por hash crudo— aceptado por Horizon en `fb64700b…`, y `verifyPayment` lo acepta de vuelta. Con un activo `USDC` emitido para la prueba, porque el USDC de Circle no se puede acuñar. Falta la firma real de Privy, que necesita un app id |
-| Contrato Soroban | ⏳ nunca compilado ni desplegado |
+| Contrato Soroban | ⚠️ **compila desde el 2026-09-23** y sus nueve pruebas corren en CI, con el `wasm` de release construido. Nunca desplegado, y nunca ha verificado una prueba Groth16 real |
 | Circom / snarkjs | ⏳ nunca compilado |
 | Teléfono físico | ⏳ nunca ejecutado |
 

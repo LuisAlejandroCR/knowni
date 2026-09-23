@@ -26,6 +26,18 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # `Cargo.lock` está versionado a propósito: `soroban-env-host` pide
+      # `ed25519-dalek >= 2.0.0`, sin techo, y la 3.0.0 no compila con él.
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo test --locked
+        working-directory: contracts/knowni-verifier
+      - run: cargo build --locked --release --target wasm32-unknown-unknown
+        working-directory: contracts/knowni-verifier
+
   app:
     runs-on: ubuntu-latest
     steps:

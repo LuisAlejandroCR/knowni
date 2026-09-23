@@ -43,6 +43,10 @@ export interface IssuerOptions {
   readonly access?: AccessPolicy;
   readonly requestQuota?: RequestQuota;
   readonly issuanceCache?: IssuanceCache<IssuanceResponse>;
+  // How long one source has before the issuance stops waiting for it. A bound,
+  // not a measurement: it exists so one slow source cannot hold the other
+  // three — and the buyer — hostage. See D-41.
+  readonly sourceDeadlineMs?: number;
 }
 
 export interface IssuanceResponse {
@@ -97,6 +101,33 @@ function answerOf(predicate: string, source: string, value: boolean | "unavailab
   };
 }
 
+export const DEFAULT_SOURCE_DEADLINE_MS = 60_000;
+
+// A source that runs out of time answers `unavailable` — never `false`. The
+// difference is the whole product: "we could not ask" is not "the answer is
+// no", and an unavailable answer is not charged either. See pricing.ts.
+interface SourceTask {
+  readonly predicate: string;
+  readonly sourceId: string;
+  run(): Promise<AttestedAnswer>;
+}
+
+async function withDeadline(task: SourceTask, deadlineMs: number): Promise<AttestedAnswer> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const started = task.run();
+  // A rejection is the adapter's own failure and reads as unavailable too;
+  // nothing above this line ever sees it.
+  const settled = started.catch(() => answerOf(task.predicate, task.sourceId, "unavailable"));
+  const expired = new Promise<undefined>((resolve) => {
+    timer = setTimeout(() => resolve(undefined), deadlineMs);
+  });
+  try {
+    return (await Promise.race([settled, expired])) ?? answerOf(task.predicate, task.sourceId, "unavailable");
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export async function issueAnswers(
   options: IssuerOptions,
   body: IssueRequestBody,
@@ -111,62 +142,71 @@ export async function issueAnswers(
     ]),
   };
 
-  const answers: AttestedAnswer[] = [];
+  // One task per consented source, all in flight at once. They were sequential
+  // and four of them took 83 s; nothing about them needs the previous answer.
+  const tasks: SourceTask[] = [];
 
   if (body.consented.includes("registraduria")) {
-    const result = await createRegistraduriaPersonhoodSource(client).fetch(subject, nowUnix);
-    answers.push(
-      answerOf(
+    tasks.push({ predicate: "personhood", sourceId: "registraduria", run: async () => {
+      const result = await createRegistraduriaPersonhoodSource(client).fetch(subject, nowUnix);
+      return answerOf(
         "personhood",
         "registraduria",
         result.status === "claimed" && result.claim.kind === "identity"
           ? result.claim.documentValid && result.claim.subjectAlive && result.claim.ofAge
           : "unavailable",
-      ),
-    );
+      );
+    } });
   }
 
   if (body.consented.includes("sicaac")) {
-    const result = await createSicaacCapacitySource(client).fetch(subject, nowUnix);
-    answers.push(
-      answerOf(
+    tasks.push({ predicate: "capacity", sourceId: "sicaac", run: async () => {
+      const result = await createSicaacCapacitySource(client).fetch(subject, nowUnix);
+      return answerOf(
         "capacity",
         "sicaac",
         result.status === "claimed" && result.claim.kind === "capacity" ? !result.claim.restricted : "unavailable",
-      ),
-    );
+      );
+    } });
   }
 
   if (body.consented.includes("listas")) {
-    const result = await createSanctionsSource(client, sha256Hash).fetch(subject, nowUnix);
-    answers.push(
-      answerOf(
+    tasks.push({ predicate: "sanctions", sourceId: "procuraduria+contraloria+contaduria", run: async () => {
+      const result = await createSanctionsSource(client, sha256Hash).fetch(subject, nowUnix);
+      return answerOf(
         "sanctions",
         "procuraduria+contraloria+contaduria",
         result.status === "claimed" && result.claim.kind === "standing" ? !result.claim.listed : "unavailable",
-      ),
-    );
+      );
+    } });
   }
 
   if (body.consented.includes("vehiculo") && body.plate !== undefined) {
-    const result = await createVehicleStandingSource(client).fetch(
-      {
-        plate: body.plate,
-        ownerDocumentNumber: body.documentNumber,
-        assetRef: sha256Hash.hash("knowni/asset-ref/v1", [new TextEncoder().encode(body.plate)]),
-      },
-      nowUnix,
-    );
-    answers.push(
-      answerOf(
+    const plate = body.plate;
+    tasks.push({ predicate: "assetStanding", sourceId: "runt+simit", run: async () => {
+      const result = await createVehicleStandingSource(client).fetch(
+        {
+          plate,
+          ownerDocumentNumber: body.documentNumber,
+          assetRef: sha256Hash.hash("knowni/asset-ref/v1", [new TextEncoder().encode(plate)]),
+        },
+        nowUnix,
+      );
+      return answerOf(
         "assetStanding",
         "runt+simit",
         result.status === "claimed" && result.claim.kind === "assetStanding"
           ? result.claim.registered && !result.claim.encumbered && !result.claim.finesOutstanding
           : "unavailable",
-      ),
-    );
+      );
+    } });
   }
+
+  // `Promise.all` keeps the order of the tasks, not of their answers, so the
+  // envelope is the same whichever source lands first.
+  const answers: readonly AttestedAnswer[] = await Promise.all(
+    tasks.map((task) => withDeadline(task, options.sourceDeadlineMs ?? DEFAULT_SOURCE_DEADLINE_MS)),
+  );
 
   const results = attestResults(sha256Hash, nodeSignatures, options.seed, {
     issuerId: options.issuerId,

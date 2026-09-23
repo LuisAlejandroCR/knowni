@@ -862,6 +862,28 @@ del `402` que ve la contraparte, por eso es decisión y no corrección silencios
 *Ejercido sobre la transacción real de la testnet,* la misma `fb64700b…`: preguntando por XLM
 responde `wrong_asset`, preguntando por otra cuenta destino responde `wrong_destination`.
 
+### D-41 — Las fuentes se preguntan a la vez, y la que no llega responde `unavailable` · 2026-09-22
+
+*El hueco:* `issueAnswers` pedía las cuatro fuentes **en serie**, una esperando a la anterior, cuando
+ninguna necesita la respuesta de otra. De ahí los 83 s medidos. Y el emisor esperaba a la más lenta
+sin límite: una fuente colgada colgaba la emisión entera, el pago del comprador incluido.
+
+*Decisión:* una tarea por fuente consentida y todas en vuelo a la vez. El orden de las respuestas lo
+fija el orden de las tareas —`Promise.all` lo conserva—, no quién contesta primero, así que el sobre
+firmado es el mismo venga como venga la red.
+
+*El plazo, y qué pasa al vencerse:* `sourceDeadlineMs` —60 s por defecto,
+`KNOWNI_SOURCE_DEADLINE_MS`— acota lo que una fuente puede hacer esperar. La que se pasa responde
+**`unavailable`, nunca `false`**: "no pudimos preguntar" no es "la respuesta es no", y esa distinción
+es el producto entero. Tampoco se cobra — `chargeableMinor` ya excluía `unavailable`, así que el
+comprador paga por lo que recibió.
+
+*Un plazo es una cota, no una medición:* 60 s no dice cuánto tarda una fuente, dice cuánto estamos
+dispuestos a esperarla. El único número medido sigue siendo los 83 s de la emisión secuencial.
+
+*Un adaptador que lanza también lee como `unavailable`:* la excepción se contiene en la tarea, y la
+llamada que se pasó del plazo se deja terminar sola —nadie la espera y nadie se cae por ella—.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -912,6 +934,7 @@ responde `wrong_asset`, preguntando por otra cuenta destino responde `wrong_dest
 | 2026-09-22 | El caché de emisiones sobrevive al reinicio en un fichero JSONL append-only, con expiradas descartadas al hidratar. Opcional a propósito: perderlo cuesta una llamada repetida a Croma, no una emisión de más — D-39. 336 pruebas |
 | 2026-09-22 | Ejercido el pago en USDC contra la testnet real: el XDR hecho a mano se acepta en Horizon y el emisor lo verifica de vuelta. Era la pieza sin red más riesgosa del repositorio y no necesitaba llaves de nadie — un activo de prueba propio basta. Detalle en `docs/verificacion.md` |
 | 2026-09-22 | Un pago que llega a la tesorería en el activo equivocado deja de decir `wrong_destination` y dice `wrong_asset`. Salió del ejercicio real, y se comprobó contra la misma transacción — D-40 |
+| 2026-09-22 | Las fuentes se piden en paralelo y con plazo: una lenta ya no cuelga a las otras tres ni al comprador, y la que se pasa responde `unavailable` sin cobrarse — D-41. 339 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

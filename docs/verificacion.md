@@ -27,6 +27,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Ningún cuerpo malformado en `/quote` ni en `/issue` alcanza una fuente, y todos reciben un estado que el servicio eligió; un predicado que nadie publicó no se cotiza, se llame `constructor`, `__proto__` o `PERSONHOOD` | `issuer/test/fuzz/service.fuzz.spec.ts` (120 cuerpos generados contra ambas rutas, con un proveedor que lanza si lo alcanzan) y `pricing.fuzz.spec.ts` | 2026-09-23 |
 | Un fichero de caché corrupto —líneas que no parsean, y líneas que parsean y no son entradas— nunca impide que el emisor arranque, y la entrada viva que haya dentro sobrevive | `issuer/test/fuzz/cache-store.fuzz.spec.ts`: 24 formas de estar mal y 300 ficheros mezclados al azar. Sin la validación del adaptador, las cinco pruebas fallan | 2026-09-23 |
 
+| El adaptador de anclaje nunca falla con un mensaje de JavaScript: toda respuesta de Horizon que no sirve produce un error que empieza por `horizon `, y un `502` con cuerpo HTML se reporta como `502` | `anchoring/test/fuzz/stellar-horizon.fuzz.spec.ts`: 14 secuencias inválidas, 7 cuerpos que no son JSON, 200 combinaciones. Sin el arreglo fallan 4 de las 5 pruebas | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

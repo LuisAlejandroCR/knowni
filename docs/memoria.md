@@ -1034,6 +1034,31 @@ entrada con `__proto__` llega reducida a tres llaves.
 ficheros mezclados al azar. La propiedad que importa: con el fichero roto como esté, la entrada viva
 que hay dentro sobrevive y el emisor arranca. Sin el arreglo, las cinco pruebas fallan.
 
+### D-49 — El anclaje fallaba hablando de JavaScript en vez de hablar de Horizon · 2026-09-23
+
+*El hueco:* `stellar-horizon.ts` leía `account.sequence` y lo pasaba a `BigInt` con una sola
+comprobación —que fuera una cadena—. `"abc"`, `"1.5"`, `"-1"` y `"1e9"` son cadenas.
+
+| Lo que Horizon devuelve | El error que salía |
+|---|---|
+| `{"sequence":"abc"}` | `SyntaxError: Cannot convert abc to a BigInt` |
+| `<html>502 Bad Gateway</html>` en el envío | `SyntaxError: Unexpected token '<'` |
+
+Y el segundo es peor que el primero: el `json()` del envío se leía **antes** de mirar el estado, así
+que un proxy delante de Horizon convertía un `502` legible en un error de parseo. Quien lee el log va
+a buscar el bug al sitio equivocado.
+
+*Decisión:* una secuencia es `^\d+$` y nada más; un cuerpo que no es JSON es un cuerpo vacío, no una
+excepción. Los dos errores que salen ahora empiezan por `horizon `, que es de lo que hablan.
+
+*Por qué importa aquí y no es teoría:* el anclaje es el paso del que el producto sobrevive sin —A11
+pide que el recorrido funcione con la cadena caída—. Un fallo suyo tiene que ser legible, porque
+alguien va a decidir si fue la red o fue el código.
+
+*Fijado en `anchoring/test/fuzz/stellar-horizon.fuzz.spec.ts`:* catorce secuencias que no son
+secuencias, siete cuerpos que no son JSON, y 200 combinaciones. Sin el arreglo fallan cuatro de las
+cinco pruebas. La quinta cuida el otro lado: la respuesta que Horizon manda de verdad sigue anclando.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1092,6 +1117,7 @@ que hay dentro sobrevive y el emisor arranca. Sin el arreglo, las cinco pruebas 
 | 2026-09-23 | El contrato Soroban compila, y nueve pruebas fijan su política —todas rechazadas antes del emparejamiento—. El bloqueo era la máquina, no el código. `Cargo.lock` versionado: `soroban-env-host` pide `ed25519-dalek` sin techo y la 3.0.0 no compila contra él — D-45 |
 | 2026-09-23 | Primeras pruebas fuzz del emisor, y encontraron una cotización cuyo total era la cadena `"0function Object() { [native code] }"`: las tablas de predicados eran objetos literales indexados por lo que manda quien llama. Ahora son `Map` — D-46. 350 pruebas |
 | 2026-09-23 | Una línea corrupta en el caché de emisiones impedía arrancar el emisor, justo lo que D-39 decía que no podía pasar. El adaptador ahora valida y reduce lo que lee del disco, como ya hacía con lo que lee de Croma — D-47 |
+| 2026-09-23 | El adaptador de Horizon fallaba con mensajes de JavaScript —`Cannot convert abc to a BigInt`— donde debía nombrar a Horizon, y un `502` de HTML salía como error de parseo. Primeras pruebas fuzz de `anchoring/` — D-49. 360 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -28,6 +28,21 @@ export interface HorizonOptions {
   readonly timeoutMs?: number;
 }
 
+// Horizon writes JSON. When something in front of it does not, that is a
+// failed call and not a crash in the caller.
+async function readJson(response: Response): Promise<Record<string, unknown>> {
+  try {
+    const parsed: unknown = await response.json();
+    return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function isSequence(value: unknown): value is string {
+  return typeof value === "string" && /^\d+$/.test(value);
+}
+
 export function createHorizonMemoSubmitter(seed: Uint8Array, options: HorizonOptions = {}): StellarMemoSubmitter {
   const horizonUrl = (options.horizonUrl ?? TESTNET_HORIZON).replace(/\/+$/, "");
   const passphrase = options.networkPassphrase ?? TESTNET_PASSPHRASE;
@@ -53,8 +68,11 @@ export function createHorizonMemoSubmitter(seed: Uint8Array, options: HorizonOpt
         // naming: Horizon answers 404 until friendbot has created it.
         throw new Error(`horizon account lookup failed with ${accountResponse.status}`);
       }
-      const account = (await accountResponse.json()) as { sequence?: string };
-      if (typeof account.sequence !== "string") throw new Error("horizon returned no sequence");
+      const account = (await readJson(accountResponse)) as { sequence?: unknown };
+      // A sequence is a non-negative integer written as a string. `BigInt` on
+      // anything else throws a message about JavaScript instead of about
+      // Horizon, and a sequence read wrong builds a transaction nobody wanted.
+      if (!isSequence(account.sequence)) throw new Error("horizon returned no usable sequence");
 
       const transaction = encodeTransaction({
         source: keypair.publicKey,
@@ -73,7 +91,10 @@ export function createHorizonMemoSubmitter(seed: Uint8Array, options: HorizonOpt
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ tx: envelope }).toString(),
       });
-      const result = (await submitted.json()) as { hash?: string; extras?: { result_codes?: unknown } };
+      // Read before the status is judged, and a body that is not JSON is an
+      // empty one: a proxy answering HTML in front of Horizon used to surface
+      // as a parse error instead of the status Horizon never sent.
+      const result = (await readJson(submitted)) as { hash?: unknown; extras?: { result_codes?: unknown } };
       if (!submitted.ok || typeof result.hash !== "string") {
         // Horizon's result codes say why — they are operational detail, not
         // anything about a subject, so they are safe to raise here.

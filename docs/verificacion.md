@@ -28,6 +28,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Un fichero de caché corrupto —líneas que no parsean, y líneas que parsean y no son entradas— nunca impide que el emisor arranque, y la entrada viva que haya dentro sobrevive | `issuer/test/fuzz/cache-store.fuzz.spec.ts`: 24 formas de estar mal y 300 ficheros mezclados al azar. Sin la validación del adaptador, las cinco pruebas fallan | 2026-09-23 |
 
 | Ninguna respuesta de Horizon hace lanzar la comprobación de un pago: toda termina en `paid` o en una de las ocho razones de refusal. Un monto que Horizon no pudo haber escrito no se cuenta como dinero | `issuer/test/fuzz/payments.fuzz.spec.ts`: 23 montos inválidos, 5 formas de `records` que no son lista, 300 respuestas generadas. Sin el arreglo fallan 3 de las 5 pruebas | 2026-09-23 |
+| El adaptador de anclaje nunca falla con un mensaje de JavaScript: toda respuesta de Horizon que no sirve produce un error que empieza por `horizon `, y un `502` con cuerpo HTML se reporta como `502` | `anchoring/test/fuzz/stellar-horizon.fuzz.spec.ts`: 14 secuencias inválidas, 7 cuerpos que no son JSON, 200 combinaciones. Sin el arreglo fallan 4 de las 5 pruebas | 2026-09-23 |
 
 ## Verificado en otra parte, no aquí
 

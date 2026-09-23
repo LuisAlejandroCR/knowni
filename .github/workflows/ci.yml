@@ -26,6 +26,21 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+  # The signal order the contract asserts against is written by the Circom
+  # compiler, so CI regenerates it and refuses a fixture that has drifted.
+  circuits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo install --locked --git https://github.com/iden3/circom.git --tag v2.2.3 circom
+      - run: git clone --depth 1 https://github.com/iden3/circomlib.git /tmp/circomlib
+      - name: compile the circuit and check the public signal order
+        working-directory: circuits
+        run: |
+          circom eligibility.circom -l /tmp/circomlib/circuits -l . --r1cs --sym --output /tmp
+          head -13 /tmp/eligibility.sym | cut -d, -f4 | sed 's/^main\.//' > /tmp/signals.txt
+          grep -v '^#' eligibility.signals.txt | diff - /tmp/signals.txt
+
   contract:
     runs-on: ubuntu-latest
     steps:

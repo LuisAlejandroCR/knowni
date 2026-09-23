@@ -32,6 +32,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | Ninguna carga de Croma hace lanzar a los cuatro adaptadores del perfil de compraventa, ninguna deja rastro de sí misma en el resultado, y una carga ilegible nunca se convierte en una respuesta negativa | `sources/test/fuzz/croma-adapters.fuzz.spec.ts`: 400 cargas generadas por adaptador con un marcador plantado, más 9 formas que no son objeto. **Cero hallazgos** — los adaptadores ya validaban | 2026-09-23 |
 
+| `circuits/eligibility.circom` compila, y el orden de sus señales públicas es el que dice el compilador y no el que decía el contrato | circom 2.2.3 construido desde fuente. 10 932 restricciones no lineales, 12 212 lineales, 8 entradas públicas, 5 salidas, 23 194 cables. La tabla de símbolos pone `listSetRoot` en el índice 12; el contrato lo leía del 11, que es `minMonthsPaid`. Corregido y fijado en `contracts/knowni-verifier/src/test.rs` contra `circuits/eligibility.signals.txt` | 2026-09-23 |
+| Compilar con `-p bls12381` **no** prueba que el circuito sea correcto sobre esa curva | Mismo comando con `-p bls12381`: mismas 10 932 restricciones y mismo orden de señales que con `bn128`. Las constantes de Poseidon de circomlib son de BN254 y compilan igual contra otro campo. Sigue pendiente generar las de BLS12-381 | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

@@ -12,7 +12,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 
 | | Estado |
 |---|---|
-| Pruebas | **317 del dominio** + **28 de la app**, verdes en CI (Node 22 y 24) |
+| Pruebas | **327 del dominio** + **32 de la app**, verdes en CI (Node 22 y 24) |
 | Ramas | solo `main`; 30 PRs integrados |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
@@ -46,6 +46,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-34 | El conjunto gastado sobrevive al proceso: `NullifierStore` es puerto y `claim` sigue síncrono a propósito |
 | D-35 | El caché del emisor liga la idempotencia al sujeto sin convertirlo en identificador; una pregunta repetida no vuelve a gastar cuota |
 | D-36 | AsyncStorage guarda el conjunto gastado; sin leerlo del disco el verificador rehúsa, no acepta |
+| D-37 | Cobrar exige un conjunto de pagos gastados durable: sin `KNOWNI_SPENT_PAYMENTS_FILE` el emisor no arranca con cobro |
 
 ## Lo que bloquea, y de quién depende
 
@@ -55,6 +56,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | Correr la app en un teléfono físico — criterio **A12** | del titular: `cd app && npm start` |
 | `EXPO_PUBLIC_PRIVY_APP_ID`, `WALLETCONNECT_PROJECT_ID`, `KAPSO_*` o `META_*`, `KNOWNI_TREASURY_ACCOUNT` | llaves pendientes; cada una ausente apaga su función |
 | `KNOWNI_ISSUER_ACCESS_KEYS` y `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | llave pendiente, pero no opcional: sin ella el emisor no arranca — D-31 |
+| `KNOWNI_SPENT_PAYMENTS_FILE` | obligatoria **si se cobra**: sin ella el emisor no arranca con tesorería configurada — D-37 |
 | UGPP como fallback documental | requiere operación humana, precio y SLA; sin ellos permanece en `needs_human_review` y fuera del flujo automático — D-29/D-32 |
 | Si existe API de IBC con autorización delegada | conversación con Aportes en Línea |
 
@@ -68,6 +70,7 @@ un archivo compartido.
 | Codex | Bloque 1 — caché idempotente y single-flight en `issuer/` — D-35 | `issuer/src/{cache,main,service}.ts`, tests del emisor, `.env.example`, `issuer/README.md` | **Cerrado.** PR #31 |
 | Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` — D-33 | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
 | Esta sesión | Llave y cuota en `/issue` — D-31 · bloqueo de autenticidad UGPP — D-32 | `issuer/src/access.ts`, `docs/{verificacion,memoria}.md` | **Cerrados.** PR #27 y #28 mergeados |
+| Esta sesión | Bloque 5b — pagos gastados persistidos — D-37 | `issuer/src/{payments,spent-store,main}.ts` | **Cerrado.** Ejercido contra disco real y contra el arranque |
 | Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 y D-36 | `attestation/src/acceptance.ts`, `app/src/domain/{verifier,nullifier-store}.ts`, `app/app/_layout.tsx`, `app/package.json` | **Cerrado.** PR #32 y el almacén del dispositivo con AsyncStorage. Falta ejercerlo en un teléfono — A12 |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
@@ -86,7 +89,8 @@ son los pagos gastados (`issuer/src/payments.ts`, espera a que el caché aterric
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
    todo o nada.
-5. **Pagos gastados con persistencia** (5b), que hoy viven en memoria en `issuer/src/payments.ts`.
+5. ~~**Pagos gastados con persistencia** (5b)~~ **cerrado — D-37.** Fichero append-only, ejercido
+   contra el disco real; cobrar sin él ya no arranca.
    ~~5a, el `NullifierLedger`~~ **cerrado — D-34 y D-36**: puerto, ledger hidratado y almacén de
    dispositivo con AsyncStorage. Lo que queda de 5a es **ejercerlo en un teléfono de verdad**, que
    es el criterio A12.

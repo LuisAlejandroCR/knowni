@@ -759,6 +759,36 @@ saber qué es un teléfono — D-23 intacto.
 cableado con un almacén falso, incluida una entrada "de una corrida anterior" que se detecta como
 replay. La escritura de verdad espera al criterio A12.
 
+### D-37 — Cobrar y persistir el gasto se encienden juntos, o ninguno · 2026-09-22
+
+*El hueco:* `createMemorySpentPayments` muere con el proceso. D-26 dice que una transacción paga una
+sola pregunta; en memoria esa regla dura lo que dure el emisor. Al reiniciar, una transacción ya
+canjeada **vuelve a comprar una emisión**, y cada emisión gratis gasta cuota real de Croma.
+
+*Decisión:* `SpentPaymentStore` entra como puerto —`load` y `append`— con
+`createPersistentSpentPayments`, calcado de `NullifierStore` de D-34: mismo agujero, misma forma. Y
+`KNOWNI_SPENT_PAYMENTS_FILE` **es obligatorio cuando hay tesorería configurada**: el emisor se niega
+a arrancar cobrando con un conjunto gastado volátil. Cobrar sin durabilidad no es una versión más
+simple de cobrar, es un agujero, así que las dos cosas se encienden juntas o ninguna — como D-31.
+
+*Sin cobro no hay nada que persistir:* sin tesorería el servicio responde gratis y el conjunto
+gastado sigue en memoria, porque no hay pago que canjear dos veces.
+
+*Por qué `claim` sigue siendo síncrono:* es el último paso de `verifyPayment` y se toca solo después
+de que todo lo demás pasó. Un `await` ahí es exactamente la ventana que necesita un doble gasto. La
+decisión sale del conjunto hidratado; **la escritura es lo que trailea**, y si falla se reporta en
+vez de tragarse.
+
+*Append-only, una línea por hash:* registrar un gasto es un `appendFile` y nunca un
+lee-modifica-escribe que dos emisiones en vuelo puedan perderse. Un fichero que todavía no existe es
+un conjunto vacío —el primer arranque—, pero **cualquier otro error de lectura corta el arranque**:
+tratar un disco ilegible como "no hay gastos" reabriría todos a la vez.
+
+*Ejercido contra la cosa real,* que es lo que la constitución pide de un límite de proceso: las
+pruebas escriben y releen un fichero de verdad en un directorio temporal, y el arranque se ejecutó en
+los tres casos —cobrando sin fichero (rechaza, `exit 2`), cobrando con fichero (arranca) y sin cobrar
+(arranca en memoria y lo dice).
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -804,6 +834,7 @@ replay. La escritura de verdad espera al criterio A12.
 | 2026-09-22 | `NullifierStore` entra como puerto y `createPersistentNullifierLedger` hidrata el conjunto gastado al arrancar, para que un reinicio de la app deje de devolver una presentación ya gastada. `claim` sigue síncrono a propósito; la escritura es lo que trailea. Falta elegir el almacén del dispositivo — D-34 |
 | 2026-09-22 | Caché idempotente del emisor: HMAC por contraparte/sujeto/pregunta/pago, single-flight, expiración con la firma y tamaño acotado. Un retry no vuelve a gastar Horizon, Croma ni WhatsApp — D-35 |
 | 2026-09-22 | El conjunto gastado aterriza en el dispositivo con AsyncStorage, una llave por nullifier. Mientras no se haya leído del disco, el verificador rehúsa en vez de aceptar lo que no puede comprobar — D-36 |
+| 2026-09-22 | Los pagos canjeados sobreviven al reinicio del emisor en un fichero append-only, y cobrar sin ese fichero deja de ser posible: el proceso no arranca. Ejercido contra el disco real y contra el arranque real — D-37 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

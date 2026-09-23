@@ -112,9 +112,8 @@ llaves.
    Circle no se puede acuñar—. **Lo que sigue faltando es la firma real de Privy**, que necesita un
    app id, y un teléfono de verdad (A12).
 
-   *Hallazgo suelto:* un pago en un activo distinto al cotizado se rechaza con `wrong_destination`.
-   Rechaza bien, pero la razón miente sobre por qué. Añadir `wrong_asset` es decisión, no
-   corrección: cambia el cuerpo del `402` que ya ve la contraparte.
+   *Hallazgo suelto, ya corregido:* un pago en un activo distinto al cotizado se rechazaba con
+   `wrong_destination`. Ahora hay `wrong_asset` — D-40 —, comprobado sobre la misma transacción real.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es

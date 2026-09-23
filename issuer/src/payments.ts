@@ -9,6 +9,7 @@ export type PaymentFailure =
   | "failed_on_chain"
   | "wrong_reference"
   | "wrong_destination"
+  | "wrong_asset"
   | "underpaid"
   | "already_spent"
   | "unreachable";
@@ -188,8 +189,10 @@ export async function verifyPayment(
   if (memoHex !== paymentRef) return { status: "refused", reason: "wrong_reference" };
 
   const expectedAsset = policy.asset ?? { type: "native" as const };
-  const toUs = payments.filter((payment) => {
-    if (payment.type !== "payment" || payment.to !== policy.destination) return false;
+  const toDestination = payments.filter(
+    (payment) => payment.type === "payment" && payment.to === policy.destination,
+  );
+  const toUs = toDestination.filter((payment) => {
     if (expectedAsset.type === "native") return payment.asset_type === "native";
     return (
       payment.asset_type !== "native" &&
@@ -197,7 +200,12 @@ export async function verifyPayment(
       payment.asset_issuer === expectedAsset.issuer
     );
   });
-  if (toUs.length === 0) return { status: "refused", reason: "wrong_destination" };
+  // Money that landed here in the wrong asset is not money that landed
+  // somewhere else, and telling the payer otherwise sends them to fix the
+  // wrong thing. Both are refusals; only the reason differs.
+  if (toUs.length === 0) {
+    return { status: "refused", reason: toDestination.length === 0 ? "wrong_destination" : "wrong_asset" };
+  }
 
   const total = toUs.reduce((sum, payment) => sum + toStroops(payment.amount ?? "0"), 0n);
   if (total < policy.minAmountStroops) return { status: "refused", reason: "underpaid" };

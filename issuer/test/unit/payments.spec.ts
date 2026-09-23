@@ -89,7 +89,9 @@ test("an asset with the same numeric amount cannot substitute the quoted asset",
     policy({ asset: usdc, fetchImpl: horizon(okTx, [okPayment]) }),
     createMemorySpentPayments(),
   );
-  assert.deepEqual(result, { status: "refused", reason: "wrong_destination" });
+  // Refused, and the reason says which thing is wrong: the money did land in
+  // the treasury, just not in the asset that was quoted.
+  assert.deepEqual(result, { status: "refused", reason: "wrong_asset" });
 });
 
 test("payment terms keep quote currency, amount and network asset aligned", () => {

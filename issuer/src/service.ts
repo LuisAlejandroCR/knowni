@@ -319,6 +319,14 @@ export function createIssuerService(options: IssuerOptions) {
             if (paid.status === "refused") {
               throw new IssueHttpError(402, { error: "payment_refused", reason: paid.reason });
             }
+            // The spend must be on disk before Croma is touched: between the
+            // claim and the write there is a window where a crash makes a
+            // redeemed transaction redeemable again. D-38.
+            try {
+              await spent.settled?.();
+            } catch {
+              throw new IssueHttpError(503, { error: "payment_not_durable" });
+            }
           }
 
           const { answers, results } = await issueAnswers(options, body, nowUnix);

@@ -60,6 +60,9 @@ export function paymentTerms(totalMinor: number, reference: string, currency: st
 // question sharing its reference, which is every retry of the same question.
 export interface SpentPayments {
   claim(txHash: string): boolean;
+  // Waits for the writes the claims launched. Optional: a store that keeps the
+  // set in memory has nothing to settle. See D-38.
+  settled?(): Promise<void>;
 }
 
 export function createMemorySpentPayments(): SpentPayments {
@@ -97,12 +100,35 @@ export async function createPersistentSpentPayments(
   const onWriteError = options.onWriteError ?? (() => {});
   const spent = new Set<string>(await store.load());
 
+  // The writes never reject on their own: a caller that never asks whether they
+  // landed must not crash the process with an unhandled rejection.
+  let inFlight: Promise<void>[] = [];
+  let failures: unknown[] = [];
+
   return {
     claim(txHash) {
       if (spent.has(txHash)) return false;
       spent.add(txHash);
-      void store.append(txHash).catch((error: unknown) => onWriteError(error, txHash));
+      // A write that fails releases the claim. Burning a buyer's transaction
+      // over a transient disk error is worse than the narrow window that
+      // reopens, and the invariant holds because nothing was issued. D-38.
+      inFlight.push(
+        store.append(txHash).catch((error: unknown) => {
+          spent.delete(txHash);
+          failures.push(error);
+          onWriteError(error, txHash);
+        }),
+      );
       return true;
+    },
+    async settled() {
+      const pending = inFlight;
+      inFlight = [];
+      await Promise.all(pending);
+      if (failures.length === 0) return;
+      const [first] = failures;
+      failures = [];
+      throw first;
     },
   };
 }

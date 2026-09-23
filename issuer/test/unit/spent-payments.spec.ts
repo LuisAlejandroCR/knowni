@@ -63,7 +63,7 @@ test("a claim is written once; claiming again writes nothing", async () => {
   assert.deepEqual(written, [TX]);
 });
 
-test("a write that fails is reported, and the claim still holds in this process", async () => {
+test("a write that fails is reported, and releases the claim it could not keep", async () => {
   const failures: string[] = [];
   const store: SpentPaymentStore = {
     async load() {
@@ -82,8 +82,10 @@ test("a write that fails is reported, and the claim still holds in this process"
   await Promise.resolve();
 
   assert.deepEqual(failures, [TX]);
-  // The double spend is still caught here; what was lost is the next restart.
-  assert.equal(spent.claim(TX), false);
+  // D-38: the write is what makes the spend real. Without it nothing was
+  // issued either, so the buyer's transaction is not burned by a disk error.
+  await assert.rejects(() => spent.settled!());
+  assert.equal(spent.claim(TX), true);
 });
 
 test("the decision does not wait for the write to land", async () => {

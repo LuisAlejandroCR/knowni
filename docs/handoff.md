@@ -83,37 +83,14 @@ conviene respetar si se vuelve a paralelizar:
 
 ## Siguiente bloque — decidido por el titular, listo para ejecutar
 
-**Cerrar la ventana de durabilidad del pago: `/issue` espera la escritura del gasto antes de tocar
-Croma.** El titular ya decidió el orden el 2026-09-22; falta implementarlo.
+**Hecho: la ventana de durabilidad del pago está cerrada — D-38.** `SpentPayments` tiene
+`settled?()`, `/issue` lo espera entre `verifyPayment` y `issueAnswers`, y responde
+`503 payment_not_durable` sin consultar ninguna fuente si la escritura no aterrizó. La sub-decisión
+que quedaba abierta se resolvió por **soltar el reclamo**: una escritura fallida devuelve la
+transacción al comprador, porque no hubo emisión. Ejercido en
+[`issuer/test/unit/issue-durability.spec.ts`](../issuer/test/unit/issue-durability.spec.ts). 329 pruebas.
 
-*El hueco:* `createPersistentSpentPayments` decide en memoria y **lanza la escritura sin esperarla**
-(`void store.append(...)`). Entre el `claim()` y el aterrizaje del `append` hay una ventana: si el
-proceso muere ahí y la escritura falló, la transacción vuelve a ser canjeable. Es estrecha —el
-append son milisegundos y después vienen hasta 83 s de Croma— pero la feature entera de D-37 existe
-para que una transacción no pague dos veces.
-
-*Qué hacer, concretamente:*
-
-1. Añadir `settled?(): Promise<void>` al puerto `SpentPayments` en `issuer/src/payments.ts`.
-   Opcional, para que `createMemorySpentPayments` no tenga que implementarlo —no hay nada que
-   esperar—. `createPersistentSpentPayments` lleva las escrituras en vuelo y **rechaza** si alguna
-   falló.
-2. En `issuer/src/service.ts`, en el manejador de `/issue`: después de que `verifyPayment` devuelva
-   `paid` y **antes** de `issueAnswers` —que es lo que gasta cuota de Croma—, esperar `settled()`.
-   Si rechaza, refusar con `503` y no consultar ninguna fuente.
-3. Prueba: un almacén cuyo `append` falla no debe producir emisión **ni una sola llamada a Croma**.
-   El patrón de `providerThatAnswers` en `service.spec.ts` ya cuenta las rutas llamadas.
-
-*La sub-decisión que queda abierta, y hay que resolver al implementar:* **qué pasa con el pago del
-comprador cuando el disco falla.**
-
-| Salida | Consecuencia |
-|---|---|
-| Mantener el gasto reclamado | El comprador pagó, no recibe emisión y su reintento choca con `already_spent`: la transacción queda quemada por un error de disco transitorio |
-| **Soltar el gasto al fallar la escritura** (recomendada) | El reintento vuelve a funcionar. Reabre un hueco estrecho —exige peticiones concurrentes *y* disco fallando—, pero el invariante "una emisión por transacción" se mantiene porque **no hubo emisión** |
-
-La recomendación es soltarlo: quemarle el pago a un cliente por un error transitorio es peor que una
-ventana que necesita dos fallos simultáneos. Pero es decisión, no corrección — anotarla como **D-38**.
+Lo siguiente sale de la lista de abajo; el primero es la persistencia del caché del emisor.
 
 ## Después, en orden
 

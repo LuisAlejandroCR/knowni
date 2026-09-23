@@ -27,6 +27,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Ningún cuerpo malformado en `/quote` ni en `/issue` alcanza una fuente, y todos reciben un estado que el servicio eligió; un predicado que nadie publicó no se cotiza, se llame `constructor`, `__proto__` o `PERSONHOOD` | `issuer/test/fuzz/service.fuzz.spec.ts` (120 cuerpos generados contra ambas rutas, con un proveedor que lanza si lo alcanzan) y `pricing.fuzz.spec.ts` | 2026-09-23 |
 | Un fichero de caché corrupto —líneas que no parsean, y líneas que parsean y no son entradas— nunca impide que el emisor arranque, y la entrada viva que haya dentro sobrevive | `issuer/test/fuzz/cache-store.fuzz.spec.ts`: 24 formas de estar mal y 300 ficheros mezclados al azar. Sin la validación del adaptador, las cinco pruebas fallan | 2026-09-23 |
 
+| Ninguna respuesta de Horizon hace lanzar la comprobación de un pago: toda termina en `paid` o en una de las ocho razones de refusal. Un monto que Horizon no pudo haber escrito no se cuenta como dinero | `issuer/test/fuzz/payments.fuzz.spec.ts`: 23 montos inválidos, 5 formas de `records` que no son lista, 300 respuestas generadas. Sin el arreglo fallan 3 de las 5 pruebas | 2026-09-23 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

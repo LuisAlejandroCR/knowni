@@ -19,6 +19,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | La misma verificación ancla en dos cadenas sin cambiar nada por encima del registro | `anchoring/test/registry.test.ts` | 2026-09-20 |
 | Node 22 ejecuta TypeScript sin paso de compilación; `enum` no, `const` sí | ejecutado | 2026-09-20 |
 | Un retry idéntico reutiliza el sobre firmado sin repetir Croma ni el aviso; sujetos distintos bajo el mismo `paymentRef` no comparten entrada | `issuer/test/unit/cache.spec.ts` e `issue-cache.spec.ts` | 2026-09-22 |
+| El camino de pago completo en USDC contra la testnet real: el XDR que construye `app/src/domain/stellar-payment.ts` a mano es aceptado por Horizon, y `verifyPayment` del emisor lo lee de vuelta y lo acepta | Testnet de Stellar. Tres cuentas con friendbot, activo `USDC` emitido para la prueba, pago de 2.5 aceptado en la transacción `fb64700b…`; saldos movidos de 1000.0000000 a 997.5000000 (pagador) y 2.5000000 (tesorería). Las cuatro negativas comprobadas sobre la misma transacción: `already_spent`, `wrong_reference`, `underpaid` y activo distinto | 2026-09-22 |
 
 ## Verificado en otra parte, no aquí
 

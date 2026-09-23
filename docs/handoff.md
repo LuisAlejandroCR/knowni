@@ -105,8 +105,16 @@ llaves.
 1. ~~**Persistencia del caché del emisor**~~ — D-39. Lo que sigue abierto es **compartirlo entre
    réplicas**: hoy cada proceso tiene su fichero, así que dos réplicas se pierden el trabajo de la
    otra. Requiere un almacén compartido, no un fichero.
-2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
-   transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
+2. **Ejercicio real del pago móvil** — *medio hecho, 2026-09-22*. La transacción USDC testnet ya
+   corrió: el XDR que `stellar-payment.ts` construye a mano fue aceptado por Horizon y el emisor lo
+   verificó de vuelta, con las cuatro negativas comprobadas sobre la misma transacción. No hizo
+   falta ninguna llave: tres cuentas con friendbot y un activo `USDC` emitido para la prueba —el de
+   Circle no se puede acuñar—. **Lo que sigue faltando es la firma real de Privy**, que necesita un
+   app id, y un teléfono de verdad (A12).
+
+   *Hallazgo suelto:* un pago en un activo distinto al cotizado se rechaza con `wrong_destination`.
+   Rechaza bien, pero la razón miente sobre por qué. Añadir `wrong_asset` es decisión, no
+   corrección: cambia el cuerpo del `402` que ya ve la contraparte.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es

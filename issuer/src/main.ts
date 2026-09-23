@@ -4,9 +4,10 @@
 // key refuses to start; a missing treasury or messaging key just turns off
 // its feature instead of faking it.
 
-import { createIssuerService } from "./service.ts";
+import { createIssuerService, type IssuanceResponse } from "./service.ts";
 import { createMemoryRequestQuota, DEFAULT_MAX_PER_MINUTE } from "./access.ts";
-import { createMemoryIssuanceCache, DEFAULT_CACHE_MAX_ENTRIES } from "./cache.ts";
+import { createMemoryIssuanceCache, createPersistentIssuanceCache, DEFAULT_CACHE_MAX_ENTRIES } from "./cache.ts";
+import { createFileIssuanceCacheStore } from "./cache-store.ts";
 import { createPersistentSpentPayments } from "./payments.ts";
 import { createFileSpentPaymentStore } from "./spent-store.ts";
 import { notifierFromEnv } from "./notify.ts";
@@ -75,6 +76,19 @@ const spentPayments =
           console.error(`spent payment ${txHash} was not written; it may be redeemed again`, error),
       });
 
+// Optional, unlike the spent set: losing the cache costs a repeated Croma call,
+// not a second issuance for a transaction already redeemed. Cost is not a hole,
+// so this turns itself on when a path is given instead of gating start-up — D-39.
+const cachePath = process.env.KNOWNI_ISSUER_CACHE_FILE;
+const issuanceCache =
+  cachePath === undefined
+    ? createMemoryIssuanceCache<IssuanceResponse>(cacheMaxEntries)
+    : await createPersistentIssuanceCache<IssuanceResponse>(createFileIssuanceCacheStore(cachePath), {
+        maxEntries: cacheMaxEntries,
+        onWriteError: (error, key) =>
+          console.error(`issuance ${key.slice(0, 8)}… was not cached; a retry will pay for it again`, error),
+      });
+
 const notifier = notifierFromEnv(process.env);
 const port = Number(process.env.PORT ?? 8787);
 
@@ -86,7 +100,7 @@ createIssuerService({
   notifier,
   access: { keys: new Set(accessKeys) },
   requestQuota: createMemoryRequestQuota(maxPerMinute),
-  issuanceCache: createMemoryIssuanceCache(cacheMaxEntries),
+  issuanceCache,
   spentPayments,
 }).listen(port, () => {
   console.log(`issuer listening on http://localhost:${port}`);
@@ -94,5 +108,5 @@ createIssuerService({
   console.log(`notifications: ${notifier.channel}`);
   console.log(`relying parties: ${accessKeys.length}, ${maxPerMinute}/min each`);
   console.log(`spent payments: ${spentPath ?? "in memory (payments off)"}`);
-  console.log(`issuance cache: memory, max ${cacheMaxEntries} entries`);
+  console.log(`issuance cache: ${cachePath ?? "memory"}, max ${cacheMaxEntries} entries`);
 });

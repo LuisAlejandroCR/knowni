@@ -815,6 +815,39 @@ nunca pregunta si aterrizó no puede tumbar el proceso con un `unhandledRejectio
 *Ejercido:* un almacén cuyo `append` falla produce `503` y **cero llamadas a Croma** —el contador de
 llamadas al proveedor es la prueba—, y la transacción vuelve a ser reclamable después.
 
+### D-39 — El caché sobrevive al reinicio, pero perderlo nunca impide arrancar · 2026-09-22
+
+*El hueco:* el caché idempotente de D-35 es volátil y por proceso. Un reinicio —o una segunda
+réplica— convierte un retry idéntico en una emisión nueva: Croma otra vez, hasta 83 s otra vez y la
+cuota otra vez. La respuesta ya estaba firmada; solo se perdió el papel donde decía que existía.
+
+*Decisión:* `IssuanceCacheStore` entra como puerto —`load`, `append`, `replace`— con
+`createPersistentIssuanceCache`, calcado de `SpentPaymentStore` de D-37. Hidrata al arrancar y
+responde desde memoria; el single-flight **se queda en el proceso** porque dos réplicas no pueden
+esperar el trabajo en vuelo de la otra, y no hace falta que puedan: lo que se comparte es la
+respuesta ya firmada.
+
+*Opcional, y ahí está la diferencia con D-37:* cobrar sin conjunto gastado durable es un agujero
+—una transacción paga dos veces— y por eso el emisor **no arranca**. Perder el caché cuesta **una
+llamada repetida a Croma**: es dinero, no una respuesta incorrecta. Un costo no gatea el arranque,
+así que `KNOWNI_ISSUER_CACHE_FILE` enciende la persistencia cuando está y no exige nada cuando no.
+
+*La escritura trailea, como en D-37:* el comprador espera su respuesta, no nuestra contabilidad. Si
+el `append` falla se reporta y la entrada se olvida —quedaría un caché que promete algo que el disco
+no tiene—. El caché gana `settled?()` como los pagos en D-38, pero **nunca rechaza**: no hay decisión
+que revertir, solo una llamada que se repetirá.
+
+*Lo que no se guarda para siempre:* al hidratar se descarta lo ya expirado y se reescribe el fichero.
+Una respuesta que nadie puede usar es retención sin propósito. El tope de entradas también se aplica
+al cargar, y lo que se cae es lo que expira primero.
+
+*Línea truncada = una respuesta, no el caché entero:* un JSONL cortado por una caída se salta. La
+reescritura va por fichero temporal y `rename`, para que una caída a mitad no deje medio caché.
+
+*Ejercido contra la cosa real:* el adaptador escribe y relee un fichero de verdad en un directorio
+temporal, con reinicio real del caché, y el arranque se ejecutó en los dos casos —con fichero
+(persiste, lo dice en el log) y sin él (memoria)—.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -862,6 +895,7 @@ llamadas al proveedor es la prueba—, y la transacción vuelve a ser reclamable
 | 2026-09-22 | El conjunto gastado aterriza en el dispositivo con AsyncStorage, una llave por nullifier. Mientras no se haya leído del disco, el verificador rehúsa en vez de aceptar lo que no puede comprobar — D-36 |
 | 2026-09-22 | Los pagos canjeados sobreviven al reinicio del emisor en un fichero append-only, y cobrar sin ese fichero deja de ser posible: el proceso no arranca. Ejercido contra el disco real y contra el arranque real — D-37 |
 | 2026-09-22 | Cerrada la ventana de durabilidad del pago: `/issue` espera la escritura del gasto antes de tocar Croma y responde `503` si no aterrizó. Una escritura fallida suelta el reclamo en vez de quemarle la transacción al comprador — D-38. 329 pruebas |
+| 2026-09-22 | El caché de emisiones sobrevive al reinicio en un fichero JSONL append-only, con expiradas descartadas al hidratar. Opcional a propósito: perderlo cuesta una llamada repetida a Croma, no una emisión de más — D-39. 336 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

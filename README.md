@@ -171,7 +171,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
 | Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas y un `200` sobre una empresa pública. **Ninguna sobre una persona** |
 | Credencial firmada y verificable sin cadena | **Corre.** Firma de la raíz, ruta de Merkle y apertura del compromiso, offline — `attestation/` |
-| Solicitud firmada y anti-replay | **Corre.** La respuesta se ata a audiencia, finalidad, reto y parámetros; el nullifier se gasta una vez |
+| Solicitud firmada y anti-replay | **Corre.** La respuesta se ata a audiencia, finalidad, reto y parámetros; el nullifier se gasta una vez, y el conjunto gastado sobrevive al reinicio de la app |
 | Lo que cruza la red | **Corre.** Respuestas firmadas por el emisor. El reclamo y la sal se quedan en el teléfono — y hay una prueba que lo afirma |
 | Modo avión y logs sanitizados | **Corre.** El recorrido se completa con `fetch` desactivado y la cadena caída; ningún log lleva documento, nombre, salario ni cuenta |
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |

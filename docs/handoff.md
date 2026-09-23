@@ -44,6 +44,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-32 | El EUC de UGPP no trae verificación pública ni es certificación según su propio emisor; `needs_human_review` es la respuesta correcta, no un pendiente |
 | D-33 | La cotización nombra monto, destino y activo; otro activo nunca paga por coincidencia numérica |
 | D-34 | El conjunto gastado sobrevive al proceso: `NullifierStore` es puerto y `claim` sigue síncrono a propósito |
+| D-36 | AsyncStorage guarda el conjunto gastado; sin leerlo del disco el verificador rehúsa, no acepta |
 
 ## Lo que bloquea, y de quién depende
 
@@ -66,7 +67,7 @@ un archivo compartido.
 | Codex | Bloque 1 — caché idempotente y single-flight en `issuer/` — D-35 | `issuer/src/{cache,main,service}.ts`, tests del emisor, `.env.example`, `issuer/README.md` | **Cerrado.** PR #31 |
 | Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` — D-33 | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
 | Esta sesión | Llave y cuota en `/issue` — D-31 · bloqueo de autenticidad UGPP — D-32 | `issuer/src/access.ts`, `docs/{verificacion,memoria}.md` | **Cerrados.** PR #27 y #28 mergeados |
-| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 | `attestation/src/acceptance.ts`, `app/src/domain/verifier.ts` | **Cerrado.** PR #32. Falta elegir el almacén del dispositivo |
+| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 y D-36 | `attestation/src/acceptance.ts`, `app/src/domain/{verifier,nullifier-store}.ts`, `app/app/_layout.tsx`, `app/package.json` | **Cerrado.** PR #32 y el almacén del dispositivo con AsyncStorage. Falta ejercerlo en un teléfono — A12 |
 | Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
 
 **Mientras Codex tenga `issuer/src/{cache,main,service}.ts` sin commitear, nadie más entra ahí.** El
@@ -85,9 +86,9 @@ son los pagos gastados (`issuer/src/payments.ts`, espera a que el caché aterric
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
    todo o nada.
 5. **Pagos gastados con persistencia** (5b), que hoy viven en memoria en `issuer/src/payments.ts`.
-   ~~5a, el `NullifierLedger`~~ **resuelto en el mecanismo — D-34**: el puerto y el ledger hidratado
-   están probados; lo que queda es **elegir el almacén del dispositivo**, que es del titular porque
-   es una dependencia nativa nueva y no se ejerce sin el criterio A12.
+   ~~5a, el `NullifierLedger`~~ **cerrado — D-34 y D-36**: puerto, ledger hidratado y almacén de
+   dispositivo con AsyncStorage. Lo que queda de 5a es **ejercerlo en un teléfono de verdad**, que
+   es el criterio A12.
 
 ## Lo que no se hace, y no es negociable
 

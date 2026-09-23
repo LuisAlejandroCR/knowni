@@ -6,8 +6,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { demoRequest, demoResults } from "../../src/domain/demo-issuer.ts";
-import { verifyOnDevice } from "../../src/domain/verifier.ts";
-import type { AttestedAnswer } from "@knowni/attestation";
+import { hydrateLedger, verifyOnDevice } from "../../src/domain/verifier.ts";
+import { createMemoryNullifierStore, type AttestedAnswer } from "@knowni/attestation";
+
+// The screen does this at start-up; without it the verifier refuses, because a
+// ledger that has not read its history cannot tell a replay from a first use.
+await hydrateLedger(createMemoryNullifierStore());
 
 const NOW = 1_760_000_000;
 

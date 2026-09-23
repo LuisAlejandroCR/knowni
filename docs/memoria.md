@@ -1008,6 +1008,31 @@ generados —JSON roto, anidamiento profundo, llaves del prototipo, cadenas de 2
 `/issue` con un proveedor que lanza si alguien lo alcanza: la propiedad es que ninguno llega a una
 fuente y todos reciben un estado que este servicio eligió. El de precios afirma que un total cotizado
 es un número y la suma de sus líneas.
+### D-47 — Un byte corrupto en el caché no arrancaba el emisor, que es lo contrario de lo que D-39 prometía · 2026-09-23
+
+*El hueco:* `cache-store.ts` ya se defendía de una línea **que no parsea** —la que deja un proceso
+que muere a mitad de un append— y la saltaba. No se defendía de una que **sí parsea y no es una
+entrada**. `JSON.parse(trimmed) as StoredCacheEntry<T>` es un `as`: el compilador acepta la promesa
+y el disco no la cumple.
+
+```
+$ echo 'null' >> cache.jsonl && npm start
+TypeError: Cannot read properties of null (reading 'key')
+```
+
+D-39 dice que perder el caché cuesta **una llamada repetida a Croma, no una emisión de más**. Una
+línea corrupta que impide arrancar el proceso es exactamente lo contrario: convierte la pieza cuya
+pérdida solo cuesta dinero en la que tumba el servicio.
+
+*Decisión:* el adaptador valida y **reduce** —criterio A8, que ya se aplicaba a las respuestas de
+Croma y no al disco—. `asEntry` comprueba `key` no vacía, `expiresAt` entero seguro y la presencia
+de `value`, y construye una entrada nueva con esos tres campos. Lo que sobra en la línea no pasa: una
+entrada con `__proto__` llega reducida a tres llaves.
+
+*Fijado en `issuer/test/fuzz/cache-store.fuzz.spec.ts`:* dieciséis formas de estar mal que parsean
+(`null`, `0`, `[]`, `expiresAt` como cadena, como `1.5`, como `1e999`), ocho que no parsean, y 300
+ficheros mezclados al azar. La propiedad que importa: con el fichero roto como esté, la entrada viva
+que hay dentro sobrevive y el emisor arranca. Sin el arreglo, las cinco pruebas fallan.
 
 ### D-48 — La comprobación de un pago lanzaba donde el protocolo ya tenía una palabra · 2026-09-23
 
@@ -1095,6 +1120,7 @@ cuidan el otro lado: 2.5000000 sigue leyéndose al stroop, y varios pagos legibl
 | 2026-09-23 | ESLint con tipos sobre los siete paquetes, dentro de `verify` y de CI: cierra el lint que pedía A14. Encontró un manejador `async` donde Node espera `void` —un rechazo se llevaba el proceso en vez de la petición—, un import muerto y dos pruebas que podían pasar por la razón equivocada — D-44 |
 | 2026-09-23 | El contrato Soroban compila, y nueve pruebas fijan su política —todas rechazadas antes del emparejamiento—. El bloqueo era la máquina, no el código. `Cargo.lock` versionado: `soroban-env-host` pide `ed25519-dalek` sin techo y la 3.0.0 no compila contra él — D-45 |
 | 2026-09-23 | Primeras pruebas fuzz del emisor, y encontraron una cotización cuyo total era la cadena `"0function Object() { [native code] }"`: las tablas de predicados eran objetos literales indexados por lo que manda quien llama. Ahora son `Map` — D-46. 350 pruebas |
+| 2026-09-23 | Una línea corrupta en el caché de emisiones impedía arrancar el emisor, justo lo que D-39 decía que no podía pasar. El adaptador ahora valida y reduce lo que lee del disco, como ya hacía con lo que lee de Croma — D-47 |
 | 2026-09-23 | La comprobación de un pago lanzaba una excepción cuando Horizon respondía un monto ilegible o una página que no era una lista. Ahora refusa con la razón que ya existía — D-48 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 

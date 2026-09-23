@@ -4,7 +4,7 @@
 // key refuses to start; a missing treasury or messaging key just turns off
 // its feature instead of faking it.
 
-import { createIssuerService, type IssuanceResponse } from "./service.ts";
+import { createIssuerService, DEFAULT_SOURCE_DEADLINE_MS, type IssuanceResponse } from "./service.ts";
 import { createMemoryRequestQuota, DEFAULT_MAX_PER_MINUTE } from "./access.ts";
 import { createMemoryIssuanceCache, createPersistentIssuanceCache, DEFAULT_CACHE_MAX_ENTRIES } from "./cache.ts";
 import { createFileIssuanceCacheStore } from "./cache-store.ts";
@@ -34,6 +34,15 @@ const maxPerMinute = Number(process.env.KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE ?? S
 const cacheMaxEntries = Number(process.env.KNOWNI_ISSUER_CACHE_MAX_ENTRIES ?? String(DEFAULT_CACHE_MAX_ENTRIES));
 if (!Number.isSafeInteger(cacheMaxEntries) || cacheMaxEntries < 1) {
   console.error("KNOWNI_ISSUER_CACHE_MAX_ENTRIES must be a positive integer.");
+  process.exit(2);
+}
+
+// One slow source used to hold the other three, and the buyer, for as long as
+// it wanted. This bounds the wait; whoever misses it answers `unavailable` and
+// is not charged — D-41.
+const sourceDeadlineMs = Number(process.env.KNOWNI_SOURCE_DEADLINE_MS ?? String(DEFAULT_SOURCE_DEADLINE_MS));
+if (!Number.isSafeInteger(sourceDeadlineMs) || sourceDeadlineMs < 1) {
+  console.error("KNOWNI_SOURCE_DEADLINE_MS must be a positive integer of milliseconds.");
   process.exit(2);
 }
 
@@ -101,6 +110,7 @@ createIssuerService({
   access: { keys: new Set(accessKeys) },
   requestQuota: createMemoryRequestQuota(maxPerMinute),
   issuanceCache,
+  sourceDeadlineMs,
   spentPayments,
 }).listen(port, () => {
   console.log(`issuer listening on http://localhost:${port}`);
@@ -109,4 +119,5 @@ createIssuerService({
   console.log(`relying parties: ${accessKeys.length}, ${maxPerMinute}/min each`);
   console.log(`spent payments: ${spentPath ?? "in memory (payments off)"}`);
   console.log(`issuance cache: ${cachePath ?? "memory"}, max ${cacheMaxEntries} entries`);
+  console.log(`source deadline: ${sourceDeadlineMs} ms each, asked in parallel`);
 });

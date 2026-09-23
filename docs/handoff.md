@@ -116,8 +116,10 @@ llaves.
    `wrong_destination`. Ahora hay `wrong_asset` — D-40 —, comprobado sobre la misma transacción real.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
-4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
-   todo o nada.
+4. ~~**Emisión por fuente con resultados parciales**~~ — D-41: las fuentes se piden a la vez y con
+   plazo; la que no llega responde `unavailable` y no se cobra. Lo que sigue abierto es **entregar
+   antes de que estén todas**: hoy el sobre se firma una vez, al final, porque un pago compra una
+   emisión. Partirlo en varios sobres cambia el modelo de cobro — es decisión del titular.
 5. **Bloque 5 cerrado.** ~~5a `NullifierLedger`~~ — D-34 y D-36: puerto, ledger hidratado y
    AsyncStorage en el dispositivo. ~~5b pagos gastados~~ — D-37: fichero append-only, ejercido contra
    el disco real; cobrar sin él ya no arranca. Lo único que le falta a 5a es **un teléfono de

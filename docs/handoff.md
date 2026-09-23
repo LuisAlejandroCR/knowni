@@ -1,9 +1,9 @@
 <!-- docs/handoff.md
-     Estado del proyecto al cierre del 2026-09-21 y cómo continuar en una sesión
+     Estado del proyecto al cierre del 2026-09-22 y cómo continuar en una sesión
      nueva: qué corre, qué está decidido, qué bloquea y cuál es el siguiente bloque.
      Se distingue de plan.md, que fija el alcance, y de memoria.md, que guarda el porqué. -->
 
-# Traspaso — 2026-09-21
+# Traspaso — 2026-09-22
 
 Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `docs/memoria.md`
 (decisiones), `docs/verificacion.md` (qué está comprobado y qué no).
@@ -13,7 +13,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | | Estado |
 |---|---|
 | Pruebas | **327 del dominio** + **32 de la app**, verdes en CI (Node 22 y 24) |
-| Ramas | solo `main`; 30 PRs integrados |
+| Ramas | **solo `main`** (`7947d2b`); 38 PRs integrados; sin worktrees, sin PRs abiertos |
 | Repositorio | **privado** — las bases del evento exigen público |
 | Entrega | faltan los dos videos; la evidencia on-chain ya existe |
 
@@ -23,9 +23,12 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
    compromisos, Merkle, credencial firmada, presentación atada a la sesión, anti-replay. Sin una
    sola dependencia externa y **sin `node:crypto` ni `Buffer`**, así que corre en el teléfono.
 2. **Emisor** (`issuer/`): único proceso con llave de proveedor. Consulta Croma de verdad, cobra
-   comprobando el pago contra Horizon, y avisa por WhatsApp sin decir el veredicto.
+   comprobando el pago contra Horizon, y avisa por WhatsApp sin decir el veredicto. Exige llave de
+   contraparte y límite por minuto antes de todo (D-31), cachea la pregunta repetida para no volver
+   a gastar cuota (D-35) y guarda los pagos ya canjeados en disco (D-37).
 3. **App** (`app/`, Expo SDK 57): ocho pantallas, el dominio corriendo dentro del bundle, wallet del
-   pagador con Privy y aceptación real en la pantalla del verificador.
+   pagador con Privy, pago de punta a punta `quote → firma → Horizon → issue` (D-33) y aceptación
+   real en la pantalla del verificador, con el conjunto gastado leído del dispositivo (D-36).
 4. **Stellar**: transacción real en testnet
    [`0dc0fdf4…f8161`](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161),
    memo idéntico al compromiso. XDR, StrKey y firma ed25519 escritos a mano.
@@ -60,40 +63,80 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | UGPP como fallback documental | requiere operación humana, precio y SLA; sin ellos permanece en `needs_human_review` y fuera del flujo automático — D-29/D-32 |
 | Si existe API de IBC con autorización delegada | conversación con Aportes en Línea |
 
-## Coordinación en curso — 2026-09-22
+## Coordinación entre agentes
 
-Tres agentes tocando el repo a la vez. Para no chocar, cada uno anota aquí qué toma antes de tocar
-un archivo compartido.
+**Ahora mismo no hay nadie más trabajando.** Los tres worktrees se eliminaron el 2026-09-22 con todo
+fusionado y limpio; no quedan ramas aparte de `main`. Un chat nuevo arranca sin colisiones.
 
-| Agente | Toma | Archivos | Estado |
-|---|---|---|---|
-| Codex | Bloque 1 — caché idempotente y single-flight en `issuer/` — D-35 | `issuer/src/{cache,main,service}.ts`, tests del emisor, `.env.example`, `issuer/README.md` | **Cerrado.** PR #31 |
-| Codex | Bloque 2 / P9 — `quote → firma → Horizon → issue` — D-33 | `app/src/domain/{issuer-client,stellar-payment,wallet-*}.ts`, `issuer/src/{main,payments,service}.ts` | **Cerrado.** PR #29 y #30 mergeados; falta solo el ejercicio real con llaves |
-| Esta sesión | Llave y cuota en `/issue` — D-31 · bloqueo de autenticidad UGPP — D-32 | `issuer/src/access.ts`, `docs/{verificacion,memoria}.md` | **Cerrados.** PR #27 y #28 mergeados |
-| Esta sesión | Bloque 5b — pagos gastados persistidos — D-37 | `issuer/src/{payments,spent-store,main}.ts` | **Cerrado.** Ejercido contra disco real y contra el arranque |
-| Esta sesión | Bloque 5a — `NullifierLedger` persistido — D-34 y D-36 | `attestation/src/acceptance.ts`, `app/src/domain/{verifier,nullifier-store}.ts`, `app/app/_layout.tsx`, `app/package.json` | **Cerrado.** PR #32 y el almacén del dispositivo con AsyncStorage. Falta ejercerlo en un teléfono — A12 |
-| Sesión de revisión de main | Cerró D-30 (Privy); sin bloque nuevo tomado | — | Idle, a la espera del titular |
+Durante el 22 trabajaron tres agentes a la vez —esta sesión, Codex en worktrees hermanos
+(`knowni-<tema>`) y otra sesión de Claude en el checkout principal—. Lo que dejó el episodio, y que
+conviene respetar si se vuelve a paralelizar:
 
-**Mientras Codex tenga `issuer/src/{cache,main,service}.ts` sin commitear, nadie más entra ahí.** El
-bloque 5 se parte por eso: **5a** es el `NullifierLedger` (`attestation/` + `app/`, libre) y **5b**
-son los pagos gastados (`issuer/src/payments.ts`, espera a que el caché aterrice).
+| Regla | Por qué |
+|---|---|
+| Anotar en esta tabla qué bloque y qué archivos se toman **antes** de tocarlos | Es la única fuente de atribución que existe |
+| **`git log` no distingue agentes**: todos los PRs figuran como `LuisAlejandroCR` | Todos empujan con la misma cuenta; auditar por autoría lleva al lugar equivocado |
+| No entrar en archivos que otro tenga sin commitear | `issuer/src/service.ts` y `docs/{memoria,handoff}.md` son donde más se choca |
+| Al abrir decisión nueva, mirar primero cuál es el siguiente `D-NN` libre | Dos agentes eligieron D-34 a la vez y hubo que renumerar |
 
-## Siguientes bloques, en orden
+**La siguiente decisión libre es D-38.**
+
+## Siguiente bloque — decidido por el titular, listo para ejecutar
+
+**Cerrar la ventana de durabilidad del pago: `/issue` espera la escritura del gasto antes de tocar
+Croma.** El titular ya decidió el orden el 2026-09-22; falta implementarlo.
+
+*El hueco:* `createPersistentSpentPayments` decide en memoria y **lanza la escritura sin esperarla**
+(`void store.append(...)`). Entre el `claim()` y el aterrizaje del `append` hay una ventana: si el
+proceso muere ahí y la escritura falló, la transacción vuelve a ser canjeable. Es estrecha —el
+append son milisegundos y después vienen hasta 83 s de Croma— pero la feature entera de D-37 existe
+para que una transacción no pague dos veces.
+
+*Qué hacer, concretamente:*
+
+1. Añadir `settled?(): Promise<void>` al puerto `SpentPayments` en `issuer/src/payments.ts`.
+   Opcional, para que `createMemorySpentPayments` no tenga que implementarlo —no hay nada que
+   esperar—. `createPersistentSpentPayments` lleva las escrituras en vuelo y **rechaza** si alguna
+   falló.
+2. En `issuer/src/service.ts`, en el manejador de `/issue`: después de que `verifyPayment` devuelva
+   `paid` y **antes** de `issueAnswers` —que es lo que gasta cuota de Croma—, esperar `settled()`.
+   Si rechaza, refusar con `503` y no consultar ninguna fuente.
+3. Prueba: un almacén cuyo `append` falla no debe producir emisión **ni una sola llamada a Croma**.
+   El patrón de `providerThatAnswers` en `service.spec.ts` ya cuenta las rutas llamadas.
+
+*La sub-decisión que queda abierta, y hay que resolver al implementar:* **qué pasa con el pago del
+comprador cuando el disco falla.**
+
+| Salida | Consecuencia |
+|---|---|
+| Mantener el gasto reclamado | El comprador pagó, no recibe emisión y su reintento choca con `already_spent`: la transacción queda quemada por un error de disco transitorio |
+| **Soltar el gasto al fallar la escritura** (recomendada) | El reintento vuelve a funcionar. Reabre un hueco estrecho —exige peticiones concurrentes *y* disco fallando—, pero el invariante "una emisión por transacción" se mantiene porque **no hubo emisión** |
+
+La recomendación es soltarlo: quemarle el pago a un cliente por un error transitorio es peor que una
+ventana que necesita dos fallos simultáneos. Pero es decisión, no corrección — anotarla como **D-38**.
+
+## Después, en orden
 
 1. **Persistencia del caché del emisor**: el caché idempotente y single-flight ya corre — D-35 —,
    pero es volátil y por proceso; entre réplicas no se comparte.
-   Después queda persistencia compartida para operar más de una réplica.
 2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
    transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se
    construye si un piloto acepta explícitamente revisión humana, costo y SLA; no bloquea el MVP.
 4. **Emisión por fuente con resultados parciales**: una emisión de cuatro fuentes tardó 83 s; hoy es
    todo o nada.
-5. ~~**Pagos gastados con persistencia** (5b)~~ **cerrado — D-37.** Fichero append-only, ejercido
-   contra el disco real; cobrar sin él ya no arranca.
-   ~~5a, el `NullifierLedger`~~ **cerrado — D-34 y D-36**: puerto, ledger hidratado y almacén de
-   dispositivo con AsyncStorage. Lo que queda de 5a es **ejercerlo en un teléfono de verdad**, que
-   es el criterio A12.
+5. **Bloque 5 cerrado.** ~~5a `NullifierLedger`~~ — D-34 y D-36: puerto, ledger hidratado y
+   AsyncStorage en el dispositivo. ~~5b pagos gastados~~ — D-37: fichero append-only, ejercido contra
+   el disco real; cobrar sin él ya no arranca. Lo único que le falta a 5a es **un teléfono de
+   verdad**, que es A12.
+
+## Lo aprendido que cuesta caro volver a aprender
+
+| | |
+|---|---|
+| **Un bundle que se genera no prueba que la app arranque** | Faltaban dos peer deps nativas de Privy y *todo* pasaba: tipos, pruebas y `expo export`. Solo `npx expo-doctor` lo vio. Córrelo ante cualquier cambio en `app/package.json` |
+| **Dormir milisegundos esperando una escritura no esperada es una carrera** | Dos pruebas de disco dormían 20 ms; fallaban ~1 de cada 5 corridas bajo carga y CI las dejó pasar. Se espera la promesa, no un número — #38 |
+| **La autoría entre agentes no se puede reconstruir con git** | Todos los PRs figuran como el titular |
 
 ## Lo que no se hace, y no es negociable
 

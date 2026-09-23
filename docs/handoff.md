@@ -44,6 +44,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, este archivo, `d
 | D-32 | El EUC de UGPP no trae verificación pública ni es certificación según su propio emisor; `needs_human_review` es la respuesta correcta, no un pendiente |
 | D-33 | La cotización nombra monto, destino y activo; otro activo nunca paga por coincidencia numérica |
 | D-34 | El conjunto gastado sobrevive al proceso: `NullifierStore` es puerto y `claim` sigue síncrono a propósito |
+| D-35 | El caché del emisor liga la idempotencia al sujeto sin convertirlo en identificador; una pregunta repetida no vuelve a gastar cuota |
 | D-36 | AsyncStorage guarda el conjunto gastado; sin leerlo del disco el verificador rehúsa, no acepta |
 
 ## Lo que bloquea, y de quién depende

@@ -90,12 +90,21 @@ que quedaba abierta se resolvió por **soltar el reclamo**: una escritura fallid
 transacción al comprador, porque no hubo emisión. Ejercido en
 [`issuer/test/unit/issue-durability.spec.ts`](../issuer/test/unit/issue-durability.spec.ts). 329 pruebas.
 
-Lo siguiente sale de la lista de abajo; el primero es la persistencia del caché del emisor.
+**Hecho también: el caché del emisor persiste — D-39.** `IssuanceCacheStore` como puerto, fichero
+JSONL append-only detrás de `KNOWNI_ISSUER_CACHE_FILE`, expiradas descartadas al hidratar. Opcional
+a propósito: perderlo cuesta una llamada repetida a Croma, no una emisión de más, y un costo no
+gatea el arranque. Ejercido en
+[`issuer/test/unit/cache-persistence.spec.ts`](../issuer/test/unit/cache-persistence.spec.ts) contra
+el disco real. 336 pruebas.
+
+Lo siguiente sale de la lista de abajo; el primero es el ejercicio real del pago móvil, que necesita
+llaves.
 
 ## Después, en orden
 
-1. **Persistencia del caché del emisor**: el caché idempotente y single-flight ya corre — D-35 —,
-   pero es volátil y por proceso; entre réplicas no se comparte.
+1. ~~**Persistencia del caché del emisor**~~ — D-39. Lo que sigue abierto es **compartirlo entre
+   réplicas**: hoy cada proceso tiene su fichero, así que dos réplicas se pierden el trabajo de la
+   otra. Requiere un almacén compartido, no un fichero.
 2. **Ejercicio real del pago móvil**: faltan las llaves para firmar con Privy/WalletConnect y una
    transacción USDC testnet. El constructor, ambas rutas de firma y el envío ya están probados sin red.
 3. **Acceso delegado a IBC**: conversación comercial con Aportes en Línea. El lector UGPP solo se

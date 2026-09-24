@@ -169,3 +169,8 @@ nativo y prohíbe cualquier atajo de servidor.
   toque dependencias — no solo al subir de SDK. Comprobado el 2026-09-22 con expo 57.0.24 y
   `@privy-io/expo` 0.74.3.
 
+- **Un criterio sin estado mezcla tres preguntas distintas: si existe código, si la prueba pedida
+  existe y si el límite real fue ejercido.** Una matriz de cumplimiento debe separar esas tres
+  capas; de lo contrario, una transacción aislada en testnet puede leerse como un recorrido móvil
+  completo. Comprobado el 2026-09-24 al contrastar A1–A14 y P1–P9 contra suites, CI y bitácora.
+

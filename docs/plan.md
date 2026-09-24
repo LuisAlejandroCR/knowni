@@ -411,6 +411,45 @@ criptográfica con aceptación y admitir el perfil vehicular en `Disclosure`.
 5. **Go-live:** sin concepto legal, eliminación de payloads, gestión de llaves y respuesta a
    incidentes, el sistema sigue siendo piloto cerrado.
 
+## Auditoría de ejecución — 2026-09-24
+
+Este corte responde si el repositorio siguió el plan sin convertir una prueba aislada en evidencia
+de punta a punta. Sus criterios de aceptación son: cada criterio activo tiene un estado, todo
+`cumplido` apunta a evidencia ejecutable o fechada, y ninguna validación externa pendiente se
+presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **futuro**.
+
+### Criterios globales
+
+| Estado | Criterios | Evidencia y brecha restante |
+|---|---|---|
+| **Cumplido** | A1, A2, A4, A5, A6, A8, A11, A13 | Invariantes de divulgación y redacción, tests de `attestation/`, registro sustituible en `anchoring/`, fuzz de adapters y recorrido offline en `journey/test/` |
+| **Parcial** | A3 | Hay registros en memoria para llaves y revocación, y adapters de anclaje intercambiables; falta el `RegistryPort` HTTPS firmado y el mismo contract test contra registro web y cadena |
+| **Parcial** | A7 | Las causas `not_found`, `source_unavailable` e `invalid_response` no se confunden, pero viven bajo `degraded`; falta demostrar en el recorrido UI la taxonomía pública exacta que pide A7 |
+| **Parcial** | A9 | Hay catálogo y llamadas reales sanitizadas a Croma, incluida una empresa pública; faltan llamadas consentidas y fechadas por cada fuente personal habilitada del perfil vehicular |
+| **Parcial** | A10 | Existen anclaje y pago USDC reales en Stellar testnet; falta que el recorrido principal del teléfono produzca su propia transacción con una wallet real |
+| **Bloqueado** | A12 | La suite demuestra operación sin red, pero nunca se ejecutó en un dispositivo físico en modo avión |
+| **Parcial** | A14 | CI instala desde cero, ejecuta lint, typecheck y tests, y compila circuitos y contrato; todavía no genera el bundle Expo de la app en CI |
+
+### Bloques activos
+
+| Estado | Criterios | Evidencia y brecha restante |
+|---|---|---|
+| **Cumplido** | P1–P5, P9 | `app/test/unit/stellar-payment.spec.ts` cubre XDR, memo, secuencia y ambos contratos de firma; `issuer-client.spec.ts` fija el orden `quote → pago → issue` |
+| **Parcial** | P6 | Los resultados tipados existen, pero faltan tests explícitos de rechazo de Horizon y caída de red en el módulo móvil |
+| **Parcial** | P7 | El módulo no registra firma, XDR ni respuestas de Horizon; falta el test de serialización pública exigido por el criterio |
+| **Parcial** | P8 | El código portable no importa `node:crypto`, `Buffer` ni el SDK de Stellar y pasa typecheck; falta una prueba de imports propia de `app/` |
+| **Cumplido** | C1–C8 | Tests unitarios, concurrentes y de persistencia prueban HMAC opaco, separación por sujeto y pago, single-flight, no-cache de fallos, expiración y límite de capacidad |
+
+### Lo que falta, en orden de cierre
+
+1. Completar la evidencia automatizable: tests P6–P8, bundle Expo en CI y contract test de A3.
+2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet.
+3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
+4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo
+   evidencia sanitizada y medir cobertura antes de usar una fuente en decisiones.
+5. Generar y verificar una prueba Groth16 con setup de confianza, desplegar el contrato Soroban y
+   ejecutar el recorrido contra ese despliegue. F2–F5 siguen siendo roadmap, no trabajo cumplido.
+
 ## Referencias primarias
 
 - [W3C Verifiable Credentials Data Model 2.0](https://www.w3.org/TR/vc-data-model-2.0/)

@@ -426,7 +426,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | Estado | Criterios | Evidencia y brecha restante |
 |---|---|---|
 | **Cumplido** | A1, A2, A4, A5, A6, A8, A11, A13 | Invariantes de divulgación y redacción, tests de `attestation/`, registro sustituible en `anchoring/`, fuzz de adapters y recorrido offline en `journey/test/` |
-| **Cumplido** | A3 | `RegistryPort` con dos adaptadores sobre un mismo documento firmado —web, que confía en la firma de la autoridad, y cadena, que confía en el digest anclado— y `attestation/test/contract/registry.contract.spec.ts`, una suite que corre igual contra los dos: la misma presentación se acepta, la misma raíz revocada se rechaza y un documento fuera de su raíz de confianza se rehúsa. La ejecución contra un despliegue real de cadena sigue pendiente (A10) — D-65 |
+| **Cumplido** | A3 | `RegistryPort` con dos adaptadores sobre un mismo documento firmado —web, que confía en la firma de la autoridad, y cadena, que confía en el digest anclado— y `attestation/test/contract/registry.contract.spec.ts`, una suite que corre igual contra los dos: la misma presentación se acepta, la misma raíz revocada se rechaza y un documento fuera de su raíz de confianza se rehúsa. Ejercido contra la testnet el 2026-09-24: el digest viaja en `MEMO_HASH` de `66bf1b7d…` y el adaptador lo lee de Horizon real. Servir el documento por HTTPS sigue pendiente — D-65, D-73 |
 | **Cumplido** | A7 | `publicStateOf` reduce las causas internas a una taxonomía pública, el emisor la devuelve en `sourceStates` **al lado** de las respuestas firmadas —la contraparte sigue recibiendo `unavailable` sin razón— y la pantalla de degradación la pinta con una frase distinta por estado. `issuer/test/unit/source-states.spec.ts` fija que `not_found`, `failed` y `degraded` son tres valores distintos y que ninguno se filtra al sobre firmado; `app/test/unit/source-states.spec.ts`, que cada estado tiene sus palabras, que ninguna suena a veredicto y que solo se reintenta lo que un reintento puede cambiar — D-68 |
 | **Parcial** | A9 | Hay catálogo y llamadas reales sanitizadas a Croma, incluida una empresa pública; faltan llamadas consentidas y fechadas por cada fuente personal habilitada del perfil vehicular |
 | **Parcial** | A10 | Existen anclaje y pago USDC reales en Stellar testnet; falta que el recorrido principal del teléfono produzca su propia transacción con una wallet real |
@@ -447,7 +447,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 
 ### Lo que falta, en orden de cierre
 
-1. Ejecutar la publicación del registro: `attestation/tools/publish-registry.ts` firma el documento e imprime su digest, y `createStellarRegistryReader` lo lee de Horizon, pero falta servirlo por HTTPS y anclar ese digest en testnet. Es lo que convierte el contract test de A3 en un ejercicio real.
+1. Servir el documento de registro por HTTPS. Anclarlo ya está hecho —`anchoring/tools/anchor-registry.ts` lo ejerció contra testnet—, así que lo que falta del camino web de A3 es una URL que lo publique.
 2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet.
 3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
 4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo

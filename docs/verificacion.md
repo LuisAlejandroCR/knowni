@@ -71,6 +71,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Renombrar `standing` a `sanctions` no mueve ningún compromiso | El mismo testigo, idéntico antes y después: la clase del reclamo entra como número, no como cadena — B2 | 2026-09-24 |
 | La app empaqueta para iOS y Android, no solo compila | `npm run bundle` en el job `app` de CI, que falla si falta alguno de los dos `.hbc` — criterio A14 | 2026-09-24 |
 
+| El digest de un documento de registro anclado en Stellar testnet, leído de vuelta por el adaptador y aceptado por el registro de cadena; un documento distinto contra el mismo ancla se rehúsa | Transacción `66bf1b7d…` en el ledger 4853052, `MEMO_HASH` = `c902165e11b60886dae5968a0f9f9693deab0d5dc770c5b84ff5eeea0affaeee`, comisión 100 stroops. `createStellarRegistryReader` lo lee de Horizon real, `createChainRegistry` resuelve con `trustedVia: chain_anchor`, y un documento con otro `registryId` responde `digest_mismatch`. El documento se sirvió desde memoria: **no** está publicado por HTTPS. Explorer: <https://stellar.expert/explorer/testnet/tx/66bf1b7dffe75e06517389a851f9ecc526b3847e07a13f009c996d943cb4fc49> — criterio A3 | 2026-09-24 |
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |
@@ -133,7 +134,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
    Es el requisito de D-11 y no está medido.
 8. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.
 9. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista.
-9b. **El documento de registro, servido y anclado de verdad.** El código existe —`attestation/tools/publish-registry.ts` lo firma e imprime su digest, y `createStellarRegistryReader` lo lee de Horizon—, pero nadie lo ha servido por HTTPS ni ha anclado su digest en testnet. El entorno de esta sesión no alcanza `horizon-testnet.stellar.org`: su política de red deniega el host. Hasta ejecutarlo, A3 está probado contra respuestas controladas y no contra la red.
+9b. **El documento de registro, servido por HTTPS.** El digest ya se ancla de verdad —ver arriba—, pero el documento todavía se sirve desde memoria: falta publicarlo en una URL para que el camino web de A3 quede ejercido igual que el de cadena.
 10. **Fecha y rúbrica del hackathon.**
 
 ## Deuda conocida

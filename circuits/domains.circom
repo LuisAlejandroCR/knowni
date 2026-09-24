@@ -44,3 +44,29 @@ function DOMAIN_SUBJECT_REF() {
 function DOMAIN_SNAPSHOT() {
     return 0x2b7f26637989fb7f5459891110efe5009b3c0674781cccddd52aa43f01e7200c;
 }
+
+// The claim kinds, as the tags core/src/claim-fields.ts assigns them.
+// claim kind: identity
+function KIND_IDENTITY() {
+    return 1;
+}
+// claim kind: income
+function KIND_INCOME() {
+    return 2;
+}
+// claim kind: formality
+function KIND_FORMALITY() {
+    return 3;
+}
+// claim kind: standing
+function KIND_STANDING() {
+    return 4;
+}
+// claim kind: capacity
+function KIND_CAPACITY() {
+    return 5;
+}
+// claim kind: assetStanding
+function KIND_ASSET_STANDING() {
+    return 6;
+}

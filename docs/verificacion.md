@@ -55,6 +55,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | `commitClaim`, `hashLeaf` y el plegado de Merkle hashean con Poseidon, y la suite entera sigue verde | 399 pruebas. Tres productores de valores fuera del campo —`subjectRef` del emisor, raíz de listas y raíz de snapshot— quedaron al descubierto y se corrigieron; los encontró el rechazo de D-56, no una revisión | 2026-09-24 |
 
+| `commitClaim` de `core/` y el compromiso del circuito son el mismo número, para identidad y para ingreso | `circuits/test/unit/claim-commitment.spec.ts` contra testigos de `IdentityCommitment` (`0x19426120…3c8f7f1a`) e `IncomeCommitment` (`0x21800de5…87207526`) compilados con circom 2.2.3 | 2026-09-24 |
+| Lo que cuesta atar el reclamo entero en el circuito | 12 258 → 12 567 restricciones no lineales (+2,5%), compilado antes y después. El orden de las señales públicas no cambia | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

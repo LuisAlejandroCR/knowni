@@ -128,7 +128,7 @@ aceptación antes de tocar nada, que es lo que el ciclo SDD del proyecto exige.
 
 ```bash
 npm install           # enlaza los workspaces
-npm run verify        # lint + typecheck + 407 pruebas
+npm run verify        # lint + typecheck + 454 pruebas
 cd app && npm install && npm test   # 32 pruebas, proyecto aparte
 ```
 

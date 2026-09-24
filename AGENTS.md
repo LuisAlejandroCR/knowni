@@ -57,7 +57,7 @@ Evaluar todo cambio no trivial contra:
 
 * Respetar los límites existentes y la dirección de las dependencias.
 * **Ningún workspace fuera de `*/adapters/` importa un SDK de proveedor.** Es la regla que hace
-  reemplazable a cada adaptador, y está verificada en `core/test/no-vendor-imports.test.ts`.
+  reemplazable a cada adaptador, y está verificada en `core/test/invariant/no-vendor-imports.invariant.spec.ts`.
 * Evitar acoplamiento innecesario y refactors no relacionados.
 * Documentar las decisiones arquitectónicas significativas en `docs/memoria.md`.
 

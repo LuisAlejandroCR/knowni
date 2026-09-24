@@ -100,7 +100,7 @@ ve idéntico a alguien sin ingresos — por eso formalidad es un predicado
 aparte y no un proxy de confiabilidad; y muchos independientes cotizan sobre
 el mínimo legal, así que el IBC es un **piso** del ingreso, no una medición.
 Ambos están escritos en [`sources/src/country/colombia/pila.ts`](sources/src/country/colombia/pila.ts)
-y probados en [`sources/test/pila.test.ts`](sources/test/pila.test.ts).
+y probados en [`sources/test/unit/pila.spec.ts`](sources/test/unit/pila.spec.ts).
 
 ### Empezamos en Colombia; el diseño no es colombiano
 
@@ -113,7 +113,7 @@ IMSS) es un adaptador nuevo en `sources/`, no un cambio en el dominio.
 El anclaje va detrás de un puerto con un registro de cadenas. La misma
 verificación ancla en Stellar, en EVM o en memoria sin que nada por encima
 del registro sepa en cuál — ejercitado, no afirmado:
-[`anchoring/test/registry.test.ts`](anchoring/test/registry.test.ts).
+[`anchoring/test/unit/registry.spec.ts`](anchoring/test/unit/registry.spec.ts).
 
 Lo mismo con Croma: es **un** adaptador de `SourcePort`. Detrás de él están la
 Registraduría, la Procuraduría y el SICAAC; si mañana hay acceso directo a una,
@@ -123,11 +123,12 @@ entra como otro adaptador sin tocar un solo predicado.
 
 - [`core/`](core/) — reclamos, predicados, compromisos, Merkle, sesión y el
   sobre de divulgación. Sin dependencias, y sin SDK de ninguna cadena — eso
-  está verificado en `core/test/no-vendor-imports.test.ts`.
+  está verificado en `core/test/invariant/no-vendor-imports.invariant.spec.ts`.
 - [`sources/`](sources/) — adaptadores de fuentes y el emisor de conjuntos de
   reclamos. Colombia primero.
-- [`retrieval/`](retrieval/) — resolución de entidades para las consultas **por
-  nombre** de Croma. **Parcialmente marcado para retirarse** — ver su README.
+- [`retrieval/`](retrieval/) — normalización de nombres y la política de resolución, para
+  las consultas **por nombre** de Croma. El índice y su puerto se retiraron; hoy no lo
+  llama nadie — ver su README.
 - [`anchoring/`](anchoring/) — el puerto de anclaje y sus adaptadores.
 - [`app/`](app/README.md) — iOS y Android: emisión verificada y motor de pago Stellar portable.
   Falta ejecución en teléfono físico y firma real con las wallets configuradas.
@@ -142,10 +143,10 @@ Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilaci�
 
 ```bash
 npm install    # enlaza los workspaces entre sí; las únicas dependencias son de desarrollo
-npm run verify # lint + typecheck + 407 pruebas (unit · fuzz · invariant)
+npm run verify # lint + typecheck + 454 pruebas (unit · fuzz · invariant · contract)
 ```
 
-Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):
+Empieza por [`journey/test/unit/journey.spec.ts`](journey/test/unit/journey.spec.ts):
 es el recorrido completo, sin red y sin mocks.
 
 ### Anclado en Stellar testnet, no prometido
@@ -167,7 +168,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 327 pruebas (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 454 pruebas del repositorio y 54 de la app (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
@@ -179,9 +180,12 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
 | App iOS / Android | **Recorrido real, bloque 5 de 5 pendiente.** La app consulta fuentes reales a través del servicio de emisión y verifica las respuestas en el teléfono. Nunca ejecutada en un dispositivo físico — [`app/`](app/README.md) |
-| Pago móvil | **Implementado y probado sin red.** `/quote` entrega activo, destino y monto; Privy firma el hash, Freighter el sobre y la app envía a Horizon. Falta una firma real y una transacción USDC testnet |
+| Pago móvil | **Ejercido en testnet.** `/quote` entrega activo, destino y monto; Privy firma el hash, Freighter el sobre y la app envía a Horizon. El XDR construido a mano fue aceptado en [`fb64700b…`](https://stellar.expert/explorer/testnet/tx/fb64700b55ab1094f00fc60c48990c035976c0938036a47f8084990800b836b9) y el emisor lo verificó de vuelta. Falta la firma real de Privy, que necesita un app id, y que la transacción la produzca el teléfono |
+| Registro de emisores | **Corre.** Un documento firmado y dos raíces de confianza sobre él —la firma de la autoridad por HTTPS y el digest anclado en cadena—, con una sola suite corriendo contra las dos. Nunca servido ni anclado de verdad |
+| Por qué falta una respuesta | **Corre.** `not_found`, `degraded` y `failed` son estados distintos: viajan al titular al lado del sobre firmado, y la contraparte sigue recibiendo `unavailable` sin razón |
+| Qué exige un contrato | **Corre.** El perfil es una lista de requisitos que compone quien pregunta; ninguna función de `core/` codifica la lista de un contrato |
 | Reintentos del emisor | **Corren.** Un HMAC opaco separa contraparte, sujeto, pregunta y pago; retries concurrentes comparten una sola consulta y expiran con el sobre firmado |
-| Circuitos Circom | **Compilan sobre BN254 y sobre BLS12-381 —la curva que Stellar verifica— con constantes derivadas para cada campo, y su compromiso de reclamo es el mismo que el de `core/`.** 12 385 restricciones no lineales; el orden de las señales públicas lo escribe el compilador y CI lo comprueba. Ninguna prueba real generada ni verificada: falta el setup de confianza — ver [`circuits/README.md`](circuits/README.md) |
+| Circuitos Circom | **Compilan sobre BN254 y sobre BLS12-381 —la curva que Stellar verifica— con constantes derivadas para cada campo, y su compromiso de reclamo es el mismo que el de `core/`.** 12 424 restricciones no lineales; el orden de las señales públicas lo escribe el compilador y CI lo comprueba. Ninguna prueba real generada ni verificada: falta el setup de confianza — ver [`circuits/README.md`](circuits/README.md) |
 | Contrato Soroban | **Compila, y su política está probada.** Once pruebas sobre las tres reglas —raíz desconocida, nulificador gastado, predicado incumplido, señales que no concuerdan— y sobre el orden de señales que emite el compilador de Circom. Nunca desplegado, y ninguna prueba ZK verificada de verdad |
 | Servicio de emisión | **Corre.** Única llave de proveedor, consentimiento por fuente y respuestas firmadas — [`issuer/`](issuer/README.md) |
 | Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |

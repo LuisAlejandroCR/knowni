@@ -1404,6 +1404,40 @@ viejas, así que un compromiso de `core/` y uno del circuito **aún no coinciden
 ya, y está comprobado contra los testigos del gadget, es el plegado de Merkle: hoja y nodo dan el
 mismo número en los dos lados. Alinear `idCommit`/`incCommit` es el cambio que falta.
 
+### D-60 — El circuito y `core/` calculan el mismo compromiso · 2026-09-24
+
+*El final del hilo que empezó en D-54.* `claims.circom` calcula el compromiso de un reclamo elemento
+por elemento en el orden de `core/src/claim-fields.ts`: dominio, etiqueta de tipo, la cabeza común,
+los campos del tipo, la sal. `commitClaim` es esa misma llamada.
+
+```
+core  commitClaim(identity)      = 0x19426120…3c8f7f1a
+circuito IdentityCommitment      = 0x19426120…3c8f7f1a
+
+core  commitClaim(income)        = 0x21800de5…87207526
+circuito IncomeCommitment        = 0x21800de5…87207526
+```
+
+Los dos del circuito salen de testigos del gadget compilado. **Una credencial emitida por este
+repositorio es una credencial que el circuito puede abrir**, que es para lo que era todo esto.
+
+*Lo que el viejo `idCommit` no ataba, y ahora sí:* era `Poseidon(6)` sobre subjectRef, tres
+booleanos, `listSetRoot` y la sal. Le faltaban el tipo de reclamo, la jurisdicción, el tipo de
+documento y **`attestedAt`**. Un compromiso que no ata la fecha es un compromiso bajo el cual la
+fecha se puede cambiar después, y la prueba se sigue abriendo — o sea, no había forma de exigir
+frescura. Y metía `listSetRoot`, que pertenece al reclamo de listas y no al de identidad.
+
+*Las etiquetas de tipo se generan, no se escriben:* salen de `KIND_TAG` de `core/` por el mismo
+generador que ya emitía los dominios, y CI rechaza un fichero desviado. Es la tercera vez que esa
+disciplina evita el bug de D-51, y las tres veces ha sido el mismo bug con otra ropa.
+
+*Coste:* 12 258 → 12 567 restricciones no lineales, **+2,5%**. El orden de las señales públicas no
+cambia.
+
+*Lo que sigue sin ser cierto:* nadie ha generado una prueba Groth16. Falta el setup, y falta
+Poseidon parametrizado para BLS12-381 —hoy todo esto es BN254, que Stellar no verifica—. Lo que
+existe es el acuerdo entre los dos lados sobre qué se compromete y cómo, que era el bloqueo real.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1474,6 +1508,7 @@ mismo número en los dos lados. Alinear `idCommit`/`incCommit` es el cambio que 
 | 2026-09-24 | Los siete dominios pasan a una sola lista en `core/` que el circuito importa, y la sal se dibuja dentro del campo con enmascarado y rechazo en vez de 32 bytes crudos — D-57. 393 pruebas |
 | 2026-09-24 | Poseidon baja a `core/` y hashear en elementos pasa a ser su propio puerto, `FieldHasher`. Reproduce los valores de hoja y nodo del gadget compilado: por primera vez los dos lados dan el mismo número. Y las constantes dejan de derivarse en cada llamada — D-58. 399 pruebas |
 | 2026-09-24 | `commitClaim` y el plegado de Merkle pasan a Poseidon: todos los compromisos cambian de valor. El cambio destapó tres sitios en producción que producían referencias y raíces con SHA-256, fuera del campo — D-59 |
+| 2026-09-24 | El circuito y `core/` calculan **el mismo compromiso**, comprobado contra testigos del gadget. El viejo `idCommit` no ataba `attestedAt`, la jurisdicción ni el tipo de documento — D-60. 403 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

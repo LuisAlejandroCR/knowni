@@ -56,7 +56,7 @@ export { buildMerkleTree, constantTimeEqualHex, hashLeaf, verifyInclusion } from
 
 export type { Blinding, BlindedCommitment, Outcome, Salt } from "./commitment.ts";
 export { commitClaim, commitOutcome, randomSalt, verifyOutcomeCommitment } from "./commitment.ts";
-export { CLAIM_WIDTH, encodeClaimFields } from "./claim-fields.ts";
+export { CLAIM_WIDTH, KIND_TAG, encodeClaimFields } from "./claim-fields.ts";
 export { DOMAINS, type DomainName } from "./domains.ts";
 export {
   BLS12_381_PRIME,

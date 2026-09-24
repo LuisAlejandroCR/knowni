@@ -9,7 +9,7 @@ import { fieldFromBoolean, fieldFromHex, fieldFromUint } from "./field.ts";
 /// The kind goes in as a number, not as a hashed string: it is a closed set
 /// this file owns, and a claim of one kind must never encode to the same list
 /// as a claim of another. Appending is safe; renumbering is a break.
-const KIND_TAG: Record<Claim["kind"], bigint> = {
+export const KIND_TAG: Record<Claim["kind"], bigint> = {
   identity: 1n,
   income: 2n,
   formality: 3n,

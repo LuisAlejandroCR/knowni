@@ -32,3 +32,41 @@ function DOMAIN_SESSION() {
 function DOMAIN_NULLIFIER() {
     return 0x549af6b19b175d04713b4a1255b6052daf944f02dde28eddd3f9010fd98bb46;
 }
+// knowni:co-sanctions:v1
+function DOMAIN_SANCTIONS_LIST_SET() {
+    return 0x9339c2aac83a79fb739ac7a6bb9509b69ff6ea2fbfff94a2e0db8b03d576e38;
+}
+// knowni:subject-ref:v1
+function DOMAIN_SUBJECT_REF() {
+    return 0xbddd87950bd36a7ef54a5fc0d41a42f7e46b7d36a951b21c58d92834db08d2a;
+}
+// knowni:snapshot:v1
+function DOMAIN_SNAPSHOT() {
+    return 0x2b7f26637989fb7f5459891110efe5009b3c0674781cccddd52aa43f01e7200c;
+}
+
+// The claim kinds, as the tags core/src/claim-fields.ts assigns them.
+// claim kind: identity
+function KIND_IDENTITY() {
+    return 1;
+}
+// claim kind: income
+function KIND_INCOME() {
+    return 2;
+}
+// claim kind: formality
+function KIND_FORMALITY() {
+    return 3;
+}
+// claim kind: standing
+function KIND_STANDING() {
+    return 4;
+}
+// claim kind: capacity
+function KIND_CAPACITY() {
+    return 5;
+}
+// claim kind: assetStanding
+function KIND_ASSET_STANDING() {
+    return 6;
+}

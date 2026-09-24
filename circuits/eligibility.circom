@@ -39,6 +39,7 @@ pragma circom 2.1.6;
 include "poseidon.circom";
 include "comparators.circom";
 include "merkle.circom";
+include "claims.circom";
 
 // depth of the issuer's published tree: 2^20 claims per root.
 template Eligibility(depth) {
@@ -53,17 +54,29 @@ template Eligibility(depth) {
     signal input listSetRoot;
 
     // ---- private: identity ----
+    // The commitment binds the whole claim, so every field of it is a witness
+    // here — including the ones no predicate reads. A commitment that leaves a
+    // field out is a commitment an issuer can change that field under.
     signal input idSubjectRef;
+    signal input idJurisdiction;   // core hashes the string; this is the element
+    signal input idDocumentKind;   // likewise
     signal input documentValid;
     signal input subjectAlive;
     signal input ofAge;
+    signal input idAttestedAt;
     signal input idSalt;
     signal input idSiblings[depth];
     signal input idIsRight[depth];
 
     // ---- private: income ----
     signal input incSubjectRef;
+    signal input incJurisdiction;
     signal input monthlyMinor;
+    signal input incCurrency;
+    signal input incBasis;
+    signal input incPeriodsObserved;
+    signal input incPeriodsWindow;
+    signal input incAttestedAt;
     signal input incSalt;
     signal input incSiblings[depth];
     signal input incIsRight[depth];
@@ -97,13 +110,17 @@ template Eligibility(depth) {
     // Without these two, the prover could invent any claim they like: a ZK
     // proof shows SOME witness satisfies the circuit, and an unanchored
     // witness satisfies it trivially.
-    component idCommit = Poseidon(6);
-    idCommit.inputs[0] <== idSubjectRef;
-    idCommit.inputs[1] <== documentValid;
-    idCommit.inputs[2] <== subjectAlive;
-    idCommit.inputs[3] <== ofAge;
-    idCommit.inputs[4] <== listSetRoot; // domain pin; see README
-    idCommit.inputs[5] <== idSalt;
+    // The gadget is the definition; this only feeds it. Keeping the element
+    // order in one place is what stops the two sides drifting apart again.
+    component idCommit = IdentityCommitment();
+    idCommit.jurisdiction <== idJurisdiction;
+    idCommit.subjectRef <== idSubjectRef;
+    idCommit.documentKind <== idDocumentKind;
+    idCommit.documentValid <== documentValid;
+    idCommit.subjectAlive <== subjectAlive;
+    idCommit.ofAge <== ofAge;
+    idCommit.attestedAt <== idAttestedAt;
+    idCommit.salt <== idSalt;
 
     component idPath = MerklePath(depth);
     idPath.commitment <== idCommit.out;
@@ -113,10 +130,16 @@ template Eligibility(depth) {
     }
     idPath.root === issuerRoot;
 
-    component incCommit = Poseidon(3);
-    incCommit.inputs[0] <== incSubjectRef;
-    incCommit.inputs[1] <== monthlyMinor;
-    incCommit.inputs[2] <== incSalt;
+    component incCommit = IncomeCommitment();
+    incCommit.jurisdiction <== incJurisdiction;
+    incCommit.subjectRef <== incSubjectRef;
+    incCommit.monthlyMinor <== monthlyMinor;
+    incCommit.currency <== incCurrency;
+    incCommit.basis <== incBasis;
+    incCommit.periodsObserved <== incPeriodsObserved;
+    incCommit.periodsWindow <== incPeriodsWindow;
+    incCommit.attestedAt <== incAttestedAt;
+    incCommit.salt <== incSalt;
 
     component incPath = MerklePath(depth);
     incPath.commitment <== incCommit.out;

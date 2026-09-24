@@ -6,7 +6,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import type { Claim, DocumentKind, IncomeBasis } from "../../src/claims.ts";
+import type { Claim, DocumentKind, IncomeBasis, IncomeProvenance } from "../../src/claims.ts";
 import { encodeClaimFields } from "../../src/claim-fields.ts";
 
 const PRIME = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001n;
@@ -27,6 +27,7 @@ function rng(seed: number): () => number {
 const JURISDICTIONS = ["CO", "MX", "CL", "", "co"];
 const DOCUMENT_KINDS: DocumentKind[] = ["CC", "CE", "PA", "NIT", "PEP", "OTHER"];
 const BASES: IncomeBasis[] = ["contribution_base", "verified_income", "cashflow"];
+const PROVENANCES: IncomeProvenance[] = ["observed", "documentary", "self_declared"];
 const REFS = ["0a".repeat(32), "0b".repeat(32), "01", "0"];
 
 function anyClaim(next: () => number): Claim {
@@ -56,6 +57,7 @@ function anyClaim(next: () => number): Claim {
         monthlyMinor: uint(1e9),
         currency: pick(["COP", "USD", "MXN"]),
         basis: pick(BASES),
+        provenance: pick(PROVENANCES),
         periodsObserved: uint(13),
         periodsWindow: 12,
         attestedAt,

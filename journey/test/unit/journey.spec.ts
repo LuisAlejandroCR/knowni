@@ -112,6 +112,7 @@ test("a tenant proves four things and the agency learns nothing else", async () 
       nowUnix: NOW,
       maxAgeSeconds: 30 * DAY,
       acceptedBases: ["contribution_base"],
+      acceptedProvenance: ["observed"],
     minPeriodsObserved: 6,
     },
     formality: {
@@ -187,6 +188,7 @@ test("the outcome anchors on any registered chain, and opens only for the tenant
       nowUnix: NOW,
       maxAgeSeconds: 30 * DAY,
       acceptedBases: ["contribution_base"],
+      acceptedProvenance: ["observed"],
     minPeriodsObserved: 6,
     },
     formality: { nowMonth: NOW_MONTH, maxMonthsSinceLastContribution: 2, minMonthsContributedLast12: 6 },

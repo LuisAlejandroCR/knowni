@@ -37,6 +37,17 @@ export interface IdentityClaim {
 // so each one is its own basis and a relying party names which it accepts.
 export type IncomeBasis = "contribution_base" | "verified_income" | "cashflow";
 
+// How the figure was learned, which is a different question from what it
+// measures. The same basis reaches us by different routes — a contribution
+// base read from an operator's records is observed; the same base read off a
+// statement the holder handed us is documentary — and a relying party that
+// cannot tell them apart is trusting whichever is weakest.
+//
+//   observed       a source this system queried answered with it
+//   documentary    a document was produced, and a human read it
+//   self_declared  the subject said so, and nobody checked
+export type IncomeProvenance = "observed" | "documentary" | "self_declared";
+
 // What each basis does NOT say, travelling with the claim so a counterparty
 // cannot widen it by reading it generously.
 export const BASIS_DOES_NOT_ESTIMATE: Record<IncomeBasis, string> = {
@@ -54,6 +65,7 @@ export interface IncomeClaim {
   readonly monthlyMinor: number; // e.g. COP cents
   readonly currency: string; // ISO 4217
   readonly basis: IncomeBasis;
+  readonly provenance: IncomeProvenance;
   // How many periods had data, and over how many the source looked: "one good
   // month" and "a year of them" stop looking identical. How many are enough is
   // the relying party's threshold, not the source's.

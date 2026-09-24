@@ -15,7 +15,7 @@ import { BLS12_381_PRIME, BN254_PRIME, circomlibSpec, parameters } from "@knowni
 
 /// Every arity the circuits actually instantiate. Generating the rest would be
 /// thousands of constants nobody hashes with.
-const ARITIES = [2, 3, 10, 11];
+const ARITIES = [2, 3, 10, 11, 12];
 
 /// The curve to derive for. BN254 is what circomlib's own constants are for,
 /// so it is the one whose output can be checked against somebody else's; and

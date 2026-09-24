@@ -66,6 +66,18 @@ jobs:
             /tmp/poseidon_main_js/poseidon_main.wasm /tmp/poseidon_input.json /tmp/poseidon.wtns
           npx --yes snarkjs@0.7.5 wtns export json /tmp/poseidon.wtns /tmp/poseidon_witness.json
           node --experimental-strip-types tools/check-poseidon-witness.ts /tmp/poseidon_witness.json
+      # A claim commitment is where the two implementations actually meet, so
+      # the witness is rebuilt here rather than trusted to a number somebody
+      # copied out of a terminal once.
+      - name: check the circuit and core agree on the income commitment
+        working-directory: circuits
+        run: |
+          circom test/income_main.circom -l . -l /tmp/circomlib/circuits --wasm --output /tmp
+          node --experimental-strip-types tools/write-claim-input.ts > /tmp/income_input.json
+          npx --yes snarkjs@0.7.5 wtns calculate \
+            /tmp/income_main_js/income_main.wasm /tmp/income_input.json /tmp/income.wtns
+          npx --yes snarkjs@0.7.5 wtns export json /tmp/income.wtns /tmp/income_witness.json
+          node --experimental-strip-types tools/check-claim-witness.ts /tmp/income_witness.json
       # The curve Stellar verifies. The BLS constants file is a drop-in for the
       # BN254 one — same template names — so the swap is a directory on -l.
       - name: compile the circuit on BLS12-381 too

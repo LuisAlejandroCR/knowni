@@ -38,6 +38,7 @@ const income: Claim = {
   monthlyMinor: 2_500_000,
   currency: "COP",
   basis: "contribution_base",
+  provenance: "observed",
   periodsObserved: 11,
   periodsWindow: 12,
   attestedAt: NOW,

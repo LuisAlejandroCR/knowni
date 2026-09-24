@@ -46,6 +46,8 @@ export function createPilaIncomeSource(client: PilaClient, options: PilaOptions 
         monthlyMinor: median(amounts),
         currency: "COP",
         basis: "contribution_base",
+        // The operator's own records, queried here. Nobody handed us a page.
+        provenance: "observed",
         periodsObserved: amounts.length,
         periodsWindow: 12,
         attestedAt: nowUnix,

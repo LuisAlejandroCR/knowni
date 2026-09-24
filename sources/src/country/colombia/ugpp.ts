@@ -91,6 +91,10 @@ export function createUgppContributionSource(
         monthlyMinor: median(amounts),
         currency: "COP",
         basis: "contribution_base",
+        // The same basis, learned another way: the holder produced a statement
+        // and a person read it. D-32 is why this route exists at all, and why
+        // it must not read like the operator answering.
+        provenance: "documentary",
         periodsObserved: amounts.length,
         periodsWindow: UGPP_WINDOW_MONTHS,
         attestedAt: nowUnix,

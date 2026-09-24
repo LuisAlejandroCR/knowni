@@ -143,7 +143,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | ~~El cliente de Croma sigue reintentando después de que la emisión dejó de esperar esa fuente~~ **Saldada el 2026-09-24:** el cliente acepta un `AbortSignal` y la emisión le da uno por fuente; el mismo plazo que corta la espera cancela la llamada en vuelo, los reintentos y el sondeo — D-69 | `sources/src/providers/croma/client.ts`, `issuer/src/service.ts` | ✅ |
 | `sources/src/country/colombia/pila.ts` habla de un operador que todavía no existe como integración | `sources/` | B4 |
 | El código sigue llamando `standing` a lo que la documentación ya llama `sanctions` (`StandingClaim`, `proveStanding`, el campo del sobre). El renombrado va con B2 | `core/`, `sources/`, `journey/` | B2 |
-| `IncomeBasis` no tiene el eje de procedencia `observed \| documentary \| self_declared` del proyecto GovTech anterior | `core/src/claims.ts` | B4b |
+| ~~`IncomeBasis` no tiene el eje de procedencia~~ **Saldada el 2026-09-24 (B4b):** `IncomeClaim` lleva `provenance`, entra en el compromiso —ancho 10, `PoseidonKnowni12`— y `SolvencyParams` exige nombrar qué rutas acepta. El circuito y `core/` se comprueban contra un testigo que CI reconstruye en cada corrida | `core/src/claims.ts` | ✅ |
 | Los dos commits iniciales llevan cuerpo y trailer `Co-Authored-By:`, contra la regla de una línea | historia de git | no se reescribe historia; la regla aplica desde el tercero |
 
 ## Auditoría de afirmaciones — 2026-09-20

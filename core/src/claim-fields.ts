@@ -23,7 +23,7 @@ export const KIND_TAG: Record<Claim["kind"], bigint> = {
 /// different claims end up with one commitment.
 export const CLAIM_WIDTH: Record<Claim["kind"], number> = {
   identity: 8,
-  income: 9,
+  income: 10,
   formality: 6,
   standing: 6,
   capacity: 6,
@@ -62,6 +62,10 @@ export function encodeClaimFields(
           fieldFromUint(claim.monthlyMinor, "monthlyMinor"),
           text(claim.currency),
           text(claim.basis),
+          // What it measures and how it was learned are two fields, and both
+          // are committed: a provenance outside the commitment is one an
+          // issuer could downgrade after the fact.
+          text(claim.provenance),
           fieldFromUint(claim.periodsObserved, "periodsObserved"),
           fieldFromUint(claim.periodsWindow, "periodsWindow"),
           fieldFromUint(claim.attestedAt, "attestedAt"),

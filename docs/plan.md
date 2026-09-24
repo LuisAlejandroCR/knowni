@@ -426,7 +426,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | Estado | Criterios | Evidencia y brecha restante |
 |---|---|---|
 | **Cumplido** | A1, A2, A4, A5, A6, A8, A11, A13 | Invariantes de divulgación y redacción, tests de `attestation/`, registro sustituible en `anchoring/`, fuzz de adapters y recorrido offline en `journey/test/` |
-| **Parcial** | A3 | Hay registros en memoria para llaves y revocación, y adapters de anclaje intercambiables; falta el `RegistryPort` HTTPS firmado y el mismo contract test contra registro web y cadena |
+| **Cumplido** | A3 | `RegistryPort` con dos adaptadores sobre un mismo documento firmado —web, que confía en la firma de la autoridad, y cadena, que confía en el digest anclado— y `attestation/test/contract/registry.contract.spec.ts`, una suite que corre igual contra los dos: la misma presentación se acepta, la misma raíz revocada se rechaza y un documento fuera de su raíz de confianza se rehúsa. La ejecución contra un despliegue real de cadena sigue pendiente (A10) — D-65 |
 | **Parcial** | A7 | Las causas `not_found`, `source_unavailable` e `invalid_response` no se confunden, pero viven bajo `degraded`; falta demostrar en el recorrido UI la taxonomía pública exacta que pide A7 |
 | **Parcial** | A9 | Hay catálogo y llamadas reales sanitizadas a Croma, incluida una empresa pública; faltan llamadas consentidas y fechadas por cada fuente personal habilitada del perfil vehicular |
 | **Parcial** | A10 | Existen anclaje y pago USDC reales en Stellar testnet; falta que el recorrido principal del teléfono produzca su propia transacción con una wallet real |
@@ -447,7 +447,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 
 ### Lo que falta, en orden de cierre
 
-1. Completar la evidencia automatizable que queda: el contract test de A3 contra registro web y cadena.
+1. Publicar el documento de registro de verdad: servirlo por HTTPS y anclar su digest en testnet, que es lo que convierte el contract test de A3 en un ejercicio real.
 2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet.
 3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
 4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo

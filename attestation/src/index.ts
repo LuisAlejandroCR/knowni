@@ -162,3 +162,24 @@ export {
   verifyRequest,
 } from "./presentation.ts";
 export type { Claim, Salt };
+
+export type {
+  RegistryDocument,
+  RegistryFailure,
+  RegistryIssuer,
+  RegistryPort,
+  RegistryResolution,
+  RegistrySnapshot,
+  RevokedRoot,
+  SignedRegistryDocument,
+} from "./registry.ts";
+export { parseRegistryDocument, registryBytes, registryDigest, signRegistry, snapshotOf } from "./registry.ts";
+
+export type { WebRegistryOptions } from "./adapters/web-registry.ts";
+export { createWebRegistry } from "./adapters/web-registry.ts";
+export type {
+  AnchoredRegistryDigest,
+  ChainRegistryOptions,
+  ChainRegistryReader,
+} from "./adapters/chain-registry.ts";
+export { createChainRegistry } from "./adapters/chain-registry.ts";

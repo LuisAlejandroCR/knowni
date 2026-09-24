@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { SolvencyTier, commitOutcome, meetsAll, outcomeOf, verify, verifyInclusion, verifyOutcomeCommitment, type HeldClaims, type VerificationRequest } from "@knowni/core";
+import { SolvencyTier, commitOutcome, meetsProfile, outcomeOf, verify, verifyInclusion, verifyOutcomeCommitment, type HeldClaims, type VerificationProfile, type VerificationRequest } from "@knowni/core";
 import { poseidonHash, sha256Hash } from "@knowni/core/node";
 import {
   createListScreeningSource,
@@ -144,7 +144,14 @@ test("a tenant proves four things and the agency learns nothing else", async () 
   assert.equal(disclosure.standing, true);
   // COP ~4,200,000 against COP 1,300,000 of rent: comfortably over 3x.
   assert.equal(disclosure.solvency, SolvencyTier.STRONG);
-  assert.equal(meetsAll(disclosure, SolvencyTier.COMFORTABLE), true);
+  // The agency composes what its contract needs; core is not asked to know it.
+  const lease: VerificationProfile = [
+    { answer: "personhood", mustBe: true },
+    { answer: "formality", mustBe: true },
+    { answer: "standing", mustBe: true },
+    { answer: "solvency", atLeast: SolvencyTier.COMFORTABLE },
+  ];
+  assert.deepEqual(meetsProfile(disclosure, lease), { status: "meets" });
 
   // Step 4 — the agency's whole record of this application.
   const record = JSON.stringify(disclosure);

@@ -235,7 +235,7 @@ paga por ejercer su derecho a demostrar un dato propio. Ver `memoria.md` D-26.
 | A13 | Ningún log contiene documento, nombre, salario, cuenta o payload de proveedor | test de redacción + revisión de logs |
 | A14 | La suite, lint, typecheck y build parten de cero en CI | workflow público en verde |
 | A15 | El sobre responde el perfil vehicular: `capacity` y `assetStanding` son respuestas entregables y un predicado no pedido vale `unavailable`, nunca `false` | `core/test/unit/verify-vehicle.spec.ts` e invariante de campos exactos |
-| A16 | Qué exige un perfil lo compone quien pregunta: ninguna función de `core/` codifica la lista de respuestas que un contrato necesita | sustituir `meetsAll(disclosure, tier)` por una comprobación parametrizada y probarla con dos perfiles |
+| A16 | Qué exige un perfil lo compone quien pregunta: ninguna función de `core/` codifica la lista de respuestas que un contrato necesita | `meetsProfile(disclosure, profile)` y `core/test/unit/profile.spec.ts` con arriendo y compraventa, más la prueba de que `core/` no exporta perfil alguno |
 
 ### Bloque activo — pago móvil Stellar de punta a punta
 
@@ -400,7 +400,7 @@ Los MD separan responsabilidades mobile, core/attestation, sources y QA. La apro
 no cierra A1, A9, A12 ni acredita ejecución nativa. Compartir en producción queda bloqueado
 hasta autenticar los resultados mínimos sin entregar `claim`/`salt` e integrar verificación
 criptográfica con aceptación. El tercer bloqueo —admitir el perfil vehicular en `Disclosure`—
-quedó levantado el 2026-09-24 (A15, D-63); lo que queda de él es A16.
+quedó levantado el 2026-09-24 (A15, D-63), y con A16 cerrado el mismo día ya no queda nada de él.
 
 ## Puertas de decisión
 
@@ -433,7 +433,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | **Bloqueado** | A12 | La suite demuestra operación sin red, pero nunca se ejecutó en un dispositivo físico en modo avión |
 | **Cumplido** | A14 | CI instala desde cero, ejecuta lint, typecheck y tests, compila circuitos y contrato, y empaqueta la app con Metro para iOS y Android: `npm run bundle` en el job `app`, que falla si alguno de los dos `.hbc` no sale |
 | **Cumplido** | A15 | `core/test/unit/verify-vehicle.spec.ts` y el invariante de campos exactos del sobre: `capacity` y `assetStanding` son respuestas entregables, el activo se compara contra la referencia que pide la contraparte y un predicado no pedido vale `unavailable` — D-63 |
-| **Futuro** | A16 | `meetsAll(disclosure, tier)` sigue con forma de arriendo e ignora las dos respuestas nuevas; falta sustituirla por una comprobación parametrizada probada con dos perfiles |
+| **Cumplido** | A16 | `meetsAll` desaparece y entra `meetsProfile(disclosure, profile)`: el perfil es una lista de requisitos que compone quien pregunta. Un requisito incumplido dice por qué —`unavailable`, `not_proven` o `below_tier`—, y un perfil vacío nunca se cumple. Probado con arriendo y compraventa en `core/test/unit/profile.spec.ts`, y con que `core/` no exporta ningún perfil — D-66 |
 
 ### Bloques activos
 

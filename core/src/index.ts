@@ -82,8 +82,17 @@ export {
 export type { Purpose, SessionRequest, SubjectSecret } from "./session.ts";
 export { deriveNullifier, isExpired, isPurpose, sessionId } from "./session.ts";
 
-export type { Disclosure, PredicateResult } from "./disclosure.ts";
-export { meetsAll, outcomeOf } from "./disclosure.ts";
+export type {
+  BooleanAnswer,
+  Disclosure,
+  PredicateResult,
+  ProfileCheck,
+  Requirement,
+  Shortfall,
+  ShortfallReason,
+  VerificationProfile,
+} from "./disclosure.ts";
+export { meetsProfile, outcomeOf } from "./disclosure.ts";
 
 export type { HeldClaims, VerificationRequest, VerificationResult } from "./verify.ts";
 export { verify } from "./verify.ts";

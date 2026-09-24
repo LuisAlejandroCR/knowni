@@ -134,7 +134,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Deuda | Dónde | Bloque |
 |---|---|---|
 | `retrieval/` está construido sobre la lectura de Chroma. El adaptador, el puerto y el índice sobran; la normalización y la política de resolución se quedan | `retrieval/` | B3 |
-| ~~El sobre `Disclosure` no admite el perfil vehicular~~ **Saldada el 2026-09-24:** `capacity` y `assetStanding` son respuestas entregables y entran en el compromiso del resultado — D-63, A15. Queda A16: que `meetsAll` deje de tener forma de arriendo | `core/src/disclosure.ts` | ✅ |
+| ~~El sobre `Disclosure` no admite el perfil vehicular~~ **Saldada el 2026-09-24:** `capacity` y `assetStanding` son respuestas entregables y entran en el compromiso del resultado — D-63, A15. A16 saldada el mismo día: `meetsAll` desaparece y `meetsProfile` recibe el perfil de quien pregunta — D-66 | `core/src/disclosure.ts` | ✅ |
 | `ofAge` se deriva de que la cédula de ciudadanía solo se expide a mayores de edad. Es una regla jurídica, no un dato que devuelva la fuente | `sources/src/country/colombia/registraduria.ts` | confirmar con el concepto legal |
 | Ningún adaptador se ha ejercido contra una respuesta real sobre una persona: los esquemas vienen del OpenAPI de Croma, no de una llamada | `sources/src/country/colombia/` | requiere un titular que autorice |
 | ~~Tests planos sin `unit · fuzz · invariant`~~ **Saldada el 2026-09-20:** 26 archivos movidos a `test/unit` y `test/invariant` con sufijo `.spec.ts`, más tres suites `fuzz` nuevas | todos los workspaces | ✅ |

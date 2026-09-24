@@ -20,6 +20,7 @@ const income = (over: Partial<IncomeClaim> = {}): IncomeClaim => ({
   monthlyMinor: RENT * 3,
   currency: "COP",
   basis: "contribution_base",
+  provenance: "observed",
   periodsObserved: 12,
   periodsWindow: 12,
   attestedAt: NOW - 60,
@@ -34,6 +35,7 @@ const params = {
   maxAgeSeconds: 86_400,
   minPeriodsObserved: 6,
   acceptedBases: ["contribution_base"] as const,
+  acceptedProvenance: ["observed"] as const,
 };
 
 test("a contribution base answers a request that asked for one", () => {

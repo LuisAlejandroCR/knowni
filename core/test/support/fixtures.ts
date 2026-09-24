@@ -38,6 +38,7 @@ export const income: IncomeClaim = {
   monthlyMinor: 481_230_000,
   currency: "COP",
   basis: "contribution_base",
+  provenance: "observed",
   periodsObserved: 12,
   periodsWindow: 12,
   attestedAt: NOW - DAY,

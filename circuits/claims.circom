@@ -40,13 +40,14 @@ template IncomeCommitment() {
     signal input monthlyMinor;
     signal input currency;
     signal input basis;
+    signal input provenance;
     signal input periodsObserved;
     signal input periodsWindow;
     signal input attestedAt;
     signal input salt;
     signal output out;
 
-    component h = PoseidonKnowni11();
+    component h = PoseidonKnowni12();
     h.inputs[0] <== DOMAIN_CLAIM();
     h.inputs[1] <== KIND_INCOME();
     h.inputs[2] <== jurisdiction;
@@ -54,9 +55,10 @@ template IncomeCommitment() {
     h.inputs[4] <== monthlyMinor;
     h.inputs[5] <== currency;
     h.inputs[6] <== basis;
-    h.inputs[7] <== periodsObserved;
-    h.inputs[8] <== periodsWindow;
-    h.inputs[9] <== attestedAt;
-    h.inputs[10] <== salt;
+    h.inputs[7] <== provenance;
+    h.inputs[8] <== periodsObserved;
+    h.inputs[9] <== periodsWindow;
+    h.inputs[10] <== attestedAt;
+    h.inputs[11] <== salt;
     out <== h.out;
 }

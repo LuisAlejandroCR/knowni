@@ -48,6 +48,11 @@ export interface SolvencyParams {
   readonly nowUnix: number;
   readonly maxAgeSeconds: number;
   readonly acceptedBases: readonly IncomeClaim["basis"][];
+  // How the figure may have been learned. Empty accepts nothing, like
+  // `acceptedBases`: a relying party that named no route has not said what
+  // evidence it would take, and defaulting to "any" would quietly accept a
+  // self-declared figure wherever an observed one was meant.
+  readonly acceptedProvenance: readonly IncomeClaim["provenance"][];
   // How many periods with data the relying party requires. Theirs to set and
   // public, like the obligation itself.
   readonly minPeriodsObserved: number;
@@ -61,6 +66,8 @@ export function proveSolvency(claim: IncomeClaim, params: SolvencyParams): Solve
     // not said what evidence it would take.
     params.acceptedBases.length > 0 &&
     params.acceptedBases.includes(claim.basis) &&
+    params.acceptedProvenance.length > 0 &&
+    params.acceptedProvenance.includes(claim.provenance) &&
     claim.periodsObserved >= params.minPeriodsObserved &&
     withinAge(claim.attestedAt, params.nowUnix, params.maxAgeSeconds);
 

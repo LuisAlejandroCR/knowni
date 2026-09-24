@@ -56,6 +56,7 @@ const solvencyParams = {
   nowUnix: NOW,
   maxAgeSeconds: 30 * DAY,
   acceptedBases: ["contribution_base", "verified_income"] as const,
+  acceptedProvenance: ["observed"] as const,
 minPeriodsObserved: 6,
 };
 

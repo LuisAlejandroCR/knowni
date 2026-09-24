@@ -37,6 +37,7 @@ const request: VerificationRequest = {
     nowUnix: NOW,
     maxAgeSeconds: 30 * DAY,
     acceptedBases: ["contribution_base"],
+    acceptedProvenance: ["observed"],
   minPeriodsObserved: 6,
   },
   formality: {

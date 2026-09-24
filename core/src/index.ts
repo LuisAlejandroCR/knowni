@@ -11,6 +11,7 @@ export type {
   FormalityClaim,
   IdentityClaim,
   IncomeBasis,
+  IncomeProvenance,
   IncomeClaim,
   Jurisdiction,
   StandingClaim,

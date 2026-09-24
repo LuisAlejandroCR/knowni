@@ -74,6 +74,7 @@ template Eligibility(depth) {
     signal input monthlyMinor;
     signal input incCurrency;
     signal input incBasis;
+    signal input incProvenance;
     signal input incPeriodsObserved;
     signal input incPeriodsWindow;
     signal input incAttestedAt;
@@ -136,6 +137,7 @@ template Eligibility(depth) {
     incCommit.monthlyMinor <== monthlyMinor;
     incCommit.currency <== incCurrency;
     incCommit.basis <== incBasis;
+    incCommit.provenance <== incProvenance;
     incCommit.periodsObserved <== incPeriodsObserved;
     incCommit.periodsWindow <== incPeriodsWindow;
     incCommit.attestedAt <== incAttestedAt;

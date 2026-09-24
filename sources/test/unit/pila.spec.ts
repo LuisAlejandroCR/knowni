@@ -119,6 +119,7 @@ test("neither claim carries anything the predicate does not read", async () => {
     "monthlyMinor",
     "periodsObserved",
     "periodsWindow",
+    "provenance",
     "subjectRef",
   ]);
 });

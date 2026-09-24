@@ -10,9 +10,9 @@ import assert from "node:assert/strict";
 import type { Claim } from "@knowni/core";
 import { commitClaim } from "@knowni/core";
 import { poseidonHash } from "@knowni/core/node";
+import { INCOME, SALT } from "../../tools/claim-fixture.ts";
 
 const SUBJECT_REF = { hex: "0a".repeat(32) };
-const SALT = { hex: "0b".repeat(32) };
 const NOW = 1_760_000_000;
 
 const identity: Claim = {
@@ -26,29 +26,20 @@ const identity: Claim = {
   attestedAt: NOW,
 };
 
-const income: Claim = {
-  kind: "income",
-  jurisdiction: "CO",
-  subjectRef: SUBJECT_REF,
-  monthlyMinor: 2_500_000,
-  currency: "COP",
-  basis: "contribution_base",
-  periodsObserved: 11,
-  periodsWindow: 12,
-  attestedAt: NOW,
-};
-
 // From the witness of circuits/claims.circom, IdentityCommitment.
 const CIRCUIT_IDENTITY = "19426120075af234be4e3f80cf347b5e4779abeff2e9c5bf0941dcab3c8f7f1a";
-// From the witness of circuits/claims.circom, IncomeCommitment.
-const CIRCUIT_INCOME = "21800de51ede96a2a805dd554f63ee861848b51a7ee9a8a2fce324de87207526";
+// From the witness of circuits/claims.circom, IncomeCommitment, rebuilt when
+// the claim grew its provenance. CI regenerates this witness on every run —
+// see the circuits job — so this constant is a second pair of eyes and not the
+// only thing standing between the two implementations.
+const CIRCUIT_INCOME = "033ae98c509045b8293d6376335fbc8f9c7d914bb6f7c445ed665b0776cb6cc4";
 
 test("an identity commitment made in core is the one the circuit computes", () => {
   assert.equal(commitClaim(poseidonHash, identity, SALT), CIRCUIT_IDENTITY);
 });
 
 test("and an income commitment too", () => {
-  assert.equal(commitClaim(poseidonHash, income, SALT), CIRCUIT_INCOME);
+  assert.equal(commitClaim(poseidonHash, INCOME, SALT), CIRCUIT_INCOME);
 });
 
 // The fields the old circuit left out. Each of these used to change nothing
@@ -66,5 +57,5 @@ test("the fields the circuit used to ignore now change the commitment", () => {
 });
 
 test("a claim of another kind with the same head commits differently", () => {
-  assert.notEqual(commitClaim(poseidonHash, identity, SALT), commitClaim(poseidonHash, income, SALT));
+  assert.notEqual(commitClaim(poseidonHash, identity, SALT), commitClaim(poseidonHash, INCOME, SALT));
 });

@@ -11,6 +11,9 @@ export const DOMAINS = {
   merkleEmpty: "knowni:merkle:empty:v1",
   session: "knowni:session:v1",
   nullifier: "knowni:nullifier:v1",
+  sanctionsListSet: "knowni:co-sanctions:v1",
+  subjectRef: "knowni:subject-ref:v1",
+  snapshot: "knowni:snapshot:v1",
 } as const;
 
 export type DomainName = keyof typeof DOMAINS;

@@ -6,7 +6,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash } from "@knowni/core/node";
 import type { CromaClient, CromaOutcome } from "../../src/providers/croma/client.ts";
 import type { SourceResult } from "../../src/types.ts";
 import { createRegistraduriaPersonhoodSource } from "../../src/country/colombia/registraduria.ts";
@@ -15,8 +15,8 @@ import { createSanctionsSource } from "../../src/country/colombia/sanctions.ts";
 import { createVehicleStandingSource } from "../../src/country/colombia/vehicle.ts";
 
 const NOW = 1_760_000_000;
-const SUBJECT = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "a".repeat(64) };
-const ASSET = { plate: "ABC123", ownerDocumentNumber: "1020304050", assetRef: "b".repeat(64) };
+const SUBJECT = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "0a".repeat(32) };
+const ASSET = { plate: "ABC123", ownerDocumentNumber: "1020304050", assetRef: "0b".repeat(32) };
 const REASONS = new Set(["source_unavailable", "not_found", "consent_missing", "needs_human_review", "invalid_response"]);
 
 /// Planted in every generated payload. Anything of the provider's answer that
@@ -115,7 +115,7 @@ test("no payload makes an adapter throw, and none of it reaches the result", asy
     const results = [
       [`personhood seed ${seed}`, await createRegistraduriaPersonhoodSource(client).fetch(SUBJECT, NOW)],
       [`capacity seed ${seed}`, await createSicaacCapacitySource(client).fetch(SUBJECT, NOW)],
-      [`sanctions seed ${seed}`, await createSanctionsSource(client, sha256Hash).fetch(SUBJECT, NOW)],
+      [`sanctions seed ${seed}`, await createSanctionsSource(client, poseidonHash).fetch(SUBJECT, NOW)],
       [`standing seed ${seed}`, await createVehicleStandingSource(client).fetch(ASSET, NOW)],
     ] as const;
     for (const [where, result] of results) {
@@ -137,7 +137,7 @@ test("a payload that is not an object is an invalid response, not a claim", asyn
     for (const [name, result] of [
       ["personhood", await createRegistraduriaPersonhoodSource(client).fetch(SUBJECT, NOW)],
       ["capacity", await createSicaacCapacitySource(client).fetch(SUBJECT, NOW)],
-      ["sanctions", await createSanctionsSource(client, sha256Hash).fetch(SUBJECT, NOW)],
+      ["sanctions", await createSanctionsSource(client, poseidonHash).fetch(SUBJECT, NOW)],
       ["standing", await createVehicleStandingSource(client).fetch(ASSET, NOW)],
     ] as const) {
       assert.equal(result.status, "degraded", `${name} claimed something from ${JSON.stringify(data)}`);
@@ -155,7 +155,7 @@ test("an unreadable payload never becomes a negative answer", async () => {
     };
     const results = [
       await createSicaacCapacitySource(client).fetch(SUBJECT, NOW),
-      await createSanctionsSource(client, sha256Hash).fetch(SUBJECT, NOW),
+      await createSanctionsSource(client, poseidonHash).fetch(SUBJECT, NOW),
       await createVehicleStandingSource(client).fetch(ASSET, NOW),
     ];
     for (const result of results) assert.equal(result.status, "degraded", `seed ${seed}`);

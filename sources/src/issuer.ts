@@ -1,7 +1,7 @@
 // issuer.ts: The step between a source answering and a subject being able to prove: commit
 // each claim, put the commitments in a tree, publish the root.
 
-import type { Claim, FieldHash, MerkleProof, Salt } from "@knowni/core";
+import type { Claim, FieldHasher, MerkleProof, Salt } from "@knowni/core";
 import { buildMerkleTree, commitClaim, hashLeaf, randomSalt } from "@knowni/core";
 
 export interface HeldCredential {
@@ -25,16 +25,16 @@ export interface IssueRequest {
   readonly padTo?: number;
 }
 
-export function issueClaimSet(h: FieldHash, request: IssueRequest): IssuedSet {
+export function issueClaimSet(h: FieldHasher, request: IssueRequest): IssuedSet {
   const salted = request.claims.map((claim) => {
-    const salt = randomSalt();
+    const salt = randomSalt(h.prime);
     return { claim, salt, leaf: hashLeaf(h, commitClaim(h, claim, salt)) };
   });
 
   const padding: string[] = [];
   const target = request.padTo ?? salted.length;
   for (let i = salted.length; i < target; i += 1) {
-    padding.push(hashLeaf(h, randomSalt().hex));
+    padding.push(hashLeaf(h, randomSalt(h.prime).hex));
   }
 
   const tree = buildMerkleTree(h, [...salted.map((s) => s.leaf), ...padding]);

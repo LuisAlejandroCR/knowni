@@ -45,7 +45,7 @@ test("a successful payment with the right memo and amount pays for the question"
 test("a payment for another question does not pay for this one", async () => {
   const result = await verifyPayment(
     REAL_TX,
-    "f".repeat(64),
+    "0f".repeat(32),
     policy({ fetchImpl: horizon(okTx, [okPayment]) }),
     createMemorySpentPayments(),
   );
@@ -127,7 +127,7 @@ test("a refused payment stays spendable, so nobody is charged for a question we 
   const spent = createMemorySpentPayments();
   const wrong = await verifyPayment(
     REAL_TX,
-    "e".repeat(64),
+    "0e".repeat(32),
     policy({ fetchImpl: horizon(okTx, [okPayment]) }),
     spent,
   );

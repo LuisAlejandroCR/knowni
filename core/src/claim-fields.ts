@@ -4,8 +4,7 @@
 // commitment.ts, which still encodes to bytes for the sha256 hash in use.
 
 import type { Claim } from "./claims.ts";
-import type { Digest } from "./hash.ts";
-import { fieldFromBoolean, fieldFromHex, fieldFromString, fieldFromUint } from "./field.ts";
+import { fieldFromBoolean, fieldFromHex, fieldFromUint } from "./field.ts";
 
 /// The kind goes in as a number, not as a hashed string: it is a closed set
 /// this file owns, and a claim of one kind must never encode to the same list
@@ -34,8 +33,14 @@ export const CLAIM_WIDTH: Record<Claim["kind"], number> = {
 /// The claim, as elements, in the order a commitment consumes them. The first
 /// three are the same for every kind — tag, jurisdiction, subject — so a
 /// reader can tell what it is looking at before it knows the schema.
-export function encodeClaimFields(digest: Digest, claim: Claim, prime: bigint): bigint[] {
-  const text = (value: string) => fieldFromString(digest, value, prime);
+/// `text` turns an open string into an element. It is passed in rather than
+/// chosen here so there is one derivation in the product and the hasher owns
+/// it — the same reason the domains live in one list.
+export function encodeClaimFields(
+  text: (value: string) => bigint,
+  claim: Claim,
+  prime: bigint,
+): bigint[] {
   const head = [
     KIND_TAG[claim.kind],
     text(claim.jurisdiction),

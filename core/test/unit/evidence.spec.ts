@@ -10,7 +10,7 @@ import { BASIS_DOES_NOT_ESTIMATE } from "../../src/claims.ts";
 import { SolvencyTier, proveSolvency } from "../../src/predicates.ts";
 
 const NOW = 1_760_000_000;
-const REF = "a".repeat(64);
+const REF = "0a".repeat(32);
 const RENT = 1_000_000;
 
 const income = (over: Partial<IncomeClaim> = {}): IncomeClaim => ({
@@ -76,10 +76,10 @@ test("every basis carries what it does not estimate, and none of them claims to 
 
 test("the periods a figure covers change its commitment", async () => {
   const { commitClaim, randomSalt } = await import("../../src/commitment.ts");
-  const { sha256Hash } = await import("../../src/node.ts");
-  const salt = randomSalt();
+  const { poseidonHash } = await import("../../src/node.ts");
+  const salt = randomSalt(poseidonHash.prime);
   assert.notEqual(
-    commitClaim(sha256Hash, income({ periodsObserved: 12 }), salt),
-    commitClaim(sha256Hash, income({ periodsObserved: 3 }), salt),
+    commitClaim(poseidonHash, income({ periodsObserved: 12 }), salt),
+    commitClaim(poseidonHash, income({ periodsObserved: 3 }), salt),
   );
 });

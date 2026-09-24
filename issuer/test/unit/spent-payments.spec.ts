@@ -17,7 +17,7 @@ import {
 import { createFileSpentPaymentStore } from "../../src/spent-store.ts";
 
 const TX = "0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161";
-const OTHER_TX = "f".repeat(64);
+const OTHER_TX = "0f".repeat(32);
 
 function sharedStore(): { store: SpentPaymentStore; written: string[] } {
   const written: string[] = [];
@@ -120,7 +120,7 @@ test("a refused payment is never written, so it stays spendable", async () => {
 
   const refused = await verifyPayment(
     TX,
-    "a".repeat(64),
+    "0a".repeat(32),
     { destination: "GTREASURY", minAmountStroops: 1n, fetchImpl: horizon },
     spent,
   );

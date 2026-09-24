@@ -42,7 +42,7 @@ const disclosureFor = (request: SessionRequest): Disclosure => {
     solvency: SolvencyTier.STRONG,
     formality: true,
     standing: true,
-    issuerRoots: ["f".repeat(64)],
+    issuerRoots: ["0f".repeat(32)],
     nullifier: deriveNullifier(sha256Hash, SECRET, session),
   };
 };

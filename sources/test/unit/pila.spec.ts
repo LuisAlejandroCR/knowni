@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { createPilaFormalitySource, createPilaIncomeSource, type PilaClient } from "../../src/country/colombia/pila.ts";
 
 const NOW = 1_760_000_000;
-const subject = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "a".repeat(64) };
+const subject = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "0a".repeat(32) };
 
 const clientOf = (rows: { month: number; ibcMinor: number }[]): PilaClient => ({
   async contributions() { return rows; },

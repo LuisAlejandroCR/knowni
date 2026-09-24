@@ -2,7 +2,7 @@
 // The issuer signs a root once; the check is signature, Merkle inclusion and
 // commitment opening, with no network and no chain.
 
-import type { Claim, FieldHash, Salt } from "@knowni/core";
+import type { Claim, FieldHasher, Salt } from "@knowni/core";
 import { commitClaim, fromHex, hashLeaf, lengthPrefixed, toHex, u64be, utf8, verifyInclusion } from "@knowni/core";
 import type { SignaturePort } from "./signing.ts";
 import type {
@@ -78,7 +78,7 @@ export interface CredentialCheck {
 
 // The whole offline check, in the order that fails cheapest first.
 export function verifyCredential(
-  h: FieldHash,
+  h: FieldHasher,
   credential: AttestedCredential,
   check: CredentialCheck,
 ): AttestationResult {

@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import type { IdentityClaim } from "@knowni/core";
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash } from "@knowni/core/node";
 import { issueClaimSet } from "@knowni/sources";
 import {
   attestRoot,
@@ -31,9 +31,9 @@ const claimFor = (ref: string): IdentityClaim => ({
   attestedAt: NOW - 120,
 });
 
-function issued(claims = [claimFor("a".repeat(64)), claimFor("b".repeat(64))]) {
+function issued(claims = [claimFor("0a".repeat(32)), claimFor("0b".repeat(32))]) {
   const keypair = generateIssuerKeypair(nodeSignatures);
-  const set = issueClaimSet(sha256Hash, { issuerId: ISSUER, claims, issuedAt: NOW - 60, padTo: 8 });
+  const set = issueClaimSet(poseidonHash, { issuerId: ISSUER, claims, issuedAt: NOW - 60, padTo: 8 });
   const attestation = attestRoot(nodeSignatures, keypair.privateKeySeed, {
     issuerId: set.issuerId,
     root: set.root,
@@ -54,13 +54,13 @@ const check = (registry: ReturnType<typeof createMemoryRegistry>) => ({
 
 test("a credential verifies with no chain, no network and no call to the source", () => {
   const { credential, registry } = issued();
-  assert.deepEqual(verifyCredential(sha256Hash, credential, check(registry)), { status: "valid" });
+  assert.deepEqual(verifyCredential(poseidonHash, credential, check(registry)), { status: "valid" });
 });
 
 test("an issuer nobody published is refused before any cryptography runs", () => {
   const { credential } = issued();
   const empty = createMemoryRegistry({});
-  assert.deepEqual(verifyCredential(sha256Hash, credential, check(empty)), {
+  assert.deepEqual(verifyCredential(poseidonHash, credential, check(empty)), {
     status: "invalid",
     reason: "unknown_issuer",
   });
@@ -76,7 +76,7 @@ test("a root signed by a different issuer does not pass as this one", () => {
     size: attestation.size,
   });
   assert.deepEqual(
-    verifyCredential(sha256Hash, { ...credential, attestation: forged }, check(registry)),
+    verifyCredential(poseidonHash, { ...credential, attestation: forged }, check(registry)),
     { status: "invalid", reason: "bad_signature" },
   );
 });
@@ -108,7 +108,7 @@ test("a valid path into an unsigned tree is not a credential", () => {
   // The proof is internally consistent — it just leads to a root this issuer
   // never signed, which is the whole attack this check exists for.
   const swapped = { ...credential, proof: other.set.credentials[0]!.proof };
-  assert.deepEqual(verifyCredential(sha256Hash, swapped, check(registry)), {
+  assert.deepEqual(verifyCredential(poseidonHash, swapped, check(registry)), {
     status: "invalid",
     reason: "not_included",
   });
@@ -116,8 +116,8 @@ test("a valid path into an unsigned tree is not a credential", () => {
 
 test("a claim swapped under a valid path fails on the commitment, not on the path", () => {
   const { credential, registry } = issued();
-  const tampered = { ...credential, claim: { ...claimFor("c".repeat(64)) } };
-  assert.deepEqual(verifyCredential(sha256Hash, tampered, check(registry)), {
+  const tampered = { ...credential, claim: { ...claimFor("0c".repeat(32)) } };
+  assert.deepEqual(verifyCredential(poseidonHash, tampered, check(registry)), {
     status: "invalid",
     reason: "commitment_mismatch",
   });
@@ -125,8 +125,8 @@ test("a claim swapped under a valid path fails on the commitment, not on the pat
 
 test("the wrong salt opens nothing, even with the right claim", () => {
   const { credential, registry } = issued();
-  const wrongSalt = { ...credential, salt: { hex: "f".repeat(64) } };
-  assert.deepEqual(verifyCredential(sha256Hash, wrongSalt, check(registry)), {
+  const wrongSalt = { ...credential, salt: { hex: "0f".repeat(32) } };
+  assert.deepEqual(verifyCredential(poseidonHash, wrongSalt, check(registry)), {
     status: "invalid",
     reason: "commitment_mismatch",
   });
@@ -135,11 +135,11 @@ test("the wrong salt opens nothing, even with the right claim", () => {
 test("a stale root expires, and one stamped in the future is refused too", () => {
   const { credential, registry } = issued();
   assert.deepEqual(
-    verifyCredential(sha256Hash, credential, { signatures: nodeSignatures, registry, nowUnix: NOW, maxRootAgeSeconds: 10 }),
+    verifyCredential(poseidonHash, credential, { signatures: nodeSignatures, registry, nowUnix: NOW, maxRootAgeSeconds: 10 }),
     { status: "invalid", reason: "root_expired" },
   );
   assert.deepEqual(
-    verifyCredential(sha256Hash, credential, { signatures: nodeSignatures, registry,
+    verifyCredential(poseidonHash, credential, { signatures: nodeSignatures, registry,
       nowUnix: credential.attestation.issuedAt - 60,
       maxRootAgeSeconds: 86_400,
     }),
@@ -153,14 +153,14 @@ test("revocation is a registry answer, and an absent entry is not a revocation",
     { [ISSUER]: keypair.publicKey },
     [`${ISSUER}:${attestation.root}`],
   );
-  assert.deepEqual(verifyCredential(sha256Hash, credential, check(revoked)), {
+  assert.deepEqual(verifyCredential(poseidonHash, credential, check(revoked)), {
     status: "invalid",
     reason: "revoked",
   });
   // A registry with no revocation knowledge at all still verifies: a
   // registry that cannot be reached must not invalidate every credential.
   const silent = { publicKeyOf: () => keypair.publicKey };
-  assert.deepEqual(verifyCredential(sha256Hash, credential, check(silent)), { status: "valid" });
+  assert.deepEqual(verifyCredential(poseidonHash, credential, check(silent)), { status: "valid" });
 });
 
 test("padding hides how many claims the issuer wrote, and the padded leaves prove nothing", () => {

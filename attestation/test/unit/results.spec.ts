@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 
 import type { SessionRequest } from "@knowni/core";
 import { SolvencyTier, deriveNullifier, sessionId } from "@knowni/core";
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash, sha256Hash } from "@knowni/core/node";
 import { issueClaimSet } from "@knowni/sources";
 import {
   acceptPresentation,
@@ -98,13 +98,13 @@ test("the held credential still carries the secrets, which is why it is never se
   // The guard is worth having precisely because the wallet-side object does
   // contain them: the difference between the two shapes IS the fix.
   const keypair = generateIssuerKeypair(nodeSignatures);
-  const set = issueClaimSet(sha256Hash, {
+  const set = issueClaimSet(poseidonHash, {
     issuerId: ISSUER,
     claims: [
       {
         kind: "capacity",
         jurisdiction: "CO",
-        subjectRef: { hex: "a".repeat(64) },
+        subjectRef: { hex: "0a".repeat(32) },
         restricted: false,
         basis: "insolvency_proceeding",
         attestedAt: NOW - 100,
@@ -213,7 +213,7 @@ const disclosureFor = (session: string) => ({
   solvency: SolvencyTier.STRONG,
   formality: true as const,
   standing: true as const,
-  issuerRoots: ["f".repeat(64)],
+  issuerRoots: ["0f".repeat(32)],
   nullifier: deriveNullifier(sha256Hash, SECRET, session),
 });
 

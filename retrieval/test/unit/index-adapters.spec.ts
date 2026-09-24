@@ -3,6 +3,7 @@
 // index is underneath.
 
 import { test } from "node:test";
+import { poseidonHash } from "@knowni/core/node";
 import assert from "node:assert/strict";
 
 import { createMemoryIndex } from "../../src/adapters/memory.ts";
@@ -17,7 +18,7 @@ const corpus: PublicRecord[] = [
 ];
 
 test("the memory index finds a distinctive name and clears an unrelated one", async () => {
-  const index = createMemoryIndex();
+  const index = createMemoryIndex(poseidonHash);
   await index.upsert(corpus);
 
   assert.equal(screen(resolve(await index.search({ text: "Carlos Mendoza" }))).listed, true);
@@ -25,7 +26,7 @@ test("the memory index finds a distinctive name and clears an unrelated one", as
 });
 
 test("a common name comes back ambiguous rather than matched", async () => {
-  const index = createMemoryIndex();
+  const index = createMemoryIndex(poseidonHash);
   await index.upsert(corpus);
   const resolution = resolve(await index.search({ text: "Maria Fernanda Rodriguez" }));
   assert.equal(resolution.status, "ambiguous");
@@ -33,14 +34,14 @@ test("a common name comes back ambiguous rather than matched", async () => {
 });
 
 test("a source filter narrows the corpus", async () => {
-  const index = createMemoryIndex();
+  const index = createMemoryIndex(poseidonHash);
   await index.upsert(corpus);
   const hits = await index.search({ text: "Carlos Mendoza", sources: ["co-procuraduria"] });
   assert.deepEqual(hits, []);
 });
 
 test("upsert replaces a record rather than duplicating it", async () => {
-  const index = createMemoryIndex();
+  const index = createMemoryIndex(poseidonHash);
   await index.upsert(corpus);
   await index.upsert([{ ...corpus[0]!, text: "CARLOS MENDOZA (delisted)" }]);
   const hits = await index.search({ text: "Carlos Mendoza" });
@@ -51,15 +52,15 @@ test("upsert replaces a record rather than duplicating it", async () => {
 test("the snapshot root is independent of ingestion order", async () => {
   // Two operators ingesting the same published list must publish the same
   // root, or a relying party cannot pin one.
-  const a = createMemoryIndex();
-  const b = createMemoryIndex();
+  const a = createMemoryIndex(poseidonHash);
+  const b = createMemoryIndex(poseidonHash);
   await a.upsert(corpus);
   await b.upsert([...corpus].reverse());
   assert.equal(await a.snapshotRoot(), await b.snapshotRoot());
 });
 
 test("the snapshot root changes when the corpus changes", async () => {
-  const index = createMemoryIndex();
+  const index = createMemoryIndex(poseidonHash);
   await index.upsert(corpus);
   const before = await index.snapshotRoot();
   await index.upsert([{ id: "sdn-2", source: "ofac-sdn", jurisdiction: "US", text: "NEW ENTRY" }]);

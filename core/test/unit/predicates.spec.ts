@@ -134,7 +134,7 @@ const standingParams = {
 
 test("standing holds only against the snapshot the relying party named", () => {
   assert.equal(proveStanding(standing, standingParams), true);
-  assert.equal(proveStanding({ ...standing, listSetRoot: "d".repeat(64) }, standingParams), false);
+  assert.equal(proveStanding({ ...standing, listSetRoot: "0d".repeat(32) }, standingParams), false);
 });
 
 test("standing fails when the subject is on the list", () => {

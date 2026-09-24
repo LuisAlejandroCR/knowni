@@ -7,11 +7,11 @@ import assert from "node:assert/strict";
 import type { AssetStandingClaim, CapacityClaim } from "../../src/claims.ts";
 import { proveAssetStanding, proveCapacity } from "../../src/predicates.ts";
 import { commitClaim, randomSalt } from "../../src/commitment.ts";
-import { sha256Hash } from "../../src/node.ts";
+import { poseidonHash } from "../../src/node.ts";
 
 const NOW = 1_760_000_000;
-const REF = "a".repeat(64);
-const ASSET = "b".repeat(64);
+const REF = "0a".repeat(32);
+const ASSET = "0b".repeat(32);
 
 const capacity = (over: Partial<CapacityClaim> = {}): CapacityClaim => ({
   kind: "capacity",
@@ -50,7 +50,7 @@ test("a register the relying party did not accept does not answer their question
 });
 
 test("capacity proven for one subject does not transfer to another", () => {
-  assert.equal(proveCapacity(capacity({ subjectRef: { hex: "c".repeat(64) } }), params), false);
+  assert.equal(proveCapacity(capacity({ subjectRef: { hex: "0c".repeat(32) } }), params), false);
 });
 
 const vehicle = (over: Partial<AssetStandingClaim> = {}): AssetStandingClaim => ({
@@ -94,18 +94,18 @@ test("outstanding fines are the buyer's call, and the parameter is where they ma
 
 test("an attestation about a different car does not prove this one", () => {
   assert.equal(
-    proveAssetStanding(vehicle({ subjectRef: { hex: "d".repeat(64) } }), assetParams),
+    proveAssetStanding(vehicle({ subjectRef: { hex: "0d".repeat(32) } }), assetParams),
     false,
   );
 });
 
 test("both new kinds commit distinctly, so one cannot be replayed as the other", () => {
-  const salt = randomSalt();
-  const a = commitClaim(sha256Hash, capacity(), salt);
-  const b = commitClaim(sha256Hash, vehicle(), salt);
+  const salt = randomSalt(poseidonHash.prime);
+  const a = commitClaim(poseidonHash, capacity(), salt);
+  const b = commitClaim(poseidonHash, vehicle(), salt);
   assert.notEqual(a, b);
   assert.match(a, /^[0-9a-f]{64}$/);
   // And a changed field changes the commitment, which is what makes the
   // commitment worth checking at all.
-  assert.notEqual(a, commitClaim(sha256Hash, capacity({ restricted: true }), salt));
+  assert.notEqual(a, commitClaim(poseidonHash, capacity({ restricted: true }), salt));
 });

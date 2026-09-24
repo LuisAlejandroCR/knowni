@@ -5,10 +5,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { sha256Hash } from "../../src/node.ts";
+import { poseidonHash } from "../../src/node.ts";
 import { buildMerkleTree, hashLeaf, verifyInclusion } from "../../src/merkle.ts";
 
-const h = sha256Hash;
+const h = poseidonHash;
 const leaves = (n: number) => Array.from({ length: n }, (_, i) => hashLeaf(h, pad(i)));
 const pad = (i: number) => i.toString(16).padStart(64, "0");
 
@@ -55,10 +55,9 @@ test("flipping the side of a path step does not fold into the root", () => {
 test("an internal node cannot be passed off as a leaf", () => {
   const set = leaves(4);
   const tree = buildMerkleTree(h, set);
-  const internal = h.hash("knowni:merkle:node:v1", [
-    Buffer.from(set[0]!, "hex"),
-    Buffer.from(set[1]!, "hex"),
-  ]);
+  const internal = h.toHex(
+    h.hashFields("merkleNode", [h.fromHex(set[0]!, "left"), h.fromHex(set[1]!, "right")]),
+  );
   assert.equal(tree.proveInclusion(internal), undefined);
 });
 

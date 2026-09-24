@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash } from "@knowni/core/node";
 import {
   createCromaClient,
   createPilaIncomeSource,
@@ -22,8 +22,8 @@ const SALARY = "420000000";
 const ACCOUNT = "CTA-99887766";
 const PLATE = "ABC123";
 
-const subject = { documentKind: "CC", documentNumber: DOCUMENT, subjectRef: "a".repeat(64) };
-const asset = { plate: PLATE, ownerDocumentNumber: DOCUMENT, assetRef: "b".repeat(64) };
+const subject = { documentKind: "CC", documentNumber: DOCUMENT, subjectRef: "0a".repeat(32) };
+const asset = { plate: PLATE, ownerDocumentNumber: DOCUMENT, assetRef: "0b".repeat(32) };
 
 // Everything an operator could end up reading: the injected telemetry, the
 // injected error sink, and the console itself.
@@ -80,7 +80,7 @@ test("a provider that echoes the document number in its error leaks nothing", as
     const results = await Promise.all([
       createRegistraduriaPersonhoodSource(client).fetch(subject, 1_760_000_000),
       createSicaacCapacitySource(client).fetch(subject, 1_760_000_000),
-      createSanctionsSource(client, sha256Hash).fetch(subject, 1_760_000_000),
+      createSanctionsSource(client, poseidonHash).fetch(subject, 1_760_000_000),
       createVehicleStandingSource(client).fetch(asset, 1_760_000_000),
     ]);
     for (const result of results) assert.equal(result.status, "degraded");

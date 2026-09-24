@@ -4,12 +4,8 @@
 // and written down in docs/memoria.md D-54; until it is settled, a root here
 // and a root there are different numbers.
 
-import type { FieldHash } from "./hash.ts";
-import { fromHex, u32be, utf8 } from "./hash.ts";
-import { DOMAINS } from "./domains.ts";
-
-const LEAF_DOMAIN = DOMAINS.merkleLeaf;
-const NODE_DOMAIN = DOMAINS.merkleNode;
+import type { FieldHasher } from "./field-hasher.ts";
+import { utf8 } from "./hash.ts";
 
 export interface MerkleProof {
   readonly leaf: string; // hex
@@ -24,19 +20,19 @@ export interface MerkleTree {
   proveInclusion(leaf: string): MerkleProof | undefined;
 }
 
-export function hashLeaf(h: FieldHash, commitmentHex: string): string {
-  return h.hash(LEAF_DOMAIN, [fromHex(commitmentHex)]);
+export function hashLeaf(h: FieldHasher, commitmentHex: string): string {
+  return h.toHex(h.hashFields("merkleLeaf", [h.fromHex(commitmentHex, "commitment")]));
 }
 
-function hashNode(h: FieldHash, left: string, right: string): string {
-  return h.hash(NODE_DOMAIN, [fromHex(left), fromHex(right)]);
+function hashNode(h: FieldHasher, left: string, right: string): string {
+  return h.toHex(h.hashFields("merkleNode", [h.fromHex(left, "left"), h.fromHex(right, "right")]));
 }
 
-export function buildMerkleTree(h: FieldHash, leaves: readonly string[]): MerkleTree {
+export function buildMerkleTree(h: FieldHasher, leaves: readonly string[]): MerkleTree {
   if (leaves.length === 0) {
     // An empty set still needs a root a contract can pin, and it must not be
     // a value any leaf could hash to.
-    const empty = h.hash(DOMAINS.merkleEmpty, [u32be(0)]);
+    const empty = h.toHex(h.hashFields("merkleEmpty", [0n]));
     return { root: empty, size: 0, proveInclusion: () => undefined };
   }
 
@@ -77,7 +73,7 @@ export function buildMerkleTree(h: FieldHash, leaves: readonly string[]): Merkle
   };
 }
 
-export function verifyInclusion(h: FieldHash, proof: MerkleProof): boolean {
+export function verifyInclusion(h: FieldHasher, proof: MerkleProof): boolean {
   let node = proof.leaf;
   for (const step of proof.path) {
     node = step.right ? hashNode(h, node, step.sibling) : hashNode(h, step.sibling, node);

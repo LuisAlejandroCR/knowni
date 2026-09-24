@@ -227,7 +227,13 @@ template PoseidonKnowni2() {
     // quadratic term and the mix would stop being one constraint per cell.
     // Adding one is free inside the expression that squares the cell, so the
     // round key never gets a signal of its own either.
-    signal state[66][3];
+    //
+    // The state itself is a var too, and that is the whole optimisation: a
+    // var holds the linear combination of signals it was built from, so
+    // mixing is bookkeeping the compiler does instead of a constraint per
+    // cell per round. Only what gets squared has to be a signal, because
+    // R1CS can multiply two linear combinations but not three. See
+    // docs/memoria.md D-52 and D-62.
     signal fullSquared[8][3];
     signal fullQuartic[8][3];
     signal fullSboxed[8][3];
@@ -237,48 +243,49 @@ template PoseidonKnowni2() {
 
     // The extra cell starts at zero: circomlib's arrangement, and the one
     // core/src/poseidon.ts mirrors.
-    state[0][0] <== 0;
+    var state[3];
+    state[0] = 0;
     for (var i = 1; i < 3; i++) {
-        state[0][i] <== inputs[i - 1];
+        state[i] = inputs[i - 1];
     }
 
+    var mixed[3];
     var f = 0;
     var p = 0;
     for (var r = 0; r < 65; r++) {
         if (r < 4 || r >= 61) {
             for (var i = 0; i < 3; i++) {
-                fullSquared[f][i] <== (state[r][i] + C[r * 3 + i]) * (state[r][i] + C[r * 3 + i]);
+                fullSquared[f][i] <== (state[i] + C[r * 3 + i]) * (state[i] + C[r * 3 + i]);
                 fullQuartic[f][i] <== fullSquared[f][i] * fullSquared[f][i];
-                fullSboxed[f][i] <== fullQuartic[f][i] * (state[r][i] + C[r * 3 + i]);
+                fullSboxed[f][i] <== fullQuartic[f][i] * (state[i] + C[r * 3 + i]);
             }
             for (var i = 0; i < 3; i++) {
-                var lc = 0;
+                mixed[i] = 0;
                 for (var j = 0; j < 3; j++) {
-                    lc += M[i][j] * fullSboxed[f][j];
+                    mixed[i] += M[i][j] * fullSboxed[f][j];
                 }
-                state[r + 1][i] <== lc;
             }
             f++;
         } else {
             // A partial round raises only the first cell. That is what makes
             // Poseidon affordable, and one character away from another hash.
-            // The other cells stay linear, so they enter the mix as the
-            // expression they already are instead of a signal each.
-            partialSquared[p] <== (state[r][0] + C[r * 3]) * (state[r][0] + C[r * 3]);
+            partialSquared[p] <== (state[0] + C[r * 3]) * (state[0] + C[r * 3]);
             partialQuartic[p] <== partialSquared[p] * partialSquared[p];
-            partialSboxed[p] <== partialQuartic[p] * (state[r][0] + C[r * 3]);
+            partialSboxed[p] <== partialQuartic[p] * (state[0] + C[r * 3]);
             for (var i = 0; i < 3; i++) {
-                var lc = M[i][0] * partialSboxed[p];
+                mixed[i] = M[i][0] * partialSboxed[p];
                 for (var j = 1; j < 3; j++) {
-                    lc += M[i][j] * (state[r][j] + C[r * 3 + j]);
+                    mixed[i] += M[i][j] * (state[j] + C[r * 3 + j]);
                 }
-                state[r + 1][i] <== lc;
             }
             p++;
         }
+        for (var i = 0; i < 3; i++) {
+            state[i] = mixed[i];
+        }
     }
 
-    out <== state[65][0];
+    out <== state[0];
 }
 // 3 inputs, state width 4, 8 full and 56 partial rounds.
 function POSEIDON_KNOWNI_C_3() {
@@ -560,7 +567,13 @@ template PoseidonKnowni3() {
     // quadratic term and the mix would stop being one constraint per cell.
     // Adding one is free inside the expression that squares the cell, so the
     // round key never gets a signal of its own either.
-    signal state[65][4];
+    //
+    // The state itself is a var too, and that is the whole optimisation: a
+    // var holds the linear combination of signals it was built from, so
+    // mixing is bookkeeping the compiler does instead of a constraint per
+    // cell per round. Only what gets squared has to be a signal, because
+    // R1CS can multiply two linear combinations but not three. See
+    // docs/memoria.md D-52 and D-62.
     signal fullSquared[8][4];
     signal fullQuartic[8][4];
     signal fullSboxed[8][4];
@@ -570,48 +583,49 @@ template PoseidonKnowni3() {
 
     // The extra cell starts at zero: circomlib's arrangement, and the one
     // core/src/poseidon.ts mirrors.
-    state[0][0] <== 0;
+    var state[4];
+    state[0] = 0;
     for (var i = 1; i < 4; i++) {
-        state[0][i] <== inputs[i - 1];
+        state[i] = inputs[i - 1];
     }
 
+    var mixed[4];
     var f = 0;
     var p = 0;
     for (var r = 0; r < 64; r++) {
         if (r < 4 || r >= 60) {
             for (var i = 0; i < 4; i++) {
-                fullSquared[f][i] <== (state[r][i] + C[r * 4 + i]) * (state[r][i] + C[r * 4 + i]);
+                fullSquared[f][i] <== (state[i] + C[r * 4 + i]) * (state[i] + C[r * 4 + i]);
                 fullQuartic[f][i] <== fullSquared[f][i] * fullSquared[f][i];
-                fullSboxed[f][i] <== fullQuartic[f][i] * (state[r][i] + C[r * 4 + i]);
+                fullSboxed[f][i] <== fullQuartic[f][i] * (state[i] + C[r * 4 + i]);
             }
             for (var i = 0; i < 4; i++) {
-                var lc = 0;
+                mixed[i] = 0;
                 for (var j = 0; j < 4; j++) {
-                    lc += M[i][j] * fullSboxed[f][j];
+                    mixed[i] += M[i][j] * fullSboxed[f][j];
                 }
-                state[r + 1][i] <== lc;
             }
             f++;
         } else {
             // A partial round raises only the first cell. That is what makes
             // Poseidon affordable, and one character away from another hash.
-            // The other cells stay linear, so they enter the mix as the
-            // expression they already are instead of a signal each.
-            partialSquared[p] <== (state[r][0] + C[r * 4]) * (state[r][0] + C[r * 4]);
+            partialSquared[p] <== (state[0] + C[r * 4]) * (state[0] + C[r * 4]);
             partialQuartic[p] <== partialSquared[p] * partialSquared[p];
-            partialSboxed[p] <== partialQuartic[p] * (state[r][0] + C[r * 4]);
+            partialSboxed[p] <== partialQuartic[p] * (state[0] + C[r * 4]);
             for (var i = 0; i < 4; i++) {
-                var lc = M[i][0] * partialSboxed[p];
+                mixed[i] = M[i][0] * partialSboxed[p];
                 for (var j = 1; j < 4; j++) {
-                    lc += M[i][j] * (state[r][j] + C[r * 4 + j]);
+                    mixed[i] += M[i][j] * (state[j] + C[r * 4 + j]);
                 }
-                state[r + 1][i] <== lc;
             }
             p++;
         }
+        for (var i = 0; i < 4; i++) {
+            state[i] = mixed[i];
+        }
     }
 
-    out <== state[64][0];
+    out <== state[0];
 }
 // 10 inputs, state width 11, 8 full and 66 partial rounds.
 function POSEIDON_KNOWNI_C_10() {
@@ -1458,7 +1472,13 @@ template PoseidonKnowni10() {
     // quadratic term and the mix would stop being one constraint per cell.
     // Adding one is free inside the expression that squares the cell, so the
     // round key never gets a signal of its own either.
-    signal state[75][11];
+    //
+    // The state itself is a var too, and that is the whole optimisation: a
+    // var holds the linear combination of signals it was built from, so
+    // mixing is bookkeeping the compiler does instead of a constraint per
+    // cell per round. Only what gets squared has to be a signal, because
+    // R1CS can multiply two linear combinations but not three. See
+    // docs/memoria.md D-52 and D-62.
     signal fullSquared[8][11];
     signal fullQuartic[8][11];
     signal fullSboxed[8][11];
@@ -1468,48 +1488,49 @@ template PoseidonKnowni10() {
 
     // The extra cell starts at zero: circomlib's arrangement, and the one
     // core/src/poseidon.ts mirrors.
-    state[0][0] <== 0;
+    var state[11];
+    state[0] = 0;
     for (var i = 1; i < 11; i++) {
-        state[0][i] <== inputs[i - 1];
+        state[i] = inputs[i - 1];
     }
 
+    var mixed[11];
     var f = 0;
     var p = 0;
     for (var r = 0; r < 74; r++) {
         if (r < 4 || r >= 70) {
             for (var i = 0; i < 11; i++) {
-                fullSquared[f][i] <== (state[r][i] + C[r * 11 + i]) * (state[r][i] + C[r * 11 + i]);
+                fullSquared[f][i] <== (state[i] + C[r * 11 + i]) * (state[i] + C[r * 11 + i]);
                 fullQuartic[f][i] <== fullSquared[f][i] * fullSquared[f][i];
-                fullSboxed[f][i] <== fullQuartic[f][i] * (state[r][i] + C[r * 11 + i]);
+                fullSboxed[f][i] <== fullQuartic[f][i] * (state[i] + C[r * 11 + i]);
             }
             for (var i = 0; i < 11; i++) {
-                var lc = 0;
+                mixed[i] = 0;
                 for (var j = 0; j < 11; j++) {
-                    lc += M[i][j] * fullSboxed[f][j];
+                    mixed[i] += M[i][j] * fullSboxed[f][j];
                 }
-                state[r + 1][i] <== lc;
             }
             f++;
         } else {
             // A partial round raises only the first cell. That is what makes
             // Poseidon affordable, and one character away from another hash.
-            // The other cells stay linear, so they enter the mix as the
-            // expression they already are instead of a signal each.
-            partialSquared[p] <== (state[r][0] + C[r * 11]) * (state[r][0] + C[r * 11]);
+            partialSquared[p] <== (state[0] + C[r * 11]) * (state[0] + C[r * 11]);
             partialQuartic[p] <== partialSquared[p] * partialSquared[p];
-            partialSboxed[p] <== partialQuartic[p] * (state[r][0] + C[r * 11]);
+            partialSboxed[p] <== partialQuartic[p] * (state[0] + C[r * 11]);
             for (var i = 0; i < 11; i++) {
-                var lc = M[i][0] * partialSboxed[p];
+                mixed[i] = M[i][0] * partialSboxed[p];
                 for (var j = 1; j < 11; j++) {
-                    lc += M[i][j] * (state[r][j] + C[r * 11 + j]);
+                    mixed[i] += M[i][j] * (state[j] + C[r * 11 + j]);
                 }
-                state[r + 1][i] <== lc;
             }
             p++;
         }
+        for (var i = 0; i < 11; i++) {
+            state[i] = mixed[i];
+        }
     }
 
-    out <== state[74][0];
+    out <== state[0];
 }
 // 11 inputs, state width 12, 8 full and 60 partial rounds.
 function POSEIDON_KNOWNI_C_11() {
@@ -2359,7 +2380,13 @@ template PoseidonKnowni11() {
     // quadratic term and the mix would stop being one constraint per cell.
     // Adding one is free inside the expression that squares the cell, so the
     // round key never gets a signal of its own either.
-    signal state[69][12];
+    //
+    // The state itself is a var too, and that is the whole optimisation: a
+    // var holds the linear combination of signals it was built from, so
+    // mixing is bookkeeping the compiler does instead of a constraint per
+    // cell per round. Only what gets squared has to be a signal, because
+    // R1CS can multiply two linear combinations but not three. See
+    // docs/memoria.md D-52 and D-62.
     signal fullSquared[8][12];
     signal fullQuartic[8][12];
     signal fullSboxed[8][12];
@@ -2369,48 +2396,49 @@ template PoseidonKnowni11() {
 
     // The extra cell starts at zero: circomlib's arrangement, and the one
     // core/src/poseidon.ts mirrors.
-    state[0][0] <== 0;
+    var state[12];
+    state[0] = 0;
     for (var i = 1; i < 12; i++) {
-        state[0][i] <== inputs[i - 1];
+        state[i] = inputs[i - 1];
     }
 
+    var mixed[12];
     var f = 0;
     var p = 0;
     for (var r = 0; r < 68; r++) {
         if (r < 4 || r >= 64) {
             for (var i = 0; i < 12; i++) {
-                fullSquared[f][i] <== (state[r][i] + C[r * 12 + i]) * (state[r][i] + C[r * 12 + i]);
+                fullSquared[f][i] <== (state[i] + C[r * 12 + i]) * (state[i] + C[r * 12 + i]);
                 fullQuartic[f][i] <== fullSquared[f][i] * fullSquared[f][i];
-                fullSboxed[f][i] <== fullQuartic[f][i] * (state[r][i] + C[r * 12 + i]);
+                fullSboxed[f][i] <== fullQuartic[f][i] * (state[i] + C[r * 12 + i]);
             }
             for (var i = 0; i < 12; i++) {
-                var lc = 0;
+                mixed[i] = 0;
                 for (var j = 0; j < 12; j++) {
-                    lc += M[i][j] * fullSboxed[f][j];
+                    mixed[i] += M[i][j] * fullSboxed[f][j];
                 }
-                state[r + 1][i] <== lc;
             }
             f++;
         } else {
             // A partial round raises only the first cell. That is what makes
             // Poseidon affordable, and one character away from another hash.
-            // The other cells stay linear, so they enter the mix as the
-            // expression they already are instead of a signal each.
-            partialSquared[p] <== (state[r][0] + C[r * 12]) * (state[r][0] + C[r * 12]);
+            partialSquared[p] <== (state[0] + C[r * 12]) * (state[0] + C[r * 12]);
             partialQuartic[p] <== partialSquared[p] * partialSquared[p];
-            partialSboxed[p] <== partialQuartic[p] * (state[r][0] + C[r * 12]);
+            partialSboxed[p] <== partialQuartic[p] * (state[0] + C[r * 12]);
             for (var i = 0; i < 12; i++) {
-                var lc = M[i][0] * partialSboxed[p];
+                mixed[i] = M[i][0] * partialSboxed[p];
                 for (var j = 1; j < 12; j++) {
-                    lc += M[i][j] * (state[r][j] + C[r * 12 + j]);
+                    mixed[i] += M[i][j] * (state[j] + C[r * 12 + j]);
                 }
-                state[r + 1][i] <== lc;
             }
             p++;
         }
+        for (var i = 0; i < 12; i++) {
+            state[i] = mixed[i];
+        }
     }
 
-    out <== state[68][0];
+    out <== state[0];
 }
 // 12 inputs, state width 13, 8 full and 65 partial rounds.
 function POSEIDON_KNOWNI_C_12() {
@@ -3394,7 +3422,13 @@ template PoseidonKnowni12() {
     // quadratic term and the mix would stop being one constraint per cell.
     // Adding one is free inside the expression that squares the cell, so the
     // round key never gets a signal of its own either.
-    signal state[74][13];
+    //
+    // The state itself is a var too, and that is the whole optimisation: a
+    // var holds the linear combination of signals it was built from, so
+    // mixing is bookkeeping the compiler does instead of a constraint per
+    // cell per round. Only what gets squared has to be a signal, because
+    // R1CS can multiply two linear combinations but not three. See
+    // docs/memoria.md D-52 and D-62.
     signal fullSquared[8][13];
     signal fullQuartic[8][13];
     signal fullSboxed[8][13];
@@ -3404,46 +3438,47 @@ template PoseidonKnowni12() {
 
     // The extra cell starts at zero: circomlib's arrangement, and the one
     // core/src/poseidon.ts mirrors.
-    state[0][0] <== 0;
+    var state[13];
+    state[0] = 0;
     for (var i = 1; i < 13; i++) {
-        state[0][i] <== inputs[i - 1];
+        state[i] = inputs[i - 1];
     }
 
+    var mixed[13];
     var f = 0;
     var p = 0;
     for (var r = 0; r < 73; r++) {
         if (r < 4 || r >= 69) {
             for (var i = 0; i < 13; i++) {
-                fullSquared[f][i] <== (state[r][i] + C[r * 13 + i]) * (state[r][i] + C[r * 13 + i]);
+                fullSquared[f][i] <== (state[i] + C[r * 13 + i]) * (state[i] + C[r * 13 + i]);
                 fullQuartic[f][i] <== fullSquared[f][i] * fullSquared[f][i];
-                fullSboxed[f][i] <== fullQuartic[f][i] * (state[r][i] + C[r * 13 + i]);
+                fullSboxed[f][i] <== fullQuartic[f][i] * (state[i] + C[r * 13 + i]);
             }
             for (var i = 0; i < 13; i++) {
-                var lc = 0;
+                mixed[i] = 0;
                 for (var j = 0; j < 13; j++) {
-                    lc += M[i][j] * fullSboxed[f][j];
+                    mixed[i] += M[i][j] * fullSboxed[f][j];
                 }
-                state[r + 1][i] <== lc;
             }
             f++;
         } else {
             // A partial round raises only the first cell. That is what makes
             // Poseidon affordable, and one character away from another hash.
-            // The other cells stay linear, so they enter the mix as the
-            // expression they already are instead of a signal each.
-            partialSquared[p] <== (state[r][0] + C[r * 13]) * (state[r][0] + C[r * 13]);
+            partialSquared[p] <== (state[0] + C[r * 13]) * (state[0] + C[r * 13]);
             partialQuartic[p] <== partialSquared[p] * partialSquared[p];
-            partialSboxed[p] <== partialQuartic[p] * (state[r][0] + C[r * 13]);
+            partialSboxed[p] <== partialQuartic[p] * (state[0] + C[r * 13]);
             for (var i = 0; i < 13; i++) {
-                var lc = M[i][0] * partialSboxed[p];
+                mixed[i] = M[i][0] * partialSboxed[p];
                 for (var j = 1; j < 13; j++) {
-                    lc += M[i][j] * (state[r][j] + C[r * 13 + j]);
+                    mixed[i] += M[i][j] * (state[j] + C[r * 13 + j]);
                 }
-                state[r + 1][i] <== lc;
             }
             p++;
         }
+        for (var i = 0; i < 13; i++) {
+            state[i] = mixed[i];
+        }
     }
 
-    out <== state[73][0];
+    out <== state[0];
 }

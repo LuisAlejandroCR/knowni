@@ -30,9 +30,11 @@ No necesita el dossier. Necesita respuestas:
 | ¿El activo está limpio? | Certificado de tradición, paz y salvo | `true` |
 
 Respuestas. Ni el nombre, ni el número de cédula, ni el salario, ni el empleador, ni la fecha de
-nacimiento. El expediente completo de la solicitud cabe en diez campos, y ninguno dice nada de ti
+nacimiento. El expediente completo de la solicitud cabe en doce campos, y ninguno dice nada de ti
 más allá de lo que te preguntaron — eso está verificado, no prometido:
-[`journey/test/journey.test.ts`](journey/test/journey.test.ts).
+[`journey/test/unit/journey.spec.ts`](journey/test/unit/journey.spec.ts) y
+[`core/test/invariant/disclosure.invariant.spec.ts`](core/test/invariant/disclosure.invariant.spec.ts),
+que comprueba la lista exacta de campos.
 
 ### El contrato es un perfil, no el producto
 

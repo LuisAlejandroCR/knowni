@@ -67,6 +67,8 @@ const outcome: Outcome = {
   solvencyTier: 3,
   formality: true,
   standing: true,
+  capacity: false,
+  assetStanding: false,
   decidedAt: 1_760_000_000,
 };
 

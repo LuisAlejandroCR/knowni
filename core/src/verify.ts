@@ -2,11 +2,34 @@
 // Pure and synchronous — fetching, proving and anchoring all happen outside it,
 // which is what makes the disclosure invariant testable as a property.
 
-import type { Claim, FormalityClaim, IdentityClaim, IncomeClaim, StandingClaim } from "./claims.ts";
+import type {
+  AssetStandingClaim,
+  CapacityClaim,
+  Claim,
+  FormalityClaim,
+  IdentityClaim,
+  IncomeClaim,
+  StandingClaim,
+} from "./claims.ts";
 import type { Disclosure, PredicateResult } from "./disclosure.ts";
 import type { FieldHash } from "./hash.ts";
-import { SolvencyTier, proveFormality, provePersonhood, proveSolvency, proveStanding } from "./predicates.ts";
-import type { FormalityParams, PersonhoodParams, SolvencyParams, StandingParams } from "./predicates.ts";
+import {
+  SolvencyTier,
+  proveAssetStanding,
+  proveCapacity,
+  proveFormality,
+  provePersonhood,
+  proveSolvency,
+  proveStanding,
+} from "./predicates.ts";
+import type {
+  AssetStandingParams,
+  CapacityParams,
+  FormalityParams,
+  PersonhoodParams,
+  SolvencyParams,
+  StandingParams,
+} from "./predicates.ts";
 import { deriveNullifier, isExpired, isPurpose, sessionId, type SessionRequest, type SubjectSecret } from "./session.ts";
 
 export interface VerificationRequest {
@@ -15,6 +38,10 @@ export interface VerificationRequest {
   readonly solvency?: Omit<SolvencyParams, "expectedSubjectRef">;
   readonly formality?: Omit<FormalityParams, "expectedSubjectRef">;
   readonly standing?: Omit<StandingParams, "expectedSubjectRef">;
+  readonly capacity?: Omit<CapacityParams, "expectedSubjectRef">;
+  // The asset's own reference travels with the request, not with the subject:
+  // a car is not a person and must not be matched against one.
+  readonly assetStanding?: AssetStandingParams;
 }
 
 // What the subject holds. A missing claim is not a failure — it produces
@@ -26,6 +53,11 @@ export interface HeldClaims {
   readonly income?: { readonly claim: IncomeClaim; readonly issuerRoot: string };
   readonly formality?: { readonly claim: FormalityClaim; readonly issuerRoot: string };
   readonly standing?: { readonly claim: StandingClaim; readonly issuerRoot: string };
+  readonly capacity?: { readonly claim: CapacityClaim; readonly issuerRoot: string };
+  // Held by the subject, but about the asset, so it is not checked against
+  // `subjectRef` — `proveAssetStanding` matches it against the asset the
+  // relying party named.
+  readonly asset?: { readonly claim: AssetStandingClaim; readonly issuerRoot: string };
 }
 
 // An expired session is refused outright rather than answered negatively:
@@ -56,6 +88,7 @@ export function verify(
     held.income?.claim,
     held.formality?.claim,
     held.standing?.claim,
+    held.capacity?.claim,
   ];
   for (const claim of claims) {
     if (claim !== undefined && claim.subjectRef.hex !== held.subjectRef) {
@@ -85,6 +118,16 @@ export function verify(
       ? "unavailable"
       : proveStanding(held.standing.claim, { ...request.standing, expectedSubjectRef: ref });
 
+  const capacity: PredicateResult =
+    request.capacity === undefined || held.capacity === undefined
+      ? "unavailable"
+      : proveCapacity(held.capacity.claim, { ...request.capacity, expectedSubjectRef: ref });
+
+  const assetStanding: PredicateResult =
+    request.assetStanding === undefined || held.asset === undefined
+      ? "unavailable"
+      : proveAssetStanding(held.asset.claim, request.assetStanding);
+
   const id = sessionId(h, request.session);
 
   const issuerRoots = [
@@ -92,6 +135,8 @@ export function verify(
     solvency !== "unavailable" ? held.income?.issuerRoot : undefined,
     formality !== "unavailable" ? held.formality?.issuerRoot : undefined,
     standing !== "unavailable" ? held.standing?.issuerRoot : undefined,
+    capacity !== "unavailable" ? held.capacity?.issuerRoot : undefined,
+    assetStanding !== "unavailable" ? held.asset?.issuerRoot : undefined,
   ].filter((root): root is string => root !== undefined);
 
   return {
@@ -105,6 +150,8 @@ export function verify(
       solvency,
       formality,
       standing,
+      capacity,
+      assetStanding,
       issuerRoots: [...new Set(issuerRoots)],
       nullifier: deriveNullifier(h, held.secret, id),
     },

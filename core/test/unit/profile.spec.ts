@@ -16,7 +16,7 @@ const BASE: Disclosure = {
   personhood: true,
   solvency: SolvencyTier.STRONG,
   formality: true,
-  standing: true,
+  sanctions: true,
   capacity: true,
   assetStanding: true,
   issuerRoots: ["0f".repeat(32)],
@@ -29,14 +29,14 @@ const BASE: Disclosure = {
 const LEASE: VerificationProfile = [
   { answer: "personhood", mustBe: true },
   { answer: "formality", mustBe: true },
-  { answer: "standing", mustBe: true },
+  { answer: "sanctions", mustBe: true },
   { answer: "solvency", atLeast: SolvencyTier.COMFORTABLE },
 ];
 
 const VEHICLE_SALE: VerificationProfile = [
   { answer: "personhood", mustBe: true },
   { answer: "capacity", mustBe: true },
-  { answer: "standing", mustBe: true },
+  { answer: "sanctions", mustBe: true },
   { answer: "assetStanding", mustBe: true },
 ];
 
@@ -97,7 +97,7 @@ test("every shortfall is reported, not just the first", () => {
     ...BASE,
     personhood: "unavailable",
     formality: false,
-    standing: "unavailable",
+    sanctions: "unavailable",
     solvency: SolvencyTier.NONE,
   };
   assert.deepEqual(meetsProfile(empty, LEASE), {
@@ -105,7 +105,7 @@ test("every shortfall is reported, not just the first", () => {
     missing: [
       { answer: "personhood", reason: "unavailable" },
       { answer: "formality", reason: "not_proven" },
-      { answer: "standing", reason: "unavailable" },
+      { answer: "sanctions", reason: "unavailable" },
       { answer: "solvency", reason: "below_tier" },
     ],
   });

@@ -83,8 +83,8 @@ export interface FormalityClaim {
   readonly attestedAt: number;
 }
 
-export interface StandingClaim {
-  readonly kind: "standing";
+export interface SanctionsClaim {
+  readonly kind: "sanctions";
   readonly jurisdiction: Jurisdiction;
   readonly subjectRef: SubjectRef;
   readonly listed: boolean;
@@ -117,7 +117,7 @@ export type Claim =
   | IdentityClaim
   | IncomeClaim
   | FormalityClaim
-  | StandingClaim
+  | SanctionsClaim
   | CapacityClaim
   | AssetStandingClaim;
 export type ClaimKind = Claim["kind"];

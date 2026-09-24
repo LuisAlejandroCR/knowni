@@ -23,7 +23,7 @@
 //     listSetRoot                          which screening snapshot counts
 //
 //   OUTPUTS (disclosed — the only witness-derived values that become public)
-//     personhood, solvencyTier, formality, standing
+//     personhood, solvencyTier, formality, sanctions
 //     nullifier                            spent-once marker, unlinkable
 //                                          across relying parties
 //
@@ -86,7 +86,7 @@ template Eligibility(depth) {
     signal input lastContributionMonth;
     signal input monthsPaid;
 
-    // ---- private: standing ----
+    // ---- private: sanctions ----
     signal input listed;
     signal input claimListSetRoot;
 
@@ -97,7 +97,7 @@ template Eligibility(depth) {
     signal output personhood;
     signal output solvencyTier;
     signal output formality;
-    signal output standing;
+    signal output sanctions;
     signal output nullifier;
 
     // Every boolean the prover supplies is constrained to a bit. An
@@ -204,11 +204,11 @@ template Eligibility(depth) {
 
     formality <== fresh.out * enough.out;
 
-    // --- standing ---
+    // --- sanctions ---
     // The claim must have been screened against the snapshot the relying
     // party named. "Clean" against a root nobody published is not an answer.
     claimListSetRoot === listSetRoot;
-    standing <== 1 - listed;
+    sanctions <== 1 - listed;
 
     // --- nullifier ---
     // Mixing sessionId in is what makes two relying parties unable to join

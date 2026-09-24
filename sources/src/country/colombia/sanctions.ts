@@ -1,8 +1,8 @@
-// sanctions.ts: standing from the three Colombian disqualification registers. Procuraduría
+// sanctions.ts: sanctions from the three Colombian disqualification registers. Procuraduría
 // (disciplinary), Contraloría (fiscal) and Contaduría (state debtors), reduced to one boolean
 // plus the snapshot it was read against.
 
-import type { FieldHasher, StandingClaim } from "@knowni/core";
+import type { FieldHasher, SanctionsClaim } from "@knowni/core";
 
 import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
 import { degraded } from "../../types.ts";
@@ -49,7 +49,7 @@ export function createSanctionsSource(client: CromaClient, h: FieldHasher): Sour
   return {
     id: "co-sanctions",
     jurisdiction: "CO",
-    produces: "standing",
+    produces: "sanctions",
     async fetch(subject: SubjectLookup, nowUnix: number): Promise<SourceResult> {
       const body = { document_number: subject.documentNumber, document_type: subject.documentKind };
       const [disciplinary, fiscal, debtors] = await Promise.all([
@@ -70,8 +70,8 @@ export function createSanctionsSource(client: CromaClient, h: FieldHasher): Sour
         verdicts.push(verdict);
       }
 
-      const claim: StandingClaim = {
-        kind: "standing",
+      const claim: SanctionsClaim = {
+        kind: "sanctions",
         jurisdiction: "CO",
         subjectRef: { hex: subject.subjectRef },
         listed: verdicts.some((verdict) => verdict.listed),

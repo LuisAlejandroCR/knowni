@@ -44,8 +44,8 @@ const income: Claim = {
   attestedAt: NOW,
 };
 
-const standing: Claim = {
-  kind: "standing",
+const sanctions: Claim = {
+  kind: "sanctions",
   jurisdiction: "CO",
   subjectRef,
   listed: false,
@@ -54,7 +54,7 @@ const standing: Claim = {
 };
 
 test("every element lands inside the field", () => {
-  for (const claim of [identity, income, standing]) {
+  for (const claim of [identity, income, sanctions]) {
     for (const value of encode(claim)) {
       assert.ok(value >= 0n && value < PRIME, `${claim.kind}: ${value}`);
     }
@@ -62,13 +62,13 @@ test("every element lands inside the field", () => {
 });
 
 test("each kind encodes to the width its table declares", () => {
-  for (const claim of [identity, income, standing]) {
+  for (const claim of [identity, income, sanctions]) {
     assert.equal(encode(claim).length, CLAIM_WIDTH[claim.kind]);
   }
 });
 
 test("two kinds never encode to the same list, whatever they share", () => {
-  const encoded = [identity, income, standing].map((claim) => encode(claim).join(","));
+  const encoded = [identity, income, sanctions].map((claim) => encode(claim).join(","));
   assert.equal(new Set(encoded).size, encoded.length);
   // The tag is what does it, and it is the first element for exactly that.
   assert.notEqual(encode(identity)[0], encode(income)[0]);
@@ -97,7 +97,7 @@ test("a reference that is not an element is refused, never reduced", () => {
   const tooBig = { ...identity, subjectRef: { hex: "ff".repeat(32) } };
   assert.throws(() => encode(tooBig), NotInFieldError);
 
-  const rootTooBig: Claim = { ...standing, listSetRoot: "ff".repeat(32) };
+  const rootTooBig: Claim = { ...sanctions, listSetRoot: "ff".repeat(32) };
   assert.throws(() => encode(rootTooBig), NotInFieldError);
 });
 

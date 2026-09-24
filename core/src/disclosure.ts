@@ -19,7 +19,7 @@ export interface Disclosure {
   readonly personhood: PredicateResult;
   readonly solvency: SolvencyTier | "unavailable";
   readonly formality: PredicateResult;
-  readonly standing: PredicateResult;
+  readonly sanctions: PredicateResult;
   readonly capacity: PredicateResult;
   readonly assetStanding: PredicateResult;
 
@@ -39,7 +39,7 @@ export function outcomeOf(disclosure: Disclosure): Outcome {
     personhood: disclosure.personhood === true,
     solvencyTier: typeof disclosure.solvency === "number" ? disclosure.solvency : 0,
     formality: disclosure.formality === true,
-    standing: disclosure.standing === true,
+    sanctions: disclosure.sanctions === true,
     capacity: disclosure.capacity === true,
     assetStanding: disclosure.assetStanding === true,
     decidedAt: disclosure.decidedAt,
@@ -51,7 +51,7 @@ export function outcomeOf(disclosure: Disclosure): Outcome {
 // `core/` knows how to check a list and nothing about which list a lease, a
 // vehicle sale or a guarantee needs — criterio A16, D-63.
 
-export type BooleanAnswer = "personhood" | "formality" | "standing" | "capacity" | "assetStanding";
+export type BooleanAnswer = "personhood" | "formality" | "sanctions" | "capacity" | "assetStanding";
 
 export type Requirement =
   | { readonly answer: BooleanAnswer; readonly mustBe: true }

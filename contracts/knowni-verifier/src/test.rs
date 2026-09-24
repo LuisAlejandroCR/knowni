@@ -47,7 +47,7 @@ fn satisfying_signals(env: &Env) -> PublicSignals {
         personhood: true,
         solvency_tier: 3,
         formality: true,
-        standing: true,
+        sanctions: true,
     }
 }
 
@@ -57,7 +57,7 @@ fn raw_signals(env: &Env, named: &PublicSignals) -> Vec<Fr> {
     raw.push_back(fr_u32(env, u32::from(named.personhood)));
     raw.push_back(fr_u32(env, named.solvency_tier));
     raw.push_back(fr_u32(env, u32::from(named.formality)));
-    raw.push_back(fr_u32(env, u32::from(named.standing)));
+    raw.push_back(fr_u32(env, u32::from(named.sanctions)));
     raw.push_back(fr_bytes(&named.nullifier));
     raw.push_back(fr_bytes(&named.issuer_root));
     raw.push_back(fr_bytes(&named.session_id));
@@ -169,7 +169,7 @@ fn every_boolean_predicate_has_to_hold_on_its_own() {
         match drop {
             0 => signals.personhood = false,
             1 => signals.formality = false,
-            _ => signals.standing = false,
+            _ => signals.sanctions = false,
         }
         f.client.register_issuer_root(&signals.issuer_root);
         let raw = raw_signals(&f.env, &signals);
@@ -302,7 +302,7 @@ fn every_signal_index_comes_from_the_compiler_and_not_from_reading() {
     assert_eq!(signal_index("personhood"), super::AT_PERSONHOOD);
     assert_eq!(signal_index("solvencyTier"), super::AT_SOLVENCY_TIER);
     assert_eq!(signal_index("formality"), super::AT_FORMALITY);
-    assert_eq!(signal_index("standing"), super::AT_STANDING);
+    assert_eq!(signal_index("sanctions"), super::AT_SANCTIONS);
     assert_eq!(signal_index("nullifier"), super::AT_NULLIFIER);
     assert_eq!(signal_index("issuerRoot"), super::AT_ISSUER_ROOT);
     assert_eq!(signal_index("sessionId"), super::AT_SESSION_ID);

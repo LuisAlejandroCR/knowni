@@ -9,7 +9,7 @@
 >
 > Se escribió leyendo "croma" como **Chroma**, la base de datos vectorial. Es
 > [**Croma**](https://docs.usecroma.com): una API de datos de gobierno de Latinoamérica que
-> devuelve **JSON tipado indexado por número de documento**. Para `personhood` y `standing` no hay
+> devuelve **JSON tipado indexado por número de documento**. Para `personhood` y `sanctions` no hay
 > nada que desambiguar — se consulta la cédula y el registro responde. La búsqueda semántica
 > resolvía un problema que la fuente ya resolvió.
 >

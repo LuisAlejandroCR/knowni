@@ -14,7 +14,7 @@ export type {
   IncomeProvenance,
   IncomeClaim,
   Jurisdiction,
-  StandingClaim,
+  SanctionsClaim,
   SubjectRef,
 } from "./claims.ts";
 
@@ -41,7 +41,7 @@ export {
   proveFormality,
   provePersonhood,
   proveSolvency,
-  proveStanding,
+  proveSanctions,
 } from "./predicates.ts";
 export type {
   AssetStandingParams,
@@ -49,7 +49,7 @@ export type {
   FormalityParams,
   PersonhoodParams,
   SolvencyParams,
-  StandingParams,
+  SanctionsParams,
 } from "./predicates.ts";
 
 export type { MerkleProof, MerkleTree } from "./merkle.ts";

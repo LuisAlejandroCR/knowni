@@ -28,7 +28,7 @@ const outcome = {
   personhood: true,
   solvencyTier: 3,
   formality: true,
-  standing: true,
+  sanctions: true,
   capacity: false,
   assetStanding: false,
   decidedAt: Math.floor(Date.now() / 1000),

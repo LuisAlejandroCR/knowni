@@ -1,5 +1,5 @@
 // verify-vehicle.spec.ts: the envelope answering the vehicle-sale profile, which asks two
-// predicates the lease profile never asks: the seller's capacity and the car's standing.
+// predicates the lease profile never asks: the seller's capacity and the car's sanctions.
 // The asset's reference is the relying party's, not the subject's, and this is where that shows.
 
 import { test } from "node:test";
@@ -70,7 +70,7 @@ test("the vehicle profile gets its two answers, and the lease ones stay unanswer
   assert.equal(d.assetStanding, true);
   assert.equal(d.solvency, "unavailable");
   assert.equal(d.formality, "unavailable");
-  assert.equal(d.standing, "unavailable");
+  assert.equal(d.sanctions, "unavailable");
 });
 
 // The asset is held by the subject but is not the subject. Matching it against

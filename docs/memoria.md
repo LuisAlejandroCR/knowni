@@ -1496,7 +1496,24 @@ frente a circomlib es suyo y D-52 lo sigue nombrando.
 unas constantes de otro campo siguen siendo *unas* constantes. CI ahora construye un testigo de
 `PoseidonKnowni2` en las dos curvas y compara la salida con `poseidon([1,2])` de `core/`. Antes ese
 acuerdo vivía en dos valores copiados a mano en una prueba; ahora lo recalcula la máquina en cada PR.
-Las cifras de restricciones medidas van a `docs/verificacion.md` cuando CI las imprima, no antes.
+El acuerdo entre las dos implementaciones dejó de vivir en dos valores copiados a mano en una prueba:
+ahora lo recalcula la máquina en cada PR.
+
+*Lo que cuesta, medido por CI en el job `circuits` (commit `e980c8b`, idéntico en las dos curvas):*
+
+| | Antes (D-61) | Ahora | |
+|---|---|---|---|
+| No lineales | 12 567 | 12 385 | −182 |
+| Lineales | 24 937 | 12 664 | −12 273 |
+| Total | 37 504 | **25 049** | **−33%** |
+
+Queda por debajo de las 28 975 que costaba la forma optimizada de circomlib, así que el +29% de
+D-61 deja de ser una deuda y pasa a ser un margen — todavía con las matrices dispersas sin
+reproducir.
+
+*Lo que no está explicado:* las 182 restricciones no lineales que también bajaron. La permutación es
+la misma —el testigo lo comprueba en las dos curvas— así que el optimizador de circom está plegando
+algo que antes no podía, pero aquí nadie ha ido a ver qué. ⏳ pendiente, y no se afirma una causa.
 
 ## Bitácora
 
@@ -1570,7 +1587,7 @@ Las cifras de restricciones medidas van a `docs/verificacion.md` cuando CI las i
 | 2026-09-24 | `commitClaim` y el plegado de Merkle pasan a Poseidon: todos los compromisos cambian de valor. El cambio destapó tres sitios en producción que producían referencias y raíces con SHA-256, fuera del campo — D-59 |
 | 2026-09-24 | El circuito y `core/` calculan **el mismo compromiso**, comprobado contra testigos del gadget. El viejo `idCommit` no ataba `attestedAt`, la jurisdicción ni el tipo de documento — D-60. 403 pruebas |
 | 2026-09-24 | Plantilla y constantes propias de Poseidon, una por curva: el circuito compila sobre BLS12-381 con constantes derivadas para ese campo y `core/` calcula lo mismo. Cuesta +29% de restricciones por dejar la forma optimizada de circomlib — D-61. 407 pruebas |
-| 2026-09-24 | La plantilla llana deja de gastar una señal por suma de constante y tres por celda copiada en las rondas parciales; la permutación no cambia. El acuerdo entre el circuito y `core/` pasa de dos valores copiados a mano a un testigo que CI construye en cada PR — D-62. 407 pruebas |
+| 2026-09-24 | La plantilla llana deja de gastar una señal por suma de constante y tres por celda copiada en las rondas parciales; la permutación no cambia y el testigo que CI construye en cada PR lo comprueba. 37 504 → 25 049 restricciones, por debajo de la forma optimizada de circomlib — D-62. 407 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

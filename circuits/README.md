@@ -12,7 +12,7 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 | Artifact | State |
 |---|---|
 | `eligibility.circom`, `merkle.circom` | **Written, and compiled** — 2026-09-23, circom 2.2.3. |
-| Compiled R1CS | **Built.** 12 567 non-linear constraints, 8 public inputs, 5 public outputs. Not committed: it is generated. The linear count moved when the Poseidon template stopped spending a signal per round-key addition (D-62) and has not been measured again here: CI prints it on every compile. |
+| Compiled R1CS | **Built.** 12 385 non-linear and 12 664 linear constraints, 8 public inputs, 5 public outputs, 25 108 wires — the same on both curves. Not committed: it is generated. |
 | Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
 | WASM prover, trusted setup, proving key | **Not run.** |
 | On-chain verification against Soroban | **Not run.** No real proof has ever been produced or verified. |

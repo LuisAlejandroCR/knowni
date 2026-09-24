@@ -4,6 +4,14 @@
 
 pragma circom 2.1.6;
 
+// knowni:claim:v1
+function DOMAIN_CLAIM() {
+    return 0x2cb990cafe8f4048101a7b4933a7650f3d30289d601d2ec39fc15aa801845467;
+}
+// knowni:outcome:v1
+function DOMAIN_OUTCOME() {
+    return 0x2b438109be4058c0dbf014a96c630c9b464335357ee62aab71c8889af9cea64b;
+}
 // knowni:merkle:leaf:v1
 function DOMAIN_MERKLE_LEAF() {
     return 0x246dad393cfce185259b74af3e7b4fb7426fb986aa1bc68977c7281438ee4fcb;
@@ -11,4 +19,16 @@ function DOMAIN_MERKLE_LEAF() {
 // knowni:merkle:node:v1
 function DOMAIN_MERKLE_NODE() {
     return 0x16e5feb3cf4914b0be4c941052c0e2423f1ab45beec36a3f829b4eff29e62ca6;
+}
+// knowni:merkle:empty:v1
+function DOMAIN_MERKLE_EMPTY() {
+    return 0x14119a4d57c258a943c1cca1a1dbd6a4c98dc506f6b745190918232af127dd43;
+}
+// knowni:session:v1
+function DOMAIN_SESSION() {
+    return 0x4d63f695f84cd1cb36eb5ac7189fd5440177de12c937517fc0bd17529cbc99f;
+}
+// knowni:nullifier:v1
+function DOMAIN_NULLIFIER() {
+    return 0x549af6b19b175d04713b4a1255b6052daf944f02dde28eddd3f9010fd98bb46;
 }

@@ -5,8 +5,10 @@
 import type { FieldHash } from "./hash.ts";
 import { fromHex, u64be, utf8 } from "./hash.ts";
 
-const SESSION_DOMAIN = "knowni:session:v1";
-const NULLIFIER_DOMAIN = "knowni:nullifier:v1";
+import { DOMAINS } from "./domains.ts";
+
+const SESSION_DOMAIN = DOMAINS.session;
+const NULLIFIER_DOMAIN = DOMAINS.nullifier;
 
 export type Purpose = string;
 

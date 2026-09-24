@@ -42,12 +42,28 @@ jobs:
       - run: npm install
       - name: check the domain constants were generated, not typed
         run: node --experimental-strip-types circuits/tools/write-domains.ts | diff - circuits/domains.circom
+      - name: check the poseidon constants were generated, not typed
+        run: |
+          node --experimental-strip-types circuits/tools/write-poseidon.ts \
+            | diff - circuits/poseidon_knowni.circom
+          node --experimental-strip-types circuits/tools/write-poseidon.ts bls12381 \
+            | diff - circuits/poseidon_knowni_bls12381.circom
       - name: compile the circuit and check the public signal order
         working-directory: circuits
         run: |
           circom eligibility.circom -l /tmp/circomlib/circuits -l . --r1cs --sym --output /tmp
           head -13 /tmp/eligibility.sym | cut -d, -f4 | sed 's/^main\.//' > /tmp/signals.txt
           grep -v '^#' eligibility.signals.txt | diff - /tmp/signals.txt
+      # The curve Stellar verifies. The BLS constants file is a drop-in for the
+      # BN254 one — same template names — so the swap is a directory on -l.
+      - name: compile the circuit on BLS12-381 too
+        working-directory: circuits
+        run: |
+          mkdir -p /tmp/bls && cp poseidon_knowni_bls12381.circom /tmp/bls/poseidon_knowni.circom
+          circom eligibility.circom -l /tmp/bls -l . -l /tmp/circomlib/circuits \
+            -p bls12381 --r1cs --sym --output /tmp/bls
+          head -13 /tmp/bls/eligibility.sym | cut -d, -f4 | sed 's/^main\.//' > /tmp/bls/signals.txt
+          grep -v '^#' eligibility.signals.txt | diff - /tmp/bls/signals.txt
 
   contract:
     runs-on: ubuntu-latest

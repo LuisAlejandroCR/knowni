@@ -36,7 +36,7 @@
 
 pragma circom 2.1.6;
 
-include "poseidon.circom";
+include "poseidon_knowni.circom";
 include "comparators.circom";
 include "merkle.circom";
 include "claims.circom";
@@ -211,7 +211,7 @@ template Eligibility(depth) {
     // --- nullifier ---
     // Mixing sessionId in is what makes two relying parties unable to join
     // their records on the same subject.
-    component nul = Poseidon(2);
+    component nul = PoseidonKnowni2();
     nul.inputs[0] <== subjectSecret;
     nul.inputs[1] <== sessionId;
     nullifier <== nul.out;

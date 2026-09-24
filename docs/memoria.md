@@ -1438,6 +1438,37 @@ cambia.
 Poseidon parametrizado para BLS12-381 —hoy todo esto es BN254, que Stellar no verifica—. Lo que
 existe es el acuerdo entre los dos lados sobre qué se compromete y cómo, que era el bloqueo real.
 
+### D-61 — Poseidon sobre la curva que Stellar verifica, y lo que cuesta dejar circomlib · 2026-09-24
+
+*El último bloqueo de D-51, cerrado.* circomlib deriva sus constantes para BN254 y su plantilla es la
+forma optimizada construida alrededor de ellas; compilarla con `-p bls12381` las reinterpreta sin
+protestar. Este repositorio ya sabía generar constantes para cualquier campo (D-53) pero no tenía
+plantilla propia, así que seguía dependiendo de la de circomlib.
+
+*Lo que se hizo:* `tools/write-poseidon.ts` emite la plantilla **y** las constantes, en la forma
+llana del paper —sumar constantes, elevar a la quinta, mezclar— para las cuatro aridades que los
+circuitos instancian. Dos ficheros, uno por curva, intercambiables: mismos nombres de plantilla,
+así que cambiar de curva es un directorio en `-l`.
+
+*La cadena de verificación, que es lo único que hace creíble lo demás:*
+
+| Afirmación | Cómo se comprueba |
+|---|---|
+| El generador de constantes es el de referencia | Reproduce las BN254 publicadas por circomlib (D-53) |
+| La plantilla nueva es Poseidon | Sobre BN254 da `0x115cc0f5…4417189a`, el valor del gadget de circomlib, con las mismas 243 restricciones no lineales |
+| Los dos lados coinciden sobre BLS12-381 | `poseidon([1,2])` de `core/` y un testigo del circuito compilado con `-p bls12381` dan ambos `0x28ce1942…7dd2a78a` |
+| Los compromisos no se movieron | El vector de D-60 sale idéntico con la plantilla nueva |
+
+*Lo que cuesta, medido:* las restricciones **no lineales no cambian** —12 567 en las dos formas—,
+pero las lineales suben de 16 408 a 24 937. En total 28 975 → 37 504, **+29%**. Es lo que la
+optimización de circomlib compraba, y recuperarla exige reproducir sus matrices dispersas `S` y `P`,
+que es trabajo que aquí nunca se hizo (D-52 lo dejó nombrado). El cambio se toma igual: un 29% es
+caro, y un circuito sobre una curva que la cadena no verifica no sirve de nada.
+
+*Lo que sigue sin ser cierto:* no hay setup de confianza ni prueba Groth16 generada. Lo que hay es
+que el circuito compila sobre BLS12-381 con constantes derivadas para ese campo, y que `core/` calcula
+lo mismo que él.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1509,6 +1540,7 @@ existe es el acuerdo entre los dos lados sobre qué se compromete y cómo, que e
 | 2026-09-24 | Poseidon baja a `core/` y hashear en elementos pasa a ser su propio puerto, `FieldHasher`. Reproduce los valores de hoja y nodo del gadget compilado: por primera vez los dos lados dan el mismo número. Y las constantes dejan de derivarse en cada llamada — D-58. 399 pruebas |
 | 2026-09-24 | `commitClaim` y el plegado de Merkle pasan a Poseidon: todos los compromisos cambian de valor. El cambio destapó tres sitios en producción que producían referencias y raíces con SHA-256, fuera del campo — D-59 |
 | 2026-09-24 | El circuito y `core/` calculan **el mismo compromiso**, comprobado contra testigos del gadget. El viejo `idCommit` no ataba `attestedAt`, la jurisdicción ni el tipo de documento — D-60. 403 pruebas |
+| 2026-09-24 | Plantilla y constantes propias de Poseidon, una por curva: el circuito compila sobre BLS12-381 con constantes derivadas para ese campo y `core/` calcula lo mismo. Cuesta +29% de restricciones por dejar la forma optimizada de circomlib — D-61. 407 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

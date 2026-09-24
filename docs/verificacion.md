@@ -58,6 +58,10 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | `commitClaim` de `core/` y el compromiso del circuito son el mismo número, para identidad y para ingreso | `circuits/test/unit/claim-commitment.spec.ts` contra testigos de `IdentityCommitment` (`0x19426120…3c8f7f1a`) e `IncomeCommitment` (`0x21800de5…87207526`) compilados con circom 2.2.3 | 2026-09-24 |
 | Lo que cuesta atar el reclamo entero en el circuito | 12 258 → 12 567 restricciones no lineales (+2,5%), compilado antes y después. El orden de las señales públicas no cambia | 2026-09-24 |
 
+| La plantilla de Poseidon de este repositorio es Poseidon: sobre BN254 reproduce el gadget de circomlib con el mismo número de restricciones no lineales | Testigo de `PoseidonKnowni2` compilado: `0x115cc0f5…4417189a`, 243 restricciones no lineales, igual que `Poseidon(2)` de circomlib | 2026-09-24 |
+| Sobre BLS12-381, `core/` y el circuito calculan el mismo digest | `poseidon([1n,2n])` con el spec de BLS12-381 y un testigo de `PoseidonKnowni2` compilado con `circom -p bls12381` dan ambos `0x28ce1942…7dd2a78a` | 2026-09-24 |
+| El circuito completo compila sobre BLS12-381 | 12 567 restricciones no lineales y 24 937 lineales, mismo orden de señales públicas que sobre BN254. Dejar la forma optimizada de circomlib cuesta +29% en total (28 975 → 37 504) | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

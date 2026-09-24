@@ -15,7 +15,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, `CLAUDE.md`, est
 |---|---|
 | Pruebas | **454 del repositorio** + **54 de la app**, verdes en CI |
 | CI | cinco jobs: suite en Node 22 y 24, app (typecheck, pruebas y bundle de Metro para iOS y Android), contrato Soroban, circuitos |
-| Ramas | solo `main` (`7d4c4a8`); 81 PRs integrados; sin PRs abiertos |
+| Ramas | solo `main` (`20ae2a4`); 83 PRs integrados; sin PRs abiertos |
 | Lenguaje | todo el repositorio pasa por `tsc --strict` con `noUncheckedIndexedAccess`, y por ESLint con reglas de tipos |
 
 ## Criterios de aceptación: dónde están

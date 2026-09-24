@@ -16,8 +16,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | 116 pruebas pasan | `npm test` con Node 24.15.0 en Windows; rutas de fixtures con `fileURLToPath` | 2026-09-20 |
 | Nada en `core/` conoce un tipo de contrato; siete perfiles distintos responden con las mismas credenciales | `core/test/session.test.ts` · `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
 | El sobre no filtra ningún valor de los reclamos | `core/test/disclosure.invariant.test.ts` | 2026-09-20 |
-| `core/` no importa ningún SDK ni declara dependencias | `core/test/no-vendor-imports.test.ts` | 2026-09-20 |
-| La misma verificación ancla en dos cadenas sin cambiar nada por encima del registro | `anchoring/test/registry.test.ts` | 2026-09-20 |
+| `core/` no importa ningún SDK ni declara dependencias | `core/test/invariant/no-vendor-imports.invariant.spec.ts` | 2026-09-20 |
+| La misma verificación ancla en dos cadenas sin cambiar nada por encima del registro | `anchoring/test/unit/registry.spec.ts` | 2026-09-20 |
 | Node 22 ejecuta TypeScript sin paso de compilación; `enum` no, `const` sí | ejecutado | 2026-09-20 |
 | El servicio HTTP no escribe documento, nombre, placa, teléfono ni la llave de la contraparte en ningún log ni cuerpo de respuesta, ni cuando la fuente devuelve el documento en su error | `issuer/test/unit/issue-redaction.spec.ts`: emisión completa, pago rechazado, llamador rechazado y cuerpo malformado, con la consola interceptada | 2026-09-22 |
 | Un retry idéntico reutiliza el sobre firmado sin repetir Croma ni el aviso; sujetos distintos bajo el mismo `paymentRef` no comparten entrada | `issuer/test/unit/cache.spec.ts` e `issue-cache.spec.ts` | 2026-09-22 |
@@ -64,6 +64,12 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | El circuito completo compila sobre BLS12-381 | 12 567 restricciones no lineales y 24 937 lineales, mismo orden de señales públicas que sobre BN254. Dejar la forma optimizada de circomlib cuesta +29% en total (28 975 → 37 504) | 2026-09-24 |
 | La plantilla llana deja de gastar señales en sumar la constante de ronda y en copiar celdas en las rondas parciales | 12 385 no lineales y 12 664 lineales, iguales sobre las dos curvas: 37 504 → 25 049 en total (−33%), por debajo de las 28 975 de la forma optimizada de circomlib. Medido por CI, job `circuits`, commit `e980c8b`. Las 182 no lineales que bajaron son el plegado de constantes de la ronda 0 que la plantilla vieja impedía: 2 por celda constante × 91 celdas, medido con sondas compiladas aparte — D-62 | 2026-09-24 |
 | El circuito y `core/` calculan el mismo Poseidon | Paso de CI en las dos curvas: testigo de `PoseidonKnowni2` contra `poseidon([1,2])` de `core/`. Antes eran dos valores copiados a mano en una prueba | 2026-09-24 |
+
+| Una misma presentación se verifica con el registro web y con el de cadena, y un documento fuera de su raíz de confianza se rehúsa con la razón que esa raíz implica | `attestation/test/contract/registry.contract.spec.ts`, una suite contra los dos adaptadores — criterio A3 | 2026-09-24 |
+| `not_found`, `degraded` y `failed` no se confunden, y ninguno llega al sobre firmado que recibe la contraparte | `issuer/test/unit/source-states.spec.ts` y `app/test/unit/source-states.spec.ts` — criterio A7 | 2026-09-24 |
+| El circuito y `core/` calculan el mismo compromiso de ingreso, con la procedencia dentro | Testigo de `IncomeCommitment` construido con circom 2.2.3 y snarkjs 0.7.5: `033ae98c…`, reconstruido por CI en cada corrida — B4b | 2026-09-24 |
+| Renombrar `standing` a `sanctions` no mueve ningún compromiso | El mismo testigo, idéntico antes y después: la clase del reclamo entra como número, no como cadena — B2 | 2026-09-24 |
+| La app empaqueta para iOS y Android, no solo compila | `npm run bundle` en el job `app` de CI, que falla si falta alguno de los dos `.hbc` — criterio A14 | 2026-09-24 |
 
 ## Verificado en otra parte, no aquí
 

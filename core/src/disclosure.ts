@@ -13,11 +13,15 @@ export interface Disclosure {
   readonly purpose: Purpose;
   readonly decidedAt: number;
 
-  // The answers. Four of them, and a band.
+  // The answers, and a band. A profile asks for the ones its contract needs;
+  // the rest come back `unavailable`, which is an answer about the request and
+  // not about the subject.
   readonly personhood: PredicateResult;
   readonly solvency: SolvencyTier | "unavailable";
   readonly formality: PredicateResult;
   readonly standing: PredicateResult;
+  readonly capacity: PredicateResult;
+  readonly assetStanding: PredicateResult;
 
   readonly issuerRoots: readonly string[];
 
@@ -36,10 +40,15 @@ export function outcomeOf(disclosure: Disclosure): Outcome {
     solvencyTier: typeof disclosure.solvency === "number" ? disclosure.solvency : 0,
     formality: disclosure.formality === true,
     standing: disclosure.standing === true,
+    capacity: disclosure.capacity === true,
+    assetStanding: disclosure.assetStanding === true,
     decidedAt: disclosure.decidedAt,
   };
 }
 
+// The lease-shaped check, and it only covers the four answers it names. A
+// profile that asks for capacity or assetStanding composes its own: see
+// docs/memoria.md D-63.
 export function meetsAll(
   disclosure: Disclosure,
   minimumTier: SolvencyTier,

@@ -213,6 +213,8 @@ const disclosureFor = (session: string) => ({
   solvency: SolvencyTier.STRONG,
   formality: true as const,
   standing: true as const,
+  capacity: "unavailable" as const,
+  assetStanding: "unavailable" as const,
   issuerRoots: ["0f".repeat(32)],
   nullifier: deriveNullifier(sha256Hash, SECRET, session),
 });

@@ -207,6 +207,8 @@ function attestedSession(sessionRequest: SessionRequest) {
       solvency: SolvencyTier.STRONG,
       formality: true as const,
       standing: true as const,
+      capacity: "unavailable" as const,
+      assetStanding: "unavailable" as const,
       issuerRoots: ["0f".repeat(32)],
       nullifier: deriveNullifier(h, { hex: "9".repeat(64) }, session),
     },

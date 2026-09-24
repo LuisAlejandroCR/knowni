@@ -234,6 +234,8 @@ paga por ejercer su derecho a demostrar un dato propio. Ver `memoria.md` D-26.
 | A12 | Wallet emite una presentación sin red después de recibir credenciales | dispositivo físico en modo avión |
 | A13 | Ningún log contiene documento, nombre, salario, cuenta o payload de proveedor | test de redacción + revisión de logs |
 | A14 | La suite, lint, typecheck y build parten de cero en CI | workflow público en verde |
+| A15 | El sobre responde el perfil vehicular: `capacity` y `assetStanding` son respuestas entregables y un predicado no pedido vale `unavailable`, nunca `false` | `core/test/unit/verify-vehicle.spec.ts` e invariante de campos exactos |
+| A16 | Qué exige un perfil lo compone quien pregunta: ninguna función de `core/` codifica la lista de respuestas que un contrato necesita | sustituir `meetsAll(disclosure, tier)` por una comprobación parametrizada y probarla con dos perfiles |
 
 ### Bloque activo — pago móvil Stellar de punta a punta
 
@@ -396,8 +398,9 @@ entrega, resultado y degradación; destinatario y finalidad visibles antes de co
 sin foto de documento, score ni selector de blockchain; estados no resueltos nunca negativos.
 Los MD separan responsabilidades mobile, core/attestation, sources y QA. La aprobación visual
 no cierra A1, A9, A12 ni acredita ejecución nativa. Compartir en producción queda bloqueado
-hasta autenticar los resultados mínimos sin entregar `claim`/`salt`, integrar verificación
-criptográfica con aceptación y admitir el perfil vehicular en `Disclosure`.
+hasta autenticar los resultados mínimos sin entregar `claim`/`salt` e integrar verificación
+criptográfica con aceptación. El tercer bloqueo —admitir el perfil vehicular en `Disclosure`—
+quedó levantado el 2026-09-24 (A15, D-63); lo que queda de él es A16.
 
 ## Puertas de decisión
 
@@ -429,6 +432,8 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | **Parcial** | A10 | Existen anclaje y pago USDC reales en Stellar testnet; falta que el recorrido principal del teléfono produzca su propia transacción con una wallet real |
 | **Bloqueado** | A12 | La suite demuestra operación sin red, pero nunca se ejecutó en un dispositivo físico en modo avión |
 | **Parcial** | A14 | CI instala desde cero, ejecuta lint, typecheck y tests, y compila circuitos y contrato; todavía no genera el bundle Expo de la app en CI |
+| **Cumplido** | A15 | `core/test/unit/verify-vehicle.spec.ts` y el invariante de campos exactos del sobre: `capacity` y `assetStanding` son respuestas entregables, el activo se compara contra la referencia que pide la contraparte y un predicado no pedido vale `unavailable` — D-63 |
+| **Futuro** | A16 | `meetsAll(disclosure, tier)` sigue con forma de arriendo e ignora las dos respuestas nuevas; falta sustituirla por una comprobación parametrizada probada con dos perfiles |
 
 ### Bloques activos
 

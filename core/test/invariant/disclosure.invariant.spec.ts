@@ -75,6 +75,8 @@ test("every disclosed digest is a digest, with nothing hiding in it", () => {
 
 test("the envelope carries exactly the fields it is allowed to carry", () => {
   assert.deepEqual(Object.keys(disclose()).sort(), [
+    "assetStanding",
+    "capacity",
     "decidedAt",
     "formality",
     "issuerRoots",

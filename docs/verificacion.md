@@ -134,7 +134,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Deuda | Dónde | Bloque |
 |---|---|---|
 | `retrieval/` está construido sobre la lectura de Chroma. El adaptador, el puerto y el índice sobran; la normalización y la política de resolución se quedan | `retrieval/` | B3 |
-| El sobre `Disclosure` todavía tiene cinco campos del perfil de arrendamiento; `capacity` y `assetStanding` existen como reclamo y como predicado, pero no como respuesta entregable | `core/src/disclosure.ts` | día 6–7, con emisión y presentación |
+| ~~El sobre `Disclosure` no admite el perfil vehicular~~ **Saldada el 2026-09-24:** `capacity` y `assetStanding` son respuestas entregables y entran en el compromiso del resultado — D-63, A15. Queda A16: que `meetsAll` deje de tener forma de arriendo | `core/src/disclosure.ts` | ✅ |
 | `ofAge` se deriva de que la cédula de ciudadanía solo se expide a mayores de edad. Es una regla jurídica, no un dato que devuelva la fuente | `sources/src/country/colombia/registraduria.ts` | confirmar con el concepto legal |
 | Ningún adaptador se ha ejercido contra una respuesta real sobre una persona: los esquemas vienen del OpenAPI de Croma, no de una llamada | `sources/src/country/colombia/` | requiere un titular que autorice |
 | ~~Tests planos sin `unit · fuzz · invariant`~~ **Saldada el 2026-09-20:** 26 archivos movidos a `test/unit` y `test/invariant` con sufijo `.spec.ts`, más tres suites `fuzz` nuevas | todos los workspaces | ✅ |
@@ -153,7 +153,7 @@ repositorio en `main` y la suite en 236 pruebas.
 |---|---|---|
 | "no hay dependencias externas" | `dependencies` de los seis `package.json`: solo enlaces `@knowni/*` entre workspaces | ✅ exacta |
 | "236 pruebas" | `npm test` desde un clon limpio, y CI en verde en Node 22 y 24 | ✅ exacta |
-| "el expediente cabe en diez campos" | `Disclosure` tiene diez campos de primer nivel; `anchor` es opcional y añadiría un onceavo | ⚠️ exacta con matiz: diez **sin** anclaje, once con él |
+| "el expediente cabe en diez campos" | `Disclosure` tenía diez campos de primer nivel | ⚠️ **desactualizada desde 2026-09-24**: son doce sin anclaje y trece con él, porque el sobre admitió `capacity` y `assetStanding` (D-63). El README ya dice doce |
 | "ancló de verdad" en Stellar testnet | `GET /transactions/0dc0fdf4…` en Horizon: `successful: true`, ledger 4783364, memo igual al compromiso | ✅ exacta |
 | "21 pruebas" del cliente de Croma | 17 en `croma.test.ts` + 4 en `croma-contract.test.ts` | ✅ exacta |
 | "llamada en vivo a Croma, acotada" | Catálogo, sondeo de 16 rutas con cuerpo vacío y un `200` sobre una empresa pública | ✅ exacta |

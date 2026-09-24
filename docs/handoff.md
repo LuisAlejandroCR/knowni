@@ -101,56 +101,16 @@ señales— ya está cerrado.
 
 ## El marco que entra ahora: banca *AI-enabling*
 
-Entrada de esta sesión: dos publicaciones de LinkedIn, de **Mauro Taroco** (Domus) y **Natalia
-Jiménez**, sobre la diferencia entre un banco *AI-enabled* y uno *AI-enabling*. No se incrustan aquí
-—`AGENTS.md` prohíbe medios de terceros— pero su contenido es el marco, atribuido:
+Entrada de una sesión anterior: dos publicaciones de **Mauro Taroco** (Domus) y **Natalia Jiménez**
+sobre la diferencia entre un banco *AI-enabled* y uno *AI-enabling*. El marco, lo que ya existe aquí
+de lo que pide, las tres preguntas de producto que hay que responder antes de escribir código y los
+criterios G1–G6 viven ahora en [`plan.md`](plan.md) → *Bloque futuro — el portador puede ser un
+agente*, que es donde el ciclo del proyecto los pone.
 
-> *AI-enabled* es un banco que usa IA. *AI-enabling* es un banco **que la IA puede usar**. Lo
-> primero —copilotos, onboarding, modelos de fraude— cualquier competidor lo copia en 18 meses con
-> el mismo proveedor. Lo segundo es que un agente, operando en nombre de un cliente, pueda
-> autenticarse contra la infraestructura, mover dinero dentro de límites que definió el cliente,
-> validar una contraparte y dejar todo auditable.
->
-> El problema: las APIs bancarias se diseñaron asumiendo un humano con un celular. OTP por SMS,
-> sesiones que expiran, confirmaciones visuales. Para un agente cada uno de esos pasos es una pared.
->
-> — y de la segunda publicación: *«identidad, límites, delegación, reversibilidad, trazabilidad y
-> accountability pasan a ser parte del producto. La próxima batalla no es por tener la mejor app:
-> es por ser el banco en el que los humanos confían lo suficiente como para dejar actuar a sus
-> agentes.»*
-
-### Por qué esto le habla directamente a knowni
-
-La tesis del repositorio —*demuestra que calificas para firmar, sin decir quién eres*— ya está
-construida sobre las piezas que ese marco pide, y **no por casualidad**:
-
-| Lo que el marco pide | Lo que ya existe aquí |
-|---|---|
-| Identidad verificable sin exponer a la persona | `subjectRef` salteado, compromisos, `core/` sin ningún dato personal |
-| Permisos delegados con límites del cliente | La sesión ata a una contraparte, una finalidad, un reto y una fecha (criterio A5) |
-| Trazabilidad y auditabilidad | Anclaje en Stellar, raíz firmada por el emisor, nulificador de un solo uso |
-| Reversibilidad / no repetición | El conjunto gastado persiste en disco y en dispositivo (D-34, D-36, D-37) |
-| Una API pensada para que del otro lado haya una máquina | **Esto es lo que falta**: `issuer/` habla HTTP con llave de contraparte, pero nada del producto está pensado como superficie para un agente |
-
-### La pregunta abierta, que es de producto y no de código
-
-El marco sugiere un uso que el repositorio **no** tiene escrito en ningún sitio: que quien presenta
-la credencial no sea una persona con un teléfono sino **un agente actuando por ella**. Eso toca la
-frontera que `AGENTS.md` declara no negociable —*«una consulta a una fuente ocurre en emisión, con
-consentimiento del sujeto; la contraparte nunca consulta»*— y merece una entrada en `docs/memoria.md`
-antes de ser una línea de código.
-
-Preguntas concretas para esa entrada:
-
-1. ¿Un agente puede **sostener** una credencial en nombre del sujeto, o solo presentarla? La
-   diferencia decide si el secreto del sujeto sale del dispositivo, que hoy nunca sale.
-2. Si un agente presenta, ¿qué lo distingue de un replay? El nulificador ata la presentación a una
-   sesión; no dice *quién* la presentó.
-3. ¿El consentimiento por fuente (D-31) sigue siendo del sujeto, o hay un consentimiento delegado
-   con límites? Es exactamente el *«permisos delegados»* del marco, y hoy no existe.
-
-**Ninguna de las tres se responde escribiendo código.** Van a `docs/plan.md` como criterios de
-aceptación antes de tocar nada, que es lo que el ciclo SDD del proyecto exige.
+**Las tres preguntas siguen sin responder**, y ninguna se contesta escribiendo código: si un agente
+puede sostener una credencial o solo presentarla, qué distingue a un agente de un replay, y si el
+consentimiento por fuente sigue siendo del sujeto o hay uno delegado con límites. Van a
+`docs/memoria.md` como decisión, con fecha, antes de que exista una línea que las suponga.
 
 ## Cómo arrancar el chat nuevo
 

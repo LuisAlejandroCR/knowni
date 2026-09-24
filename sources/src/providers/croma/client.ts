@@ -44,6 +44,11 @@ export interface CromaClientOptions {
   readonly timeoutMs?: number;
   readonly maxRetries?: number;
   readonly backoffMs?: number;
+  // The caller's own budget. When it aborts, the client stops: the request in
+  // flight is cancelled, no retry is scheduled and no poll waits its turn.
+  // Without it a deadline above only stops the *waiting* — the retries went on
+  // spending calls on an answer nobody would read. See D-41.
+  readonly signal?: AbortSignal;
 }
 
 export type CromaOutcome =
@@ -108,6 +113,26 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   const backoffMs = options.backoffMs ?? DEFAULT_BACKOFF_MS;
+  const budget = options.signal;
+  const spent = () => budget?.aborted === true;
+
+  // A wait that ends when the budget does. `AbortSignal.any` would do this in
+  // one line and does not exist on every runtime this package has to run on.
+  const waitUnlessSpent = async (ms: number): Promise<void> => {
+    if (spent()) return;
+    if (budget === undefined) return await sleep(ms);
+    let release = () => {};
+    const aborted = new Promise<void>((resolve) => {
+      const wake = () => resolve();
+      release = () => budget.removeEventListener("abort", wake);
+      budget.addEventListener("abort", wake, { once: true });
+    });
+    try {
+      await Promise.race([sleep(ms), aborted]);
+    } finally {
+      release();
+    }
+  };
 
   const headers = {
     Authorization: `Bearer ${options.apiKey ?? ""}`,
@@ -123,7 +148,12 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
   ): Promise<Response | undefined> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    // The caller's budget aborts this request too, so a call in flight when the
+    // deadline passes is cancelled instead of finishing into nobody's hands.
+    const giveUp = () => controller.abort();
+    budget?.addEventListener("abort", giveUp, { once: true });
     try {
+      if (spent()) return undefined;
       const response = await fetchImpl(url, { ...init, headers, signal: controller.signal });
       observe({ path, status: response.status, attempt, rateLimit: rateLimitOf(response) });
       return response;
@@ -134,6 +164,7 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
       return undefined;
     } finally {
       clearTimeout(timer);
+      budget?.removeEventListener("abort", giveUp);
     }
   }
 
@@ -147,7 +178,8 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
   async function poll(statusUrl: string, path: string, firstWaitMs: number): Promise<CromaOutcome> {
     let waitMs = firstWaitMs;
     for (let attempt = 1; attempt <= maxPolls; attempt += 1) {
-      await sleep(waitMs);
+      await waitUnlessSpent(waitMs);
+      if (spent()) return degrade("source_unavailable");
       const response = await send(statusUrl, { method: "GET" }, path, attempt);
       if (response === undefined) return degrade("source_unavailable");
       const payload = await readJson(response);
@@ -170,6 +202,7 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
       // and still must not throw into a verification.
       if (options.apiKey === undefined || options.apiKey === "") return degrade("consent_missing");
       if (fetchImpl === undefined) return degrade("source_unavailable");
+      if (spent()) return degrade("source_unavailable");
 
       const url = `${baseUrl}${path}`;
       const init: RequestInit = { method: "POST", body: JSON.stringify(body) };
@@ -177,8 +210,9 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
       for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
         const response = await send(url, init, path, attempt);
         if (response === undefined) {
-          if (attempt === maxRetries) return degrade("source_unavailable");
-          await sleep(backoffMs * 2 ** (attempt - 1));
+          if (attempt === maxRetries || spent()) return degrade("source_unavailable");
+          await waitUnlessSpent(backoffMs * 2 ** (attempt - 1));
+          if (spent()) return degrade("source_unavailable");
           continue;
         }
 
@@ -200,8 +234,9 @@ export function createCromaClient(options: CromaClientOptions = {}): CromaClient
         // the contract calls out. Everything else we would only repeat.
         const retryable = response.status === 429 || response.status >= 500;
         if (!retryable) return degrade("invalid_response");
-        if (attempt === maxRetries) return degrade("source_unavailable");
-        await sleep(retryAfterMs(response) ?? backoffMs * 2 ** (attempt - 1));
+        if (attempt === maxRetries || spent()) return degrade("source_unavailable");
+        await waitUnlessSpent(retryAfterMs(response) ?? backoffMs * 2 ** (attempt - 1));
+        if (spent()) return degrade("source_unavailable");
       }
 
       return degrade("source_unavailable");

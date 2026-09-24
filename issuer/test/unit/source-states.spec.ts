@@ -119,3 +119,17 @@ test("the states carry no document, no name and no provider payload", async () =
     assert.ok(!serialized.includes(secret), `"${secret}" reached the public source states`);
   }
 });
+
+test("the deadline stops the calling, not only the waiting", async () => {
+  let calls = 0;
+  const flaky: typeof fetch = async () => {
+    calls += 1;
+    return new Response("{}", { status: 503 });
+  };
+  const { sourceStates } = await askWith(flaky);
+  assert.equal(sourceStates[0]!.state, "degraded");
+  const whenGaveUp = calls;
+  // Long enough for the client's backoff to have scheduled another attempt.
+  await new Promise((resolve) => setTimeout(resolve, 1_200));
+  assert.equal(calls, whenGaveUp, "the client kept calling a source the issuance gave up on");
+});

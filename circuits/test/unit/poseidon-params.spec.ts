@@ -11,7 +11,7 @@ import {
   BN254_PRIME,
   circomlibSpec,
   roundConstants,
-} from "../../tools/poseidon-params.ts";
+} from "@knowni/core";
 
 // sage generate_parameters_grain.sage 1 0 254 2 8 56 <bn254>
 const CIRCOMLIB_WIDTH_2 = [

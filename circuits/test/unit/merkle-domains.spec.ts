@@ -6,8 +6,8 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BN254_PRIME, circomlibSpec } from "../../tools/poseidon-params.ts";
-import { poseidon } from "../../tools/poseidon.ts";
+import { BN254_PRIME, circomlibSpec } from "@knowni/core";
+import { poseidon } from "@knowni/core";
 import { DOMAINS, domainElement } from "../../tools/domains.ts";
 
 /// Named by how many inputs go in: the state is always one cell wider.

@@ -59,6 +59,18 @@ export { commitClaim, commitOutcome, randomFieldSalt, randomSalt, verifyOutcomeC
 export { CLAIM_WIDTH, encodeClaimFields } from "./claim-fields.ts";
 export { DOMAINS, type DomainName } from "./domains.ts";
 export {
+  BLS12_381_PRIME,
+  BN254_PRIME,
+  CIRCOMLIB_PARTIAL_ROUNDS,
+  circomlibSpec,
+  parameters,
+  roundConstants,
+  type GrainSpec,
+  type PoseidonParameters,
+} from "./poseidon-params.ts";
+export { poseidon } from "./poseidon.ts";
+export { createPoseidonHasher, type FieldHasher } from "./field-hasher.ts";
+export {
   NotInFieldError,
   fieldFromBoolean,
   fieldFromHex,

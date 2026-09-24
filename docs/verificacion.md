@@ -51,6 +51,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | La sal de campo cae siempre dentro del primo, en BN254 y en BLS12-381, y un valor por encima del primo se rechaza y se vuelve a dibujar | `core/test/unit/field.spec.ts`: 500 extracciones por campo, más una fuente guionizada que devuelve el mayor valor enmascarable posible y obliga al segundo intento | 2026-09-24 |
 
+| El puerto de hash de `core/` reproduce los valores que el circuito compilado calcula para una hoja y para un nodo | `core/test/unit/field-hasher.spec.ts`: `hashFields("merkleLeaf",[7n])` da `0x09403be3…d16a04b4` y `hashFields("merkleNode",[7n,9n])` da `0x03b5f4ce…a9672e7`, los mismos que los testigos del gadget | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

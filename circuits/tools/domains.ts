@@ -4,19 +4,18 @@
 // becomes one field element, derived once and pinned on both sides.
 
 import { createHash } from "node:crypto";
-import { DOMAINS, type DomainName } from "@knowni/core";
+import { DOMAINS, fieldFromString, type DomainName } from "@knowni/core";
 
 /// Imported, not copied. `core/src/domains.ts` is the definition; everything
 /// below is a way of writing those same strings down for a field. A second
 /// copy of the list is a copy that drifts.
 export { DOMAINS, type DomainName } from "@knowni/core";
 
-/// SHA-256 of the domain string, read big-endian and reduced. The hash is not
-/// doing security work here — separation is — so what matters is only that
-/// both sides compute the same element from the same string.
+/// The derivation is `core`'s, not a second copy of it: what matters here is
+/// only that both sides compute the same element from the same string, and two
+/// implementations of "the same" is how that stops being true.
 export function domainElement(domain: string, prime: bigint): bigint {
-  const digest = createHash("sha256").update(domain, "utf8").digest("hex");
-  return BigInt(`0x${digest}`) % prime;
+  return fieldFromString((bytes) => Uint8Array.from(createHash("sha256").update(bytes).digest()), domain, prime);
 }
 
 /// The generated `circuits/domains.circom`, as text. CI regenerates it and

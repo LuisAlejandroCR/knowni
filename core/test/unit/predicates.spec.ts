@@ -11,9 +11,9 @@ import {
   proveFormality,
   provePersonhood,
   proveSolvency,
-  proveStanding,
+  proveSanctions,
 } from "../../src/predicates.ts";
-import { DAY, LIST_ROOT, NOW, OTHER_REF, SUBJECT_REF, formality, identity, income, standing } from "../support/fixtures.ts";
+import { DAY, LIST_ROOT, NOW, OTHER_REF, SUBJECT_REF, formality, identity, income, sanctions } from "../support/fixtures.ts";
 
 const personhoodParams = {
   expectedSubjectRef: SUBJECT_REF,
@@ -133,11 +133,11 @@ const standingParams = {
   maxAgeSeconds: 7 * DAY,
 };
 
-test("standing holds only against the snapshot the relying party named", () => {
-  assert.equal(proveStanding(standing, standingParams), true);
-  assert.equal(proveStanding({ ...standing, listSetRoot: "0d".repeat(32) }, standingParams), false);
+test("sanctions holds only against the snapshot the relying party named", () => {
+  assert.equal(proveSanctions(sanctions, standingParams), true);
+  assert.equal(proveSanctions({ ...sanctions, listSetRoot: "0d".repeat(32) }, standingParams), false);
 });
 
-test("standing fails when the subject is on the list", () => {
-  assert.equal(proveStanding({ ...standing, listed: true }, standingParams), false);
+test("sanctions fails when the subject is on the list", () => {
+  assert.equal(proveSanctions({ ...sanctions, listed: true }, standingParams), false);
 });

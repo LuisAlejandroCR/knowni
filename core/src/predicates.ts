@@ -8,7 +8,7 @@ import type {
   FormalityClaim,
   IdentityClaim,
   IncomeClaim,
-  StandingClaim,
+  SanctionsClaim,
 } from "./claims.ts";
 
 export const SolvencyTier = {
@@ -100,7 +100,7 @@ export function proveFormality(claim: FormalityClaim, params: FormalityParams): 
   );
 }
 
-export interface StandingParams {
+export interface SanctionsParams {
   readonly expectedSubjectRef: string;
   // The snapshot the relying party accepts. A "clean" answer against a root
   // nobody published, or against last year's list, is not an answer.
@@ -109,7 +109,7 @@ export interface StandingParams {
   readonly maxAgeSeconds: number;
 }
 
-export function proveStanding(claim: StandingClaim, params: StandingParams): boolean {
+export function proveSanctions(claim: SanctionsClaim, params: SanctionsParams): boolean {
   return (
     claim.subjectRef.hex === params.expectedSubjectRef &&
     claim.listSetRoot === params.acceptedListSetRoot &&

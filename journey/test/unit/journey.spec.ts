@@ -51,7 +51,7 @@ const SUBJECT = {
 
 // The snapshot the three registers were read against, as the relying party
 // knows it. A "clean" answer against a list nobody published is not an answer,
-// so the root travels with the verdict — see proveStanding.
+// so the root travels with the verdict — see proveSanctions.
 const snapshotRoot = listSetRoot(poseidonHash, [...SYNTHETIC_LIST_STAMPS]);
 
 async function issueForSubject(subject = ANA) {
@@ -120,7 +120,7 @@ test("a tenant proves four things and the agency learns nothing else", async () 
       maxMonthsSinceLastContribution: 2,
       minMonthsContributedLast12: 6,
     },
-    standing: { acceptedListSetRoot: snapshotRoot, nowUnix: NOW, maxAgeSeconds: 7 * DAY },
+    sanctions: { acceptedListSetRoot: snapshotRoot, nowUnix: NOW, maxAgeSeconds: 7 * DAY },
   };
 
   const held: HeldClaims = {
@@ -129,7 +129,7 @@ test("a tenant proves four things and the agency learns nothing else", async () 
     identity: { claim: by("identity").claim as never, issuerRoot: issued.root },
     income: { claim: by("income").claim as never, issuerRoot: issued.root },
     formality: { claim: by("formality").claim as never, issuerRoot: issued.root },
-    standing: { claim: by("standing").claim as never, issuerRoot: issued.root },
+    sanctions: { claim: by("sanctions").claim as never, issuerRoot: issued.root },
   };
 
   // Step 3 — the tenant answers.
@@ -139,14 +139,14 @@ test("a tenant proves four things and the agency learns nothing else", async () 
 
   assert.equal(disclosure.personhood, true);
   assert.equal(disclosure.formality, true);
-  assert.equal(disclosure.standing, true);
+  assert.equal(disclosure.sanctions, true);
   // COP ~4,200,000 against COP 1,300,000 of rent: comfortably over 3x.
   assert.equal(disclosure.solvency, SolvencyTier.STRONG);
   // The agency composes what its contract needs; core is not asked to know it.
   const lease: VerificationProfile = [
     { answer: "personhood", mustBe: true },
     { answer: "formality", mustBe: true },
-    { answer: "standing", mustBe: true },
+    { answer: "sanctions", mustBe: true },
     { answer: "solvency", atLeast: SolvencyTier.COMFORTABLE },
   ];
   assert.deepEqual(meetsProfile(disclosure, lease), { status: "meets" });
@@ -192,7 +192,7 @@ test("the outcome anchors on any registered chain, and opens only for the tenant
     minPeriodsObserved: 6,
     },
     formality: { nowMonth: NOW_MONTH, maxMonthsSinceLastContribution: 2, minMonthsContributedLast12: 6 },
-    standing: { acceptedListSetRoot: snapshotRoot, nowUnix: NOW, maxAgeSeconds: 7 * DAY },
+    sanctions: { acceptedListSetRoot: snapshotRoot, nowUnix: NOW, maxAgeSeconds: 7 * DAY },
   };
 
   const result = verify(
@@ -204,7 +204,7 @@ test("the outcome anchors on any registered chain, and opens only for the tenant
       identity: { claim: by("identity").claim as never, issuerRoot: issued.root },
       income: { claim: by("income").claim as never, issuerRoot: issued.root },
       formality: { claim: by("formality").claim as never, issuerRoot: issued.root },
-      standing: { claim: by("standing").claim as never, issuerRoot: issued.root },
+      sanctions: { claim: by("sanctions").claim as never, issuerRoot: issued.root },
     },
     NOW,
   );
@@ -264,13 +264,13 @@ test("a tenant named by one register is claimed as listed, not left unanswered",
   // clean answer from the other two does not cancel a disciplinary record.
   const flagged: SyntheticSubject = { ...ANA, listedIn: ["procuraduria"] };
   const { results } = await issueForSubject(flagged);
-  const standing = results.find(
-    (r) => r.status === "claimed" && r.claim.kind === "standing",
+  const sanctions = results.find(
+    (r) => r.status === "claimed" && r.claim.kind === "sanctions",
   );
-  assert.ok(standing, "a decisive match still produces a claim");
+  assert.ok(sanctions, "a decisive match still produces a claim");
   assert.equal(
-    standing.status === "claimed" && standing.claim.kind === "standing"
-      ? standing.claim.listed
+    sanctions.status === "claimed" && sanctions.claim.kind === "sanctions"
+      ? sanctions.claim.listed
       : undefined,
     true,
   );

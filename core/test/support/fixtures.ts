@@ -8,7 +8,7 @@ import type {
   FormalityClaim,
   IdentityClaim,
   IncomeClaim,
-  StandingClaim,
+  SanctionsClaim,
 } from "../../src/claims.ts";
 
 export const SUBJECT_REF = "0a".repeat(32);
@@ -53,8 +53,8 @@ export const formality: FormalityClaim = {
   attestedAt: NOW - DAY,
 };
 
-export const standing: StandingClaim = {
-  kind: "standing",
+export const sanctions: SanctionsClaim = {
+  kind: "sanctions",
   jurisdiction: "CO",
   subjectRef: { hex: SUBJECT_REF },
   listed: false,

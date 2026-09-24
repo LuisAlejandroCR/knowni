@@ -41,7 +41,7 @@ const disclosureFor = (request: SessionRequest): Disclosure => {
     personhood: true,
     solvency: SolvencyTier.STRONG,
     formality: true,
-    standing: true,
+    sanctions: true,
     capacity: "unavailable",
     assetStanding: "unavailable",
     issuerRoots: ["0f".repeat(32)],

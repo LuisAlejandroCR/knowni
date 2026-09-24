@@ -8,13 +8,13 @@ import { sha256Hash } from "../../src/node.ts";
 import { outcomeOf, meetsProfile, type VerificationProfile } from "../../src/disclosure.ts";
 import { SolvencyTier } from "../../src/predicates.ts";
 import { verify, type HeldClaims, type VerificationRequest } from "../../src/verify.ts";
-import { DAY, LIST_ROOT, NOW, SUBJECT_REF, formality, identity, income, standing } from "../support/fixtures.ts";
+import { DAY, LIST_ROOT, NOW, SUBJECT_REF, formality, identity, income, sanctions } from "../support/fixtures.ts";
 
 // The lease profile, composed here because composing it is the caller's job.
 const LEASE = (atLeast: SolvencyTier): VerificationProfile => [
   { answer: "personhood", mustBe: true },
   { answer: "formality", mustBe: true },
-  { answer: "standing", mustBe: true },
+  { answer: "sanctions", mustBe: true },
   { answer: "solvency", atLeast },
 ];
 
@@ -45,7 +45,7 @@ const request: VerificationRequest = {
     maxMonthsSinceLastContribution: 2,
     minMonthsContributedLast12: 6,
   },
-  standing: { acceptedListSetRoot: LIST_ROOT, nowUnix: NOW, maxAgeSeconds: 7 * DAY },
+  sanctions: { acceptedListSetRoot: LIST_ROOT, nowUnix: NOW, maxAgeSeconds: 7 * DAY },
 };
 
 const held: HeldClaims = {
@@ -54,7 +54,7 @@ const held: HeldClaims = {
   identity: { claim: identity, issuerRoot: IDENTITY_ROOT },
   income: { claim: income, issuerRoot: INCOME_ROOT },
   formality: { claim: formality, issuerRoot: IDENTITY_ROOT },
-  standing: { claim: standing, issuerRoot: IDENTITY_ROOT },
+  sanctions: { claim: sanctions, issuerRoot: IDENTITY_ROOT },
 };
 
 function disclose(r = request, hc = held) {
@@ -68,7 +68,7 @@ test("a full verification answers every predicate", () => {
   assert.equal(d.personhood, true);
   assert.equal(d.solvency, SolvencyTier.STRONG);
   assert.equal(d.formality, true);
-  assert.equal(d.standing, true);
+  assert.equal(d.sanctions, true);
   assert.deepEqual(meetsProfile(d, LEASE(SolvencyTier.COMFORTABLE)), { status: "meets" });
 });
 
@@ -93,9 +93,9 @@ test("the envelope carries exactly the fields it is allowed to carry", () => {
     "personhood",
     "purpose",
     "relyingPartyId",
+    "sanctions",
     "sessionId",
     "solvency",
-    "standing",
   ]);
 });
 
@@ -118,7 +118,7 @@ test("the envelope leaks no value from the claims that produced it", () => {
     String(identity.attestedAt),
     SUBJECT_REF,
     held.secret.hex,
-    standing.listSetRoot,
+    sanctions.listSetRoot,
   ];
 
   for (const needle of forbidden) {
@@ -156,13 +156,13 @@ test("a predicate that was not asked is not answered", () => {
 test("unavailable is not folded into a negative outcome for the relying party", () => {
   // But it IS a negative for what gets committed: a commitment is a claim
   // about what was proven, and nothing was.
-  const d = disclose(request, { ...held, standing: undefined });
-  assert.equal(d.standing, "unavailable");
-  assert.notEqual(d.standing, false);
-  assert.equal(outcomeOf(d).standing, false);
+  const d = disclose(request, { ...held, sanctions: undefined });
+  assert.equal(d.sanctions, "unavailable");
+  assert.notEqual(d.sanctions, false);
+  assert.equal(outcomeOf(d).sanctions, false);
   assert.deepEqual(meetsProfile(d, LEASE(SolvencyTier.BASIC)), {
     status: "short",
-    missing: [{ answer: "standing", reason: "unavailable" }],
+    missing: [{ answer: "sanctions", reason: "unavailable" }],
   });
 });
 

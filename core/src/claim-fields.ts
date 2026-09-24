@@ -13,7 +13,7 @@ export const KIND_TAG: Record<Claim["kind"], bigint> = {
   identity: 1n,
   income: 2n,
   formality: 3n,
-  standing: 4n,
+  sanctions: 4n,
   capacity: 5n,
   assetStanding: 6n,
 };
@@ -25,7 +25,7 @@ export const CLAIM_WIDTH: Record<Claim["kind"], number> = {
   identity: 8,
   income: 10,
   formality: 6,
-  standing: 6,
+  sanctions: 6,
   capacity: 6,
   assetStanding: 7,
 };
@@ -76,7 +76,7 @@ export function encodeClaimFields(
           fieldFromUint(claim.monthsContributedLast12, "monthsContributedLast12"),
           fieldFromUint(claim.attestedAt, "attestedAt"),
         ];
-      case "standing":
+      case "sanctions":
         return [
           fieldFromBoolean(claim.listed),
           fieldFromHex(claim.listSetRoot, prime, "listSetRoot"),

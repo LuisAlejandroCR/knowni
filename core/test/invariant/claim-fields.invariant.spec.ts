@@ -73,7 +73,7 @@ function anyClaim(next: () => number): Claim {
       };
     case 3:
       return {
-        kind: "standing",
+        kind: "sanctions",
         jurisdiction,
         subjectRef,
         listed: next() < 0.5,

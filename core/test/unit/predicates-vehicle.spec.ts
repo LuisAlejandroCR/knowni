@@ -72,7 +72,7 @@ const assetParams = {
   requireNoFines: true,
 };
 
-test("a registered, unencumbered, fine-free asset proves standing", () => {
+test("a registered, unencumbered, fine-free asset proves sanctions", () => {
   assert.equal(proveAssetStanding(vehicle(), assetParams), true);
 });
 

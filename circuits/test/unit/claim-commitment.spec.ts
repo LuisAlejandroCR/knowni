@@ -31,7 +31,7 @@ const CIRCUIT_IDENTITY = "19426120075af234be4e3f80cf347b5e4779abeff2e9c5bf0941dc
 // From the witness of circuits/claims.circom, IncomeCommitment, rebuilt when
 // the claim grew its provenance. CI regenerates this witness on every run —
 // see the circuits job — so this constant is a second pair of eyes and not the
-// only thing standing between the two implementations.
+// only thing sanctions between the two implementations.
 const CIRCUIT_INCOME = "033ae98c509045b8293d6376335fbc8f9c7d914bb6f7c445ed665b0776cb6cc4";
 
 test("an identity commitment made in core is the one the circuit computes", () => {

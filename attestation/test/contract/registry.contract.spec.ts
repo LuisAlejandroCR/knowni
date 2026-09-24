@@ -91,7 +91,7 @@ function presentation() {
       personhood: true as const,
       solvency: SolvencyTier.STRONG,
       formality: true as const,
-      standing: true as const,
+      sanctions: true as const,
       capacity: "unavailable" as const,
       assetStanding: "unavailable" as const,
       issuerRoots: [ROOT],

@@ -12,7 +12,7 @@ import {
   verifyOutcomeCommitment,
   type Outcome,
 } from "../../src/commitment.ts";
-import { formality, identity, income, standing } from "../support/fixtures.ts";
+import { formality, identity, income, sanctions } from "../support/fixtures.ts";
 import type { IncomeBasis } from "../../src/claims.ts";
 
 const h = sha256Hash;
@@ -47,7 +47,7 @@ test("every field of a claim is bound into its commitment", () => {
 
 test("claims of different kinds never share a commitment", () => {
   const salt = randomSalt(poseidonHash.prime);
-  const all = [identity, income, formality, standing].map((c) => commitClaim(fh, c, salt));
+  const all = [identity, income, formality, sanctions].map((c) => commitClaim(fh, c, salt));
   assert.equal(new Set(all).size, all.length);
 });
 
@@ -66,7 +66,7 @@ const outcome: Outcome = {
   personhood: true,
   solvencyTier: 3,
   formality: true,
-  standing: true,
+  sanctions: true,
   capacity: false,
   assetStanding: false,
   decidedAt: 1_760_000_000,

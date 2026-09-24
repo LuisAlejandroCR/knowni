@@ -9,7 +9,7 @@ import type {
   FormalityClaim,
   IdentityClaim,
   IncomeClaim,
-  StandingClaim,
+  SanctionsClaim,
 } from "./claims.ts";
 import type { Disclosure, PredicateResult } from "./disclosure.ts";
 import type { FieldHash } from "./hash.ts";
@@ -20,7 +20,7 @@ import {
   proveFormality,
   provePersonhood,
   proveSolvency,
-  proveStanding,
+  proveSanctions,
 } from "./predicates.ts";
 import type {
   AssetStandingParams,
@@ -28,7 +28,7 @@ import type {
   FormalityParams,
   PersonhoodParams,
   SolvencyParams,
-  StandingParams,
+  SanctionsParams,
 } from "./predicates.ts";
 import { deriveNullifier, isExpired, isPurpose, sessionId, type SessionRequest, type SubjectSecret } from "./session.ts";
 
@@ -37,7 +37,7 @@ export interface VerificationRequest {
   readonly personhood?: Omit<PersonhoodParams, "expectedSubjectRef">;
   readonly solvency?: Omit<SolvencyParams, "expectedSubjectRef">;
   readonly formality?: Omit<FormalityParams, "expectedSubjectRef">;
-  readonly standing?: Omit<StandingParams, "expectedSubjectRef">;
+  readonly sanctions?: Omit<SanctionsParams, "expectedSubjectRef">;
   readonly capacity?: Omit<CapacityParams, "expectedSubjectRef">;
   // The asset's own reference travels with the request, not with the subject:
   // a car is not a person and must not be matched against one.
@@ -52,7 +52,7 @@ export interface HeldClaims {
   readonly identity?: { readonly claim: IdentityClaim; readonly issuerRoot: string };
   readonly income?: { readonly claim: IncomeClaim; readonly issuerRoot: string };
   readonly formality?: { readonly claim: FormalityClaim; readonly issuerRoot: string };
-  readonly standing?: { readonly claim: StandingClaim; readonly issuerRoot: string };
+  readonly sanctions?: { readonly claim: SanctionsClaim; readonly issuerRoot: string };
   readonly capacity?: { readonly claim: CapacityClaim; readonly issuerRoot: string };
   // Held by the subject, but about the asset, so it is not checked against
   // `subjectRef` — `proveAssetStanding` matches it against the asset the
@@ -87,7 +87,7 @@ export function verify(
     held.identity?.claim,
     held.income?.claim,
     held.formality?.claim,
-    held.standing?.claim,
+    held.sanctions?.claim,
     held.capacity?.claim,
   ];
   for (const claim of claims) {
@@ -113,10 +113,10 @@ export function verify(
       ? "unavailable"
       : proveFormality(held.formality.claim, { ...request.formality, expectedSubjectRef: ref });
 
-  const standing: PredicateResult =
-    request.standing === undefined || held.standing === undefined
+  const sanctions: PredicateResult =
+    request.sanctions === undefined || held.sanctions === undefined
       ? "unavailable"
-      : proveStanding(held.standing.claim, { ...request.standing, expectedSubjectRef: ref });
+      : proveSanctions(held.sanctions.claim, { ...request.sanctions, expectedSubjectRef: ref });
 
   const capacity: PredicateResult =
     request.capacity === undefined || held.capacity === undefined
@@ -134,7 +134,7 @@ export function verify(
     personhood !== "unavailable" ? held.identity?.issuerRoot : undefined,
     solvency !== "unavailable" ? held.income?.issuerRoot : undefined,
     formality !== "unavailable" ? held.formality?.issuerRoot : undefined,
-    standing !== "unavailable" ? held.standing?.issuerRoot : undefined,
+    sanctions !== "unavailable" ? held.sanctions?.issuerRoot : undefined,
     capacity !== "unavailable" ? held.capacity?.issuerRoot : undefined,
     assetStanding !== "unavailable" ? held.asset?.issuerRoot : undefined,
   ].filter((root): root is string => root !== undefined);
@@ -149,7 +149,7 @@ export function verify(
       personhood,
       solvency,
       formality,
-      standing,
+      sanctions,
       capacity,
       assetStanding,
       issuerRoots: [...new Set(issuerRoots)],

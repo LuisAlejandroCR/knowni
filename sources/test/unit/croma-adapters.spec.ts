@@ -133,11 +133,11 @@ const cleanRegisters = {
   [CONTAD]: data({ found: true, reported: false, checked_at: "2026-09-20T10:00:05Z" }),
 };
 
-test("three clean registers make one standing claim, rooted in the snapshots read", async () => {
+test("three clean registers make one sanctions claim, rooted in the snapshots read", async () => {
   const client = clientOf(cleanRegisters);
   const result = await createSanctionsSource(client, poseidonHash).fetch(subject, NOW);
   assert.equal(result.status, "claimed");
-  if (result.status !== "claimed" || result.claim.kind !== "standing") throw new Error("shape");
+  if (result.status !== "claimed" || result.claim.kind !== "sanctions") throw new Error("shape");
   assert.equal(result.claim.listed, false);
   assert.match(result.claim.listSetRoot, /^[0-9a-f]{64}$/);
   assert.equal(client.paths.length, 3);
@@ -150,7 +150,7 @@ test("the root changes when a register publishes a different snapshot", async ()
       [CONTRAL]: data({ found: true, is_fiscal_responsible: false, verification_code: "ZZZ-999" }),
     }), poseidonHash).fetch(subject, NOW);
   const rootOf = (r: typeof first) =>
-    r.status === "claimed" && r.claim.kind === "standing" ? r.claim.listSetRoot : "";
+    r.status === "claimed" && r.claim.kind === "sanctions" ? r.claim.listSetRoot : "";
   assert.notEqual(rootOf(first), rootOf(second));
 });
 
@@ -159,7 +159,7 @@ test("one register reporting is enough to be listed", async () => {
       ...cleanRegisters,
       [PROC]: data({ found: true, has_records: true, status: "SANCION", checked_at: "2026-09-20T10:00:00Z" }),
     }), poseidonHash).fetch(subject, NOW);
-  assert.equal(result.status === "claimed" && result.claim.kind === "standing" && result.claim.listed, true);
+  assert.equal(result.status === "claimed" && result.claim.kind === "sanctions" && result.claim.listed, true);
 });
 
 test("a register that could not be read makes the whole screening unavailable", async () => {

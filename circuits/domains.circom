@@ -58,8 +58,8 @@ function KIND_INCOME() {
 function KIND_FORMALITY() {
     return 3;
 }
-// claim kind: standing
-function KIND_STANDING() {
+// claim kind: sanctions
+function KIND_SANCTIONS() {
     return 4;
 }
 // claim kind: capacity

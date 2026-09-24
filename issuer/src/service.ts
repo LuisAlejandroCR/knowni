@@ -226,7 +226,7 @@ export async function issueAnswers(
         answerOf(
           "sanctions",
           "procuraduria+contraloria+contaduria",
-          result.status === "claimed" && result.claim.kind === "standing" ? !result.claim.listed : "unavailable",
+          result.status === "claimed" && result.claim.kind === "sanctions" ? !result.claim.listed : "unavailable",
         ),
         publicStateOf(result),
       );

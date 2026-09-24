@@ -116,7 +116,7 @@ test("no payload makes an adapter throw, and none of it reaches the result", asy
       [`personhood seed ${seed}`, await createRegistraduriaPersonhoodSource(client).fetch(SUBJECT, NOW)],
       [`capacity seed ${seed}`, await createSicaacCapacitySource(client).fetch(SUBJECT, NOW)],
       [`sanctions seed ${seed}`, await createSanctionsSource(client, poseidonHash).fetch(SUBJECT, NOW)],
-      [`standing seed ${seed}`, await createVehicleStandingSource(client).fetch(ASSET, NOW)],
+      [`sanctions seed ${seed}`, await createVehicleStandingSource(client).fetch(ASSET, NOW)],
     ] as const;
     for (const [where, result] of results) {
       assertWellFormed(result, where);
@@ -138,7 +138,7 @@ test("a payload that is not an object is an invalid response, not a claim", asyn
       ["personhood", await createRegistraduriaPersonhoodSource(client).fetch(SUBJECT, NOW)],
       ["capacity", await createSicaacCapacitySource(client).fetch(SUBJECT, NOW)],
       ["sanctions", await createSanctionsSource(client, poseidonHash).fetch(SUBJECT, NOW)],
-      ["standing", await createVehicleStandingSource(client).fetch(ASSET, NOW)],
+      ["sanctions", await createVehicleStandingSource(client).fetch(ASSET, NOW)],
     ] as const) {
       assert.equal(result.status, "degraded", `${name} claimed something from ${JSON.stringify(data)}`);
     }

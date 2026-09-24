@@ -65,7 +65,7 @@ pub struct PublicSignals {
     pub personhood: bool,
     pub solvency_tier: u32,
     pub formality: bool,
-    pub standing: bool,
+    pub sanctions: bool,
 }
 
 #[contracttype]
@@ -161,7 +161,7 @@ impl KnowniVerifier {
 
         if !signals.personhood
             || !signals.formality
-            || !signals.standing
+            || !signals.sanctions
             || signals.solvency_tier < min_tier
         {
             return Err(Error::PredicateNotSatisfied);
@@ -258,14 +258,14 @@ pub const SIGNAL_COUNT: u32 = 13;
 pub(crate) const AT_PERSONHOOD: u32 = 0;
 pub(crate) const AT_SOLVENCY_TIER: u32 = 1;
 pub(crate) const AT_FORMALITY: u32 = 2;
-pub(crate) const AT_STANDING: u32 = 3;
+pub(crate) const AT_SANCTIONS: u32 = 3;
 pub(crate) const AT_NULLIFIER: u32 = 4;
 pub(crate) const AT_ISSUER_ROOT: u32 = 5;
 pub(crate) const AT_SESSION_ID: u32 = 6;
 pub(crate) const AT_LIST_SET_ROOT: u32 = 12;
 
 fn signals_match(env: &Env, named: &PublicSignals, raw: &Vec<Fr>) -> bool {
-    // Outputs first (personhood, solvencyTier, formality, standing,
+    // Outputs first (personhood, solvencyTier, formality, sanctions,
     // nullifier), then the declared public inputs.
     if raw.len() != SIGNAL_COUNT {
         return false;
@@ -273,7 +273,7 @@ fn signals_match(env: &Env, named: &PublicSignals, raw: &Vec<Fr>) -> bool {
     fr_eq_bool(env, raw.get(AT_PERSONHOOD), named.personhood)
         && fr_eq_u32(env, raw.get(AT_SOLVENCY_TIER), named.solvency_tier)
         && fr_eq_bool(env, raw.get(AT_FORMALITY), named.formality)
-        && fr_eq_bool(env, raw.get(AT_STANDING), named.standing)
+        && fr_eq_bool(env, raw.get(AT_SANCTIONS), named.sanctions)
         && fr_eq_bytes(raw.get(AT_NULLIFIER), &named.nullifier)
         && fr_eq_bytes(raw.get(AT_ISSUER_ROOT), &named.issuer_root)
         && fr_eq_bytes(raw.get(AT_SESSION_ID), &named.session_id)

@@ -79,9 +79,9 @@ export function disclosureFor(request: SessionRequest, nowUnix: number): Disclos
     personhood: true,
     solvency: SolvencyTier.NONE,
     formality: true,
-    standing: true,
+    sanctions: true,
     // The demo profile is a vehicle sale, and these are the two answers it
-    // turns on: the seller's capacity and the car's standing.
+    // turns on: the seller's capacity and the car's sanctions.
     capacity: true,
     assetStanding: true,
     issuerRoots: ["f".repeat(64)],

@@ -1154,6 +1154,32 @@ nadie analizó. El bloqueo real de los circuitos nunca fue el toolchain: es este
 parametrizado para BLS12-381, y falta que `core/` hashee con él —hoy el puerto `FieldHash` está
 implementado con SHA-256, que es exactamente el cambio que el puerto existe para permitir—.
 
+### D-52 — Las constantes de Poseidon se generan aquí y se comprueban contra circomlib; la matriz no · 2026-09-24
+
+*El problema, recordado en una línea:* compilar con `-p bls12381` no protesta, y las constantes de
+ronda de circomlib son del campo de BN254. Generar las del campo correcto es el trabajo.
+
+*Lo que se hizo, y por qué se puede creer:* `circuits/tools/poseidon-params.ts` es un port del
+`generate_parameters_grain.sage` de referencia —el script que la propia cabecera de circomlib nombra
+como origen de sus constantes—. No se cree porque parezca correcto: la prueba regenera con él las
+constantes BN254 **publicadas** para anchos 2 y 3 y las compara. Coinciden.
+
+*La parte del LFSR que no se puede adivinar:* un bit se emite solo cuando el anterior fue un `1`, y
+el par se consume igual. Leer todos los bits da una secuencia igual de aleatoria a la vista y
+distinta; la primera constante de circomlib es lo que distingue una regla de la otra, y es por lo que
+la prueba vale.
+
+*Dónde se paró, dicho exacto:* la matriz MDS **no** se reproduce. Una Cauchy sobre los mismos `x`/`y`
+generados coincide con la matriz publicada de circomlib en su primera fila y en otra más, y discrepa
+en el resto —una coincidencia parcial que no es casualidad y que todavía no se explica—. Sin esa
+matriz no hay permutación que escribir, ni dentro ni fuera del circuito. Tres intentos sobre la
+convención de filas y columnas, y la regla del proyecto dice parar y nombrar el supuesto dudoso.
+
+*Lo que queda como base para el siguiente intento:* el valor de verdad lo produce el propio gadget,
+no una tabla de internet — `circom --wasm` y un testigo para las entradas `1, 2` sobre BN254 dan
+`Poseidon(1,2) = 0x115cc0f5…4417189a`. Una implementación que no reproduzca ese número está mal,
+reproduzca lo que reproduzca.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1216,6 +1242,7 @@ implementado con SHA-256, que es exactamente el cambio que el puerto existe para
 | 2026-09-23 | El adaptador de Horizon fallaba con mensajes de JavaScript —`Cannot convert abc to a BigInt`— donde debía nombrar a Horizon, y un `502` de HTML salía como error de parseo. Primeras pruebas fuzz de `anchoring/` — D-49. 365 pruebas |
 | 2026-09-23 | Fuzz sobre los cuatro adaptadores de Croma: cero hallazgos. Ya validaban y reducían de verdad, a diferencia del emisor y el anclaje. La diferencia no era la disciplina sino dónde estaba dibujado el límite — D-50. 368 pruebas |
 | 2026-09-23 | Los circuitos compilan por primera vez, y la tabla de símbolos delató que el contrato leía `listSetRoot` del índice 11, que es `minMonthsPaid`. El orden de señales deja de ser una lectura: lo escribe el compilador y CI lo comprueba — D-51 |
+| 2026-09-24 | Las constantes de ronda de Poseidon se generan en el repositorio y la prueba las compara con las BN254 publicadas por circomlib: coinciden. La matriz MDS no se reproduce y el trabajo se para ahí, nombrado — D-52. 371 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

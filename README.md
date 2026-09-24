@@ -140,7 +140,7 @@ Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilaci�
 
 ```bash
 npm install    # enlaza los workspaces entre sí; las únicas dependencias son de desarrollo
-npm run verify # lint + typecheck + 368 pruebas (unit · fuzz · invariant)
+npm run verify # lint + typecheck + 371 pruebas (unit · fuzz · invariant)
 ```
 
 Empieza por [`journey/test/journey.test.ts`](journey/test/journey.test.ts):

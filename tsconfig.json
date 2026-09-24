@@ -18,7 +18,8 @@
     "anchoring/**/*.ts",
     "attestation/**/*.ts",
     "issuer/**/*.ts",
-    "journey/**/*.ts"
+    "journey/**/*.ts",
+    "circuits/**/*.ts"
   ],
   "exclude": ["**/node_modules/**", "app/**"]
 }

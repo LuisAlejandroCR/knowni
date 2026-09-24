@@ -20,12 +20,14 @@ import type { SessionRequest } from "@knowni/core";
 import { toHex } from "@knowni/core";
 import { attestResults, type AttestedAnswer } from "@knowni/attestation";
 import { nodeSignatures } from "@knowni/attestation/node";
+import type { PublicSourceState } from "@knowni/sources";
 import {
   createCromaClient,
   createRegistraduriaPersonhoodSource,
   createSanctionsSource,
   createSicaacCapacitySource,
   createVehicleStandingSource,
+  publicStateOf,
 } from "@knowni/sources";
 
 export interface IssuerOptions {
@@ -52,6 +54,9 @@ export interface IssuerOptions {
 export interface IssuanceResponse {
   readonly results: ReturnType<typeof attestResults>;
   readonly chargedMinor: number;
+  // Cached with the rest: a retry that hits the cache describes the same
+  // issuance, so it must not forget why a source was missing from it.
+  readonly sourceStates: readonly SourceState[];
 }
 
 class IssueHttpError extends Error {
@@ -109,20 +114,37 @@ export const DEFAULT_SOURCE_DEADLINE_MS = 60_000;
 interface SourceTask {
   readonly predicate: string;
   readonly sourceId: string;
-  run(): Promise<AttestedAnswer>;
+  run(): Promise<SourceOutcome>;
 }
 
-async function withDeadline(task: SourceTask, deadlineMs: number): Promise<AttestedAnswer> {
+// Why an answer is missing, for the person whose verification it is. It rides
+// beside the signed answers and never inside them: what the counterparty
+// receives stays `unavailable`, with no reason attached — criterio A7.
+export interface SourceState {
+  readonly predicate: string;
+  readonly source: string;
+  readonly state: PublicSourceState;
+}
+
+interface SourceOutcome {
+  readonly answer: AttestedAnswer;
+  readonly state: PublicSourceState;
+}
+
+const outcome = (answer: AttestedAnswer, state: PublicSourceState): SourceOutcome => ({ answer, state });
+
+async function withDeadline(task: SourceTask, deadlineMs: number): Promise<SourceOutcome> {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  // A rejection and a deadline are both the source failing to answer in time,
+  // which is `degraded` and never `failed`: nothing came back to judge.
+  const gaveUp = outcome(answerOf(task.predicate, task.sourceId, "unavailable"), "degraded");
   const started = task.run();
-  // A rejection is the adapter's own failure and reads as unavailable too;
-  // nothing above this line ever sees it.
-  const settled = started.catch(() => answerOf(task.predicate, task.sourceId, "unavailable"));
+  const settled = started.catch(() => gaveUp);
   const expired = new Promise<undefined>((resolve) => {
     timer = setTimeout(() => resolve(undefined), deadlineMs);
   });
   try {
-    return (await Promise.race([settled, expired])) ?? answerOf(task.predicate, task.sourceId, "unavailable");
+    return (await Promise.race([settled, expired])) ?? gaveUp;
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
@@ -132,7 +154,11 @@ export async function issueAnswers(
   options: IssuerOptions,
   body: IssueRequestBody,
   nowUnix: number,
-): Promise<{ readonly answers: readonly AttestedAnswer[]; readonly results: ReturnType<typeof attestResults> }> {
+): Promise<{
+  readonly answers: readonly AttestedAnswer[];
+  readonly results: ReturnType<typeof attestResults>;
+  readonly sourceStates: readonly SourceState[];
+}> {
   const client = createCromaClient({ apiKey: options.apiKey, fetchImpl: options.fetchImpl });
   const subject = {
     documentKind: body.documentKind,
@@ -153,12 +179,15 @@ export async function issueAnswers(
   if (body.consented.includes("registraduria")) {
     tasks.push({ predicate: "personhood", sourceId: "registraduria", run: async () => {
       const result = await createRegistraduriaPersonhoodSource(client).fetch(subject, nowUnix);
-      return answerOf(
-        "personhood",
-        "registraduria",
-        result.status === "claimed" && result.claim.kind === "identity"
-          ? result.claim.documentValid && result.claim.subjectAlive && result.claim.ofAge
-          : "unavailable",
+      return outcome(
+        answerOf(
+          "personhood",
+          "registraduria",
+          result.status === "claimed" && result.claim.kind === "identity"
+            ? result.claim.documentValid && result.claim.subjectAlive && result.claim.ofAge
+            : "unavailable",
+        ),
+        publicStateOf(result),
       );
     } });
   }
@@ -166,10 +195,13 @@ export async function issueAnswers(
   if (body.consented.includes("sicaac")) {
     tasks.push({ predicate: "capacity", sourceId: "sicaac", run: async () => {
       const result = await createSicaacCapacitySource(client).fetch(subject, nowUnix);
-      return answerOf(
-        "capacity",
-        "sicaac",
-        result.status === "claimed" && result.claim.kind === "capacity" ? !result.claim.restricted : "unavailable",
+      return outcome(
+        answerOf(
+          "capacity",
+          "sicaac",
+          result.status === "claimed" && result.claim.kind === "capacity" ? !result.claim.restricted : "unavailable",
+        ),
+        publicStateOf(result),
       );
     } });
   }
@@ -177,10 +209,13 @@ export async function issueAnswers(
   if (body.consented.includes("listas")) {
     tasks.push({ predicate: "sanctions", sourceId: "procuraduria+contraloria+contaduria", run: async () => {
       const result = await createSanctionsSource(client, poseidonHash).fetch(subject, nowUnix);
-      return answerOf(
-        "sanctions",
-        "procuraduria+contraloria+contaduria",
-        result.status === "claimed" && result.claim.kind === "standing" ? !result.claim.listed : "unavailable",
+      return outcome(
+        answerOf(
+          "sanctions",
+          "procuraduria+contraloria+contaduria",
+          result.status === "claimed" && result.claim.kind === "standing" ? !result.claim.listed : "unavailable",
+        ),
+        publicStateOf(result),
       );
     } });
   }
@@ -196,21 +231,30 @@ export async function issueAnswers(
         },
         nowUnix,
       );
-      return answerOf(
-        "assetStanding",
-        "runt+simit",
-        result.status === "claimed" && result.claim.kind === "assetStanding"
-          ? result.claim.registered && !result.claim.encumbered && !result.claim.finesOutstanding
-          : "unavailable",
+      return outcome(
+        answerOf(
+          "assetStanding",
+          "runt+simit",
+          result.status === "claimed" && result.claim.kind === "assetStanding"
+            ? result.claim.registered && !result.claim.encumbered && !result.claim.finesOutstanding
+            : "unavailable",
+        ),
+        publicStateOf(result),
       );
     } });
   }
 
   // `Promise.all` keeps the order of the tasks, not of their answers, so the
   // envelope is the same whichever source lands first.
-  const answers: readonly AttestedAnswer[] = await Promise.all(
+  const outcomes = await Promise.all(
     tasks.map((task) => withDeadline(task, options.sourceDeadlineMs ?? DEFAULT_SOURCE_DEADLINE_MS)),
   );
+  const answers: readonly AttestedAnswer[] = outcomes.map((each) => each.answer);
+  const sourceStates: readonly SourceState[] = outcomes.map((each, index) => ({
+    predicate: tasks[index]!.predicate,
+    source: tasks[index]!.sourceId,
+    state: each.state,
+  }));
 
   const results = attestResults(sha256Hash, nodeSignatures, options.seed, {
     issuerId: options.issuerId,
@@ -222,7 +266,7 @@ export async function issueAnswers(
 
   // The raw provider responses are gone by here: each adapter reduced its own
   // and nothing above the port ever held one.
-  return { answers, results };
+  return { answers, results, sourceStates };
 }
 
 function send(response: ServerResponse, status: number, body: unknown): void {
@@ -376,14 +420,14 @@ export function createIssuerService(options: IssuerOptions) {
             }
           }
 
-          const { answers, results } = await issueAnswers(options, body, nowUnix);
+          const { answers, results, sourceStates } = await issueAnswers(options, body, nowUnix);
           // The notice says an answer is ready and nothing more; a failure to
           // send it is not a failure to issue. A cache hit never sends it twice.
           if (typeof body.notifyPhone === "string" && body.notifyPhone !== "") {
             void notifier.notify(body.notifyPhone, results.sessionId);
           }
           return {
-            value: { results, chargedMinor: chargeableMinor(answers) },
+            value: { results, chargedMinor: chargeableMinor(answers), sourceStates },
             expiresAt: results.expiresAt,
           };
         });

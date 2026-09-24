@@ -140,6 +140,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Ningún adaptador se ha ejercido contra una respuesta real sobre una persona: los esquemas vienen del OpenAPI de Croma, no de una llamada | `sources/src/country/colombia/` | requiere un titular que autorice |
 | ~~Tests planos sin `unit · fuzz · invariant`~~ **Saldada el 2026-09-20:** 26 archivos movidos a `test/unit` y `test/invariant` con sufijo `.spec.ts`, más tres suites `fuzz` nuevas | todos los workspaces | ✅ |
 | ~~Cabeceras de 10–30 líneas con narrativa~~ **Saldada el 2026-09-20:** 65 archivos con cabecera de 2–3 líneas y 146 bloques narrativos retirados. El razonamiento vive en `memoria.md` | todos los `.ts` | ✅ |
+| El cliente de Croma sigue reintentando después de que la emisión dejó de esperar esa fuente: el plazo de D-41 corta la espera, no el trabajo. Son llamadas pagadas que ya no se usan. Salió al medir una prueba que tardaba 30 s en cerrar | `sources/src/providers/croma/client.ts`, `issuer/src/service.ts` | pendiente |
 | `sources/src/country/colombia/pila.ts` habla de un operador que todavía no existe como integración | `sources/` | B4 |
 | El código sigue llamando `standing` a lo que la documentación ya llama `sanctions` (`StandingClaim`, `proveStanding`, el campo del sobre). El renombrado va con B2 | `core/`, `sources/`, `journey/` | B2 |
 | `IncomeBasis` no tiene el eje de procedencia `observed \| documentary \| self_declared` del proyecto GovTech anterior | `core/src/claims.ts` | B4b |

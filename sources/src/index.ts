@@ -2,8 +2,8 @@
 // Colombia is the first jurisdiction and nothing in types.ts or issuer.ts
 // knows it.
 
-export type { SourceFailureReason, SourcePort, SourceResult, SubjectLookup } from "./types.ts";
-export { degraded } from "./types.ts";
+export type { PublicSourceState, SourceFailureReason, SourcePort, SourceResult, SubjectLookup } from "./types.ts";
+export { degraded, publicStateOf } from "./types.ts";
 
 export type { HeldCredential, IssueRequest, IssuedSet } from "./issuer.ts";
 export { issueClaimSet } from "./issuer.ts";

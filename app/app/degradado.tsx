@@ -6,7 +6,7 @@ import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { DEGRADED } from "../src/fixtures.ts";
-import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
+import { answerText, PREDICATE_LABEL, RETRYABLE_STATES, sourceStateText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { type as typography } from "../src/theme.ts";
 
@@ -16,6 +16,14 @@ export default function Degradado() {
   const flow = useFlow();
   const missing = (flow.answers ?? []).filter((answer) => answer.value === "unavailable");
   const answered = (flow.answers ?? []).filter((answer) => answer.value !== "unavailable");
+  // Why each one is missing, as the issuer said it beside the signed answers.
+  // Without this the screen can only say "sin respuesta" to every cause, which
+  // is the conflation A7 refuses.
+  const stateOf = (predicate: string) =>
+    flow.sourceStates.find((entry) => entry.predicate === predicate)?.state;
+  const retryable = flow.sourceStates.some(
+    (entry) => entry.state !== "answered" && RETRYABLE_STATES.includes(entry.state),
+  );
 
   return (
     <Screen>
@@ -31,14 +39,17 @@ export default function Degradado() {
           {missing.length === 0 ? (
             <Row icon={<Text>!</Text>} title={DEGRADED.source} scope={DEGRADED.note} />
           ) : (
-            missing.map((answer) => (
-              <Row
-                key={answer.predicate}
-                icon={<Text>!</Text>}
-                title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
-                scope={answer.doesNotEstimate}
-              />
-            ))
+            missing.map((answer) => {
+              const state = stateOf(answer.predicate);
+              return (
+                <Row
+                  key={answer.predicate}
+                  icon={<Text>!</Text>}
+                  title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
+                  scope={state === undefined ? answer.doesNotEstimate : sourceStateText(state)}
+                />
+              );
+            })
           )}
           <Text style={{ ...typography.small, marginTop: 8 }}>{DEGRADED.explanation}</Text>
         </Card>
@@ -53,9 +64,11 @@ export default function Degradado() {
         <Note>No enviaremos una respuesta completa mientras falte evidencia requerida.</Note>
       </ScrollView>
       <Footer>
-        <Link href="/emision" asChild>
-          <Button>Reintentar fuente pendiente</Button>
-        </Link>
+        {retryable ? (
+          <Link href="/emision" asChild>
+            <Button>Reintentar fuente pendiente</Button>
+          </Link>
+        ) : null}
         <Link href="/" asChild>
           <Button tone="secondary">Volver después</Button>
         </Link>

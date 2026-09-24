@@ -447,7 +447,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 
 ### Lo que falta, en orden de cierre
 
-1. Publicar el documento de registro de verdad: servirlo por HTTPS y anclar su digest en testnet, que es lo que convierte el contract test de A3 en un ejercicio real.
+1. Ejecutar la publicación del registro: `attestation/tools/publish-registry.ts` firma el documento e imprime su digest, y `createStellarRegistryReader` lo lee de Horizon, pero falta servirlo por HTTPS y anclar ese digest en testnet. Es lo que convierte el contract test de A3 en un ejercicio real.
 2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet.
 3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
 4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo

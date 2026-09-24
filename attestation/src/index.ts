@@ -183,3 +183,6 @@ export type {
   ChainRegistryReader,
 } from "./adapters/chain-registry.ts";
 export { createChainRegistry } from "./adapters/chain-registry.ts";
+
+export type { StellarRegistryReaderOptions } from "./adapters/stellar-registry-reader.ts";
+export { createStellarRegistryReader } from "./adapters/stellar-registry-reader.ts";

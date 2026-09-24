@@ -12,7 +12,7 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 | Artifact | State |
 |---|---|
 | `eligibility.circom`, `merkle.circom` | **Written, and compiled** — 2026-09-23, circom 2.2.3. |
-| Compiled R1CS | **Built.** 12 424 non-linear and 12 797 linear constraints, 8 public inputs, 5 public outputs, 25 281 wires — the same on both curves. The last move was the income claim growing its provenance (B4b): +39 non-linear. Not committed: it is generated. |
+| Compiled R1CS | **Built.** 12 379 non-linear and 254 linear constraints, 8 public inputs, 5 public outputs, 12 693 wires — the same on both curves. The last move was carrying the Poseidon state as an expression instead of a signal per cell per round: 25 221 → 12 633 constraints, −50%, and the permutation is unchanged (D-74). Not committed: it is generated. |
 | Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
 | WASM prover, trusted setup, proving key | **Not run.** |
 | On-chain verification against Soroban | **Not run.** No real proof has ever been produced or verified. |

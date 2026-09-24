@@ -1570,6 +1570,47 @@ creyendo que cubre el perfil vehicular.
 *Lo que esto no cierra:* ninguna de las dos respuestas se ha producido a partir de una fuente real.
 RUNT y SIMIT siguen sin ejercitarse contra una respuesta viva — `docs/verificacion.md`, pendiente 6.
 
+### D-74 — El estado de Poseidon deja de ser una señal y pasa a ser una expresión · 2026-09-24
+
+*El problema, recordado en una línea:* D-62 quitó las señales que sobraban **dentro** de una ronda y
+dejó nombrado lo que faltaba —las matrices dispersas `S` y `P`—. Lo que nadie había mirado es que
+seguía habiendo una señal por celda y por ronda solo para **guardar** el resultado de la mezcla.
+
+*Lo que se hizo:* `state` pasa de `signal state[rounds + 1][t]` a `var state[t]`. En circom un `var`
+sostiene la combinación lineal de señales con la que se construyó, así que mezclar es contabilidad
+que hace el compilador en vez de una restricción por celda. Solo se materializa lo que R1CS no puede
+evitar: el cuadrado, el cuártico y el quinto de cada S-box, porque una restricción multiplica **dos**
+combinaciones lineales y no tres. La salida es la única otra señal, y las entradas entran directas.
+
+*Por qué es seguro, y no un "parece que sale igual":* las multiplicaciones son las mismas, en las
+mismas rondas, sobre los mismos valores. La permutación no cambia y no hacía falta creerlo: el
+testigo de `PoseidonKnowni2` sigue dando `0x115cc0f5…4417189a` en las dos curvas, y el compromiso de
+ingreso sigue dando `033ae98c…`. Los dos los reconstruye CI en cada corrida desde D-62 y D-71, que
+es exactamente para lo que sirven.
+
+*Lo que cuesta, compilado antes y después con circom 2.2.3 sobre este repositorio (idéntico en las
+dos curvas):*
+
+| | Antes (D-71) | Ahora | |
+|---|---|---|---|
+| No lineales | 12 424 | 12 379 | −45 |
+| Lineales | 12 797 | **254** | −12 543 |
+| Total | 25 221 | **12 633** | **−50%** |
+| Cables | 25 281 | 12 693 | −12 588 |
+
+Una instancia suelta de `PoseidonKnowni2`, medida aparte, pasa de 241 + 197 a 240 + 3: las 197
+lineales eran 65 rondas × 3 celdas más las dos entradas.
+
+*Las 45 no lineales que también bajaron, sin adornarlo:* es residuo de D-62, no el objetivo. En la
+ronda 0 la celda extra vale cero por construcción, y al no pasar por una señal intermedia el
+simplificador le pliega la última multiplicación que antes sostenía. Medido: −1 por instancia de
+ancho 3. No se buscó y no cambia nada de lo anterior.
+
+*Lo que esto cierra, y lo que no:* cierra el +29% de D-61 —12 633 está muy por debajo de las 28 975
+de la forma optimizada de circomlib—. No reproduce `S` ni `P`, y ahora reproducirlas rinde poco: lo
+que atacan son las no lineales, y las no lineales apenas se movieron. D-52 las sigue nombrando, pero
+como trabajo con una cifra objetivo delante, no como pendiente abierto.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1656,6 +1697,7 @@ RUNT y SIMIT siguen sin ejercitarse contra una respuesta viva — `docs/verifica
 | 2026-09-24 | B4b: qué mide una cifra de ingreso y **cómo se supo** dejan de ser el mismo campo. `provenance` entra en el reclamo y en el compromiso —ancho 10, `PoseidonKnowni12`, +39 restricciones no lineales medidas: 12 385 → 12 424—, porque una procedencia fuera del compromiso es una que el emisor podría degradar después. PILA responde `observed`; el estado de cuenta que aporta el titular, `documentary`, y ya no se leen igual. `SolvencyParams` exige nombrar las rutas que acepta: lista vacía no acepta nada, como `acceptedBases`. El número copiado a mano que unía circuito y `core/` se reemplaza por un testigo que CI reconstruye en cada corrida — D-71. 454 pruebas |
 | 2026-09-24 | B2: el código deja de llamar `standing` a lo que el producto llama `sanctions`, en los cinco sitios donde el nombre viajaba —`core/`, las fuentes, el circuito, el fixture de señales y el contrato—. No cambia ningún compromiso: la etiqueta del reclamo es un número, no la cadena, así que renombrarla no mueve un solo hash; lo comprobó el testigo de `IncomeCommitment`, idéntico antes y después. `assetStanding` se queda como está: es otro predicado, sobre un activo y no sobre una persona — D-72. 454 pruebas y 11 del contrato |
 | 2026-09-24 | El ancla del registro deja de ser una forma y pasa a ser una transacción: `66bf1b7d…` lleva el digest del documento firmado como `MEMO_HASH`, y el mismo adaptador que corre en las pruebas lo lee de Horizon real y resuelve el registro con `trustedVia: chain_anchor`. Un documento distinto contra la misma ancla responde `digest_mismatch` — la comprobación que vale es esa, no la que resuelve. Lo que sigue sin hacerse es servir el documento por HTTPS: en el ejercicio salió de memoria, y el registro lo dice así — D-73 |
+| 2026-09-24 | El estado de Poseidon deja de ser una señal por celda y por ronda y pasa a viajar como expresión lineal: mezclar es contabilidad del compilador y solo se materializa lo que se eleva a la quinta. 25 221 → 12 633 restricciones (−50%) y 25 281 → 12 693 cables, iguales sobre las dos curvas; el testigo y el compromiso de ingreso que CI reconstruye no se mueven, que es lo que dice que la permutación es la misma — D-74. 454 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

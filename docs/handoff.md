@@ -78,15 +78,19 @@ El ancla ya es real. Lo que falta del camino web de A3 es publicar el JSON firma
 en el ejercicio se sirvió desde memoria, y `docs/verificacion.md` lo dice así. Una página estática
 basta; `attestation/tools/publish-registry.ts` imprime el documento y su digest.
 
-### 3. Recuperar el resto del 29% de restricciones — **trabajo técnico, sin bloqueo**
+### 3. El sobrecoste de restricciones — **cerrado; lo que queda es el margen**
 
-Una parte ya se recuperó: la plantilla llana gastaba una señal por sumar la constante de ronda y tres
-por cada celda que una ronda parcial se limita a copiar. Eso salió (D-62) sin tocar la permutación.
-Medido por CI: 37 504 → 25 049 restricciones (−33%), por debajo de las 28 975 que costaba la forma
-optimizada de circomlib. Hoy el circuito está en 25 221 en total —12 424 no lineales y 12 797
-lineales—, porque B4b le añadió la procedencia del ingreso. Lo que queda es suyo: las matrices dispersas `S` y `P`, que aquí nunca se
-reprodujeron y que D-52 dejó nombrado. Las 182 no lineales que también bajaron están explicadas: plegado de constantes en la ronda 0, 2
-por celda constante × 91 celdas (D-62).
+El +29% de D-61 dejó de ser deuda y pasó a ser margen. Dos movimientos, ninguno de ellos toca la
+permutación: primero la clave de ronda y las celdas copiadas dejaron de gastar señal (D-62,
+37 504 → 25 049); después el estado entero dejó de ser una señal por celda y por ronda y pasó a
+viajar como expresión lineal, materializando solo lo que se eleva a la quinta (D-74,
+25 221 → **12 633**, −50%, y 25 281 → 12 693 cables). Hoy: 12 379 no lineales y 254 lineales,
+iguales sobre las dos curvas.
+
+Queda **muy por debajo** de las 28 975 de la forma optimizada de circomlib, así que las matrices
+dispersas `S` y `P` —que D-52 dejó nombradas y aquí nunca se reprodujeron— ya no son una deuda de
+coste: reproducirlas serviría para bajar las no lineales, y las no lineales apenas se movieron
+(−45). Si alguien las retoma, que sea con una cifra objetivo delante, no por cerrar un pendiente.
 
 ### 4. `outcome` y `session` siguen en SHA-256 — **deliberado**
 

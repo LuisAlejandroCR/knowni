@@ -29,12 +29,11 @@ export { createPilaFormalitySource, createPilaIncomeSource } from "./country/col
 export type { UgppOptions, UgppPeriod, UgppStatement } from "./country/colombia/ugpp.ts";
 export { UGPP_WINDOW_MONTHS, createUgppContributionSource, statementRef } from "./country/colombia/ugpp.ts";
 
-export type { ListScreeningOptions } from "./country/colombia/listas.ts";
-export { CO_DEFAULT_LISTS, createListScreeningSource } from "./country/colombia/listas.ts";
 
 export type { SyntheticSubject } from "./country/colombia/synthetic.ts";
 export {
-  createSyntheticNameResolver,
+  createSyntheticSanctionsClient,
+  SYNTHETIC_LIST_STAMPS,
   createSyntheticPilaClient,
   createSyntheticRegistraduriaSource,
 } from "./country/colombia/synthetic.ts";

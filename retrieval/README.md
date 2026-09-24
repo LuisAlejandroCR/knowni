@@ -5,7 +5,7 @@
 
 # `@knowni/retrieval`
 
-> **Este workspace está marcado para retirarse en parte. Léelo antes de construir sobre él.**
+> **Retirado en parte el 2026-09-24 (B3). Léelo antes de construir sobre él.**
 >
 > Se escribió leyendo "croma" como **Chroma**, la base de datos vectorial. Es
 > [**Croma**](https://docs.usecroma.com): una API de datos de gobierno de Latinoamérica que
@@ -19,13 +19,13 @@
 
 | Pieza | Por qué | Estado |
 |---|---|---|
-| `src/adapters/chroma.ts` | No hay corpus que indexar cuando la fuente es una API tipada | ✅ **retirado el 2026-09-24**: no lo llamaba nadie fuera de su propia prueba |
-| `src/types.ts` → `RecordIndexPort`, `PublicRecord` | El puerto correcto es `SourcePort`, en `sources/` | pendiente: hoy lo sostiene `sources/src/country/colombia/listas.ts`, y el recorrido de `journey/` tamiza listas por ahí |
-| `src/adapters/memory.ts` | Existía para probar el puerto anterior | pendiente por lo mismo: es el índice sobre el que corre ese tamizado |
+| `src/adapters/chroma.ts` | No hay corpus que indexar cuando la fuente es una API tipada | ✅ retirado: no lo llamaba nadie fuera de su propia prueba |
+| `src/types.ts` → `RecordIndexPort`, `RecordQuery` | El puerto correcto es `SourcePort`, en `sources/` | ✅ retirado con su último llamador |
+| `src/adapters/memory.ts` | Existía para probar el puerto anterior | ✅ retirado |
+| `sources/.../listas.ts` | Tamizaba por nombre contra un índice; los tres registros se consultan por número de documento | ✅ retirado: `createSanctionsSource` ya era el camino de producción |
 
-Retirar el puerto y el índice no es borrar dos archivos: exige que el tamizado de listas pase por
-`createSanctionsSource` —el camino de Croma— y que el recorrido de `journey/` lo ejercite así. Eso
-es trabajo de B3, no un efecto colateral de este retiro.
+El recorrido de `journey/` ejercita ahora esa misma fuente, con un Croma sintético que responde los
+tres endpoints sin red. `sources/` ya no depende de este workspace.
 
 ## Qué se conserva, y por qué sigue haciendo falta
 
@@ -39,8 +39,12 @@ un umbral.
 
 | Pieza | Destino |
 |---|---|
-| [`src/normalize.ts`](src/normalize.ts) | Se queda. La consulta por nombre se arma desde texto, y los registros colombianos traen tildes inconsistentes, `apellidos, nombres` y segundo apellido opcional |
-| [`src/resolve.ts`](src/resolve.ts) | Se queda. **Dos reglas, no un umbral**: el mejor candidato tiene que ser bueno *y* ganarle al segundo por margen. Si no, es `ambiguous`, va a revisión humana, y nunca se degrada a "limpio" |
+| [`src/normalize.ts`](src/normalize.ts) | Se queda, hoy sin llamador. La consulta por nombre se arma desde texto, y los registros colombianos traen tildes inconsistentes, `apellidos, nombres` y segundo apellido opcional |
+| [`src/resolve.ts`](src/resolve.ts) | Se queda, hoy sin llamador. **Dos reglas, no un umbral**: el mejor candidato tiene que ser bueno *y* ganarle al segundo por margen. Si no, es `ambiguous`, va a revisión humana, y nunca se degrada a "limpio" |
+
+Que hoy no las llame nadie es un hecho, no un descuido: entran en cuanto se integre uno de esos dos
+endpoints por nombre, y borrarlas ahora obligaría a reescribir la regla del margen bajo presión de
+entrega, que es justo cuando se convierte en un umbral.
 
 Esa última regla es la que impide que un homónimo produzca una coincidencia judicial contra un
 desconocido y alguien se quede sin arriendo por eso. Un sistema optimizado para conveniencia

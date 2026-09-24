@@ -402,6 +402,68 @@ hasta autenticar los resultados mínimos sin entregar `claim`/`salt` e integrar 
 criptográfica con aceptación. El tercer bloqueo —admitir el perfil vehicular en `Disclosure`—
 quedó levantado el 2026-09-24 (A15, D-63), y con A16 cerrado el mismo día ya no queda nada de él.
 
+## Bloque futuro — el portador puede ser un agente
+
+Marco de entrada, atribuido: dos publicaciones de **Mauro Taroco** (Domus) y **Natalia Jiménez**
+sobre la diferencia entre un banco *AI-enabled* —uno que usa IA— y uno *AI-enabling* —uno **que la
+IA puede usar**. Lo primero lo copia cualquier competidor en 18 meses con el mismo proveedor. Lo
+segundo es que un agente, operando por un cliente, pueda autenticarse, actuar dentro de límites que
+el cliente definió, validar una contraparte y dejar todo auditable. El obstáculo que nombran: las
+APIs se diseñaron asumiendo un humano con un celular —OTP por SMS, sesiones que expiran,
+confirmaciones visuales—, y para un agente cada uno de esos pasos es una pared. De la segunda
+publicación: *«identidad, límites, delegación, reversibilidad, trazabilidad y accountability pasan a
+ser parte del producto»*. No se incrusta el medio; `AGENTS.md` lo prohíbe.
+
+Qué tiene que ver con esto: cuatro de las cinco piezas que el marco pide ya existen aquí, y no por
+casualidad.
+
+| Lo que el marco pide | Lo que ya existe |
+|---|---|
+| Identidad verificable sin exponer a la persona | `subjectRef` salteado y compromisos; `core/` no guarda ningún dato personal |
+| Permisos con límites del cliente | La sesión ata contraparte, finalidad, reto y fecha — A5 |
+| Trazabilidad y auditabilidad | Raíz firmada por el emisor, anclaje opcional, nulificador de un solo uso |
+| No repetición | El conjunto gastado sobrevive al reinicio, en el emisor y en el dispositivo — D-34, D-36, D-37 |
+| Una superficie pensada para que del otro lado haya una máquina | **Falta.** `issuer/` habla HTTP con llave de contraparte, pero nada está diseñado como superficie de agente |
+
+### Lo que este bloque **no** hace
+
+No mueve la frontera que `AGENTS.md` declara no negociable: una fuente se consulta **en emisión**,
+con consentimiento del sujeto, y la contraparte nunca consulta. Un agente que presenta no es una
+contraparte que pregunta, y si el diseño terminara necesitando que lo fuera, el bloque se cae y se
+dice por qué.
+
+### Tres preguntas que se responden antes de escribir código
+
+Son de producto, no de implementación. Cada una tiene que quedar contestada en `docs/memoria.md` —
+con su decisión y su fecha— antes de que exista una línea que la suponga.
+
+1. **¿Un agente puede *sostener* una credencial en nombre del sujeto, o solo presentarla?** La
+   diferencia decide si el secreto del sujeto sale del dispositivo, que hoy nunca sale.
+2. **Si un agente presenta, ¿qué lo distingue de un replay?** El nulificador ata la presentación a
+   una sesión; no dice *quién* la presentó.
+3. **¿El consentimiento por fuente (D-31) sigue siendo del sujeto, o hay un consentimiento delegado
+   con límites?** Es el *«permisos delegados»* del marco, y hoy no existe.
+
+### Criterios de aceptación
+
+Vigentes solo si las tres preguntas se responden a favor de construirlo. Un criterio que dependa de
+una respuesta que no se ha dado no se implementa.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| G1 | Un agente que presenta no obtiene nunca el secreto del sujeto ni el par `claim`/`salt` | prueba de que lo que cruza al agente es una presentación ya construida, y una invariante sobre lo que sale del dispositivo |
+| G2 | Una delegación declara sujeto, agente, finalidad, límites y vencimiento, y está firmada por el sujeto | esquema, firma verificada y prueba de que una delegación vencida o de otra finalidad se rehúsa |
+| G3 | Una presentación hecha por un agente dice que lo fue, sin identificar al agente ante la contraparte más de lo que la delegación autoriza | prueba de divulgación: la contraparte distingue «presentó un agente autorizado» de «presentó el sujeto», y nada más |
+| G4 | El nulificador sigue gastándose una sola vez, presente quien presente | prueba de replay con sujeto y agente sobre la misma sesión |
+| G5 | Revocar una delegación surte efecto antes de la siguiente presentación, y su estado es `live`, `revoked` o `unknown` como el de una credencial | prueba sobre el oráculo de revocación con las tres respuestas, y la política que decide qué hacer con `unknown` |
+| G6 | Ninguna superficie de agente consulta una fuente: si falta evidencia, se emite de nuevo con consentimiento del sujeto | prueba de arquitectura/importaciones, la misma que sostiene A2 |
+
+### Puerta de decisión
+
+Si responder las tres preguntas exige que el secreto del sujeto salga del dispositivo, el bloque se
+detiene y se anota como descartado con su razón. Una credencial que un agente puede sostener sin
+límite es una credencial que el sujeto ya no controla, y eso contradice el norte del producto.
+
 ## Puertas de decisión
 
 1. **Croma/PILA:** no prometer solvencia por aportes hasta comprobar que el endpoint devuelve IBC,
@@ -413,6 +475,9 @@ quedó levantado el 2026-09-24 (A15, D-63), y con A16 cerrado el mismo día ya n
    un adapter; nunca se rellena con datos sintéticos en producción.
 5. **Go-live:** sin concepto legal, eliminación de payloads, gestión de llaves y respuesta a
    incidentes, el sistema sigue siendo piloto cerrado.
+6. **Agente portador:** si sostener una credencial en nombre del sujeto exige que su secreto salga
+   del dispositivo, el bloque de agente no se construye. Ver *Bloque futuro — el portador puede ser
+   un agente*.
 
 ## Auditoría de ejecución — 2026-09-24
 

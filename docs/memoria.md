@@ -1211,6 +1211,40 @@ sumar constantes, s-box, mezclar, cada ronda; la variante de sumar una vez al pr
 compararla ni revisión de seguridad. Y `core/` sigue con SHA-256 — cambiarlo mueve todos los
 compromisos, así que es un cambio propio.
 
+### D-54 — Los dos lados no hashean igual, y el código afirmaba que sí · 2026-09-24
+
+*Cómo apareció:* con Poseidon ya comprobado (D-53) se puede preguntarle al circuito qué hace, en vez
+de leerlo. `MerkleLevel(7, 9, izquierda)` compilado y ejecutado da
+`0x2f447495…4a27376a`, que es exactamente `poseidon(7n, 9n)`. Sin prefijo de dominio por ningún lado.
+
+| | Cómo hashea un nodo |
+|---|---|
+| `circuits/merkle.circom` | `Poseidon(left, right)` — sin dominio |
+| `core/src/merkle.ts` | `hash("knowni:merkle:node:v1", [left, right])` — con dominio |
+
+Y los compromisos tampoco: el circuito hace `Poseidon(6)(subjectRef, documentValid, subjectAlive,
+ofAge, listSetRoot, salt)`; `commitClaim` hace `hash(CLAIM_DOMAIN, [...encodeClaim(claim), salt])`
+con codificación `u64be`. No son dos vistas de la misma construcción.
+
+*Lo que se corrige hoy:* la cabecera de `merkle.ts` decía *«The same fold the circuit performs, so
+both sides agree on what a root means»*. No es cierto y ya no lo dice. Cambiar `FieldHash` a Poseidon
+**no** los reconcilia: el dominio de `core/` no tiene contraparte en el circuito.
+
+*Las dos salidas, y lo que cuesta cada una:*
+
+| | Qué implica |
+|---|---|
+| **El circuito adopta los dominios** | `MerkleLevel` pasa a `Poseidon(3)` con una constante. Mantiene la separación hoja/nodo y deja a `core/` como referencia, que es lo que `circuits/README.md` ya declara |
+| **`core/` adopta el circuito** | Cero coste en restricciones y se pierde la separación hoja/nodo: una hoja que parezca un nodo deja de estar descartada por construcción |
+
+*Medido, no estimado:* `Poseidon(2)` son 243 restricciones no lineales; `Poseidon(3)` con una
+constante de dominio, 264. **+21 por hash.** Con dos caminos Merkle de profundidad 20 son +840 sobre
+las 10 932 actuales — **un 7,7%**.
+
+*Recomendación registrada:* la primera. Un 8% de circuito es más barato que publicar una regresión de
+seguridad, y es la única salida que deja verdadera la frase que este commit tuvo que borrar. La
+decisión es de producto y toca el circuito, el hashing de `core/` y todos los compromisos, así que
+no se ejecuta desde aquí.
 ### D-55 — El circuito adopta los dominios, y le faltaba además un nivel entero · 2026-09-24
 
 *Decisión (la recomendada en D-54, confirmada):* el circuito se acerca a `core/`, no al revés.
@@ -1307,6 +1341,7 @@ lados son la **misma construcción** y solo queda el hash.
 | 2026-09-23 | Los circuitos compilan por primera vez, y la tabla de símbolos delató que el contrato leía `listSetRoot` del índice 11, que es `minMonthsPaid`. El orden de señales deja de ser una lectura: lo escribe el compilador y CI lo comprueba — D-51 |
 | 2026-09-24 | Las constantes de ronda de Poseidon se generan en el repositorio y la prueba las compara con las BN254 publicadas por circomlib: coinciden. La matriz MDS no se reproduce y el trabajo se para ahí, nombrado — D-52. 371 pruebas |
 | 2026-09-24 | Leer el guion de referencia cerró lo que D-52 dejó abierto: la matriz MDS **reduce** donde las constantes **rechazan**, y circomlib publica la transpuesta. La permutación fuera del circuito ya reproduce el valor del propio gadget — D-53. 376 pruebas |
+| 2026-09-24 | El circuito y `core/` no hashean igual —uno separa hoja de nodo con un dominio y el otro no— y la cabecera de `merkle.ts` afirmaba lo contrario. Corregida; la salida queda decidida con el coste medido delante — D-54 |
 | 2026-09-24 | El circuito adopta los dominios de `core/`, y al implementarlo apareció que además se saltaba el hash de la hoja entero. +12,1% de restricciones, medido. Solo queda el hash para que las raíces coincidan — D-55. 380 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 

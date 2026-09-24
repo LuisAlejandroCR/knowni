@@ -56,6 +56,14 @@ export { buildMerkleTree, constantTimeEqualHex, hashLeaf, verifyInclusion } from
 
 export type { Blinding, BlindedCommitment, Outcome, Salt } from "./commitment.ts";
 export { commitClaim, commitOutcome, randomSalt, verifyOutcomeCommitment } from "./commitment.ts";
+export { CLAIM_WIDTH, encodeClaimFields } from "./claim-fields.ts";
+export {
+  NotInFieldError,
+  fieldFromBoolean,
+  fieldFromHex,
+  fieldFromString,
+  fieldFromUint,
+} from "./field.ts";
 
 export type { Purpose, SessionRequest, SubjectSecret } from "./session.ts";
 export { deriveNullifier, isExpired, isPurpose, sessionId } from "./session.ts";

@@ -1277,6 +1277,42 @@ el mismo trato que el orden de señales.
 *Lo que sigue faltando para que las raíces coincidan:* `core/` hashea con SHA-256. Ahora los dos
 lados son la **misma construcción** y solo queda el hash.
 
+### D-56 — Un reclamo como lista de elementos de campo, y lo que el circuito tendrá que adoptar · 2026-09-24
+
+*Qué decide esta entrada:* la forma que tendrán todos los compromisos cuando el hash sea el del
+circuito. `encodeClaim` serializa a bytes con `u64be` y UTF-8; un circuito no hashea bytes, suma y
+multiplica elementos de un primo. `core/src/claim-fields.ts` es la traducción, y `core/src/field.ts`
+es el único sitio que decide cómo se lee cada tipo de valor.
+
+| Qué | Cómo entra | Por qué |
+|---|---|---|
+| El tipo de reclamo | Un número de una tabla cerrada, primero en la lista | Dos tipos no pueden encodear igual, y se ve antes de conocer el esquema |
+| Jurisdicción, moneda, base, tipo de documento | `sha256(cadena) mod p` | Son cadenas abiertas; no hay forma inyectiva de meterlas, y es la misma derivación que usan las constantes de dominio del circuito |
+| Enteros —fecha, montos, conteos— | Tal cual, exigiendo entero seguro no negativo | Caben de sobra y no necesitan nada más |
+| Booleanos | 0 o 1 | |
+| Referencias de 32 bytes —sujeto, raíz de listas, sal— | Se exige que sean **menores que p**, y si no, error | Es lo importante de todo esto |
+
+*La trampa, que es la razón del último renglón:* un valor de 256 bits reducido a un campo de 254 no
+es inyectivo. Reducir en silencio mezcla dos sujetos que nunca fueron el mismo, y ninguna cantidad de
+hashing posterior lo repara. `fieldFromHex` lanza `NotInFieldError` en vez de reducir. Después del
+cambio de hash esos valores **serán** salidas de Poseidon y estarán en el campo por construcción;
+hasta entonces, la comprobación es la que avisa de que aún no lo están.
+
+*El ancho es declarado, no contado:* una tabla dice cuántos elementos produce cada tipo, y el
+codificador falla si no cuadra. Un esquema que gana un campo y no toca la tabla cambiaría todos los
+compromisos de ese tipo sin que nada lo dijera. Rellenar una lista de largo variable hasta un ancho
+fijo es justamente como dos reclamos distintos acaban con un compromiso.
+
+*Lo que el circuito tendrá que adoptar, y hoy no hace:* `idCommit` es
+`Poseidon(6)(subjectRef, documentValid, subjectAlive, ofAge, listSetRoot, salt)`. Comparado con esta
+codificación le faltan el tipo, la jurisdicción, el tipo de documento y **`attestedAt`** —un
+compromiso que no ata la fecha no permite exigir frescura— y en cambio mete `listSetRoot`, que
+pertenece al reclamo de listas y no al de identidad.
+
+*Lo que no cambia todavía:* nada. `commitClaim` sigue con la codificación de bytes y SHA-256. Esto es
+el contrato con el que se hará el cambio, con su invariante de inyectividad sobre 4000 reclamos
+generados.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1343,6 +1379,7 @@ lados son la **misma construcción** y solo queda el hash.
 | 2026-09-24 | Leer el guion de referencia cerró lo que D-52 dejó abierto: la matriz MDS **reduce** donde las constantes **rechazan**, y circomlib publica la transpuesta. La permutación fuera del circuito ya reproduce el valor del propio gadget — D-53. 376 pruebas |
 | 2026-09-24 | El circuito y `core/` no hashean igual —uno separa hoja de nodo con un dominio y el otro no— y la cabecera de `merkle.ts` afirmaba lo contrario. Corregida; la salida queda decidida con el coste medido delante — D-54 |
 | 2026-09-24 | El circuito adopta los dominios de `core/`, y al implementarlo apareció que además se saltaba el hash de la hoja entero. +12,1% de restricciones, medido. Solo queda el hash para que las raíces coincidan — D-55. 380 pruebas |
+| 2026-09-24 | Definida la codificación de un reclamo como lista de elementos de campo: tipo como etiqueta, cadenas hasheadas, anchos declarados y referencias de 32 bytes **rechazadas** si no están en el campo en vez de reducidas. Es el contrato que el circuito tendrá que adoptar — D-56. 389 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

@@ -10,35 +10,27 @@ jobs:
       - name: probe
         working-directory: circuits
         run: |
-          set -x
           mkdir -p /tmp/probe
-          # two variable inputs: the only constant cell is the zero one
-          cat > /tmp/probe/a.circom <<'C'
-          pragma circom 2.1.6;
-          include "poseidon_knowni.circom";
-          template A() { signal input x; signal input y; signal output out;
-            component h = PoseidonKnowni2(); h.inputs[0] <== x; h.inputs[1] <== y; out <== h.out; }
-          component main = A();
-C
-          # one constant input, like every domain-separated call site
-          cat > /tmp/probe/b.circom <<'C'
-          pragma circom 2.1.6;
-          include "poseidon_knowni.circom";
-          template B() { signal input y; signal output out;
-            component h = PoseidonKnowni2(); h.inputs[0] <== 12345; h.inputs[1] <== y; out <== h.out; }
-          component main = B();
-C
-          cat > /tmp/probe/c.circom <<'C'
-          pragma circom 2.1.6;
-          include "poseidon_knowni.circom";
-          template C2() { signal input y; signal input z; signal output out;
-            component h = PoseidonKnowni3(); h.inputs[0] <== 12345; h.inputs[1] <== y; h.inputs[2] <== z; out <== h.out; }
-          component main = C2();
-C
+          printf '%s\n' 'pragma circom 2.1.6;' 'include "poseidon_knowni.circom";' \
+            'template A() { signal input x; signal input y; signal output out;' \
+            '  component h = PoseidonKnowni2(); h.inputs[0] <== x; h.inputs[1] <== y; out <== h.out; }' \
+            'component main = A();' > /tmp/probe/a.circom
+          printf '%s\n' 'pragma circom 2.1.6;' 'include "poseidon_knowni.circom";' \
+            'template B() { signal input y; signal output out;' \
+            '  component h = PoseidonKnowni2(); h.inputs[0] <== 12345; h.inputs[1] <== y; out <== h.out; }' \
+            'component main = B();' > /tmp/probe/b.circom
+          printf '%s\n' 'pragma circom 2.1.6;' 'include "poseidon_knowni.circom";' \
+            'template C2() { signal input y; signal input z; signal output out;' \
+            '  component h = PoseidonKnowni3(); h.inputs[0] <== 12345; h.inputs[1] <== y; h.inputs[2] <== z; out <== h.out; }' \
+            'component main = C2();' > /tmp/probe/c.circom
+          printf '%s\n' 'pragma circom 2.1.6;' 'include "poseidon_knowni.circom";' \
+            'template D() { signal input y; signal input z; signal output out;' \
+            '  component h = PoseidonKnowni3(); h.inputs[0] <== 1; h.inputs[1] <== 2; h.inputs[2] <== z; out <== h.out; signal unused; unused <== y; }' \
+            'component main = D();' > /tmp/probe/d.circom
           for tpl in new old; do
             if [ "$tpl" = old ]; then git checkout origin/main -- poseidon_knowni.circom; fi
-            for p in a b c; do
+            for p in a b c d; do
               echo "### $tpl $p"
-              circom /tmp/probe/$p.circom -l . --r1cs --output /tmp/probe 2>&1 | grep -E "non-linear|linear constraints"
+              circom /tmp/probe/$p.circom -l . --r1cs --output /tmp/probe 2>&1 | grep -E "constraints"
             done
           done

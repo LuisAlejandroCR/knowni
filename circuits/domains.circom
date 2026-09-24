@@ -32,3 +32,15 @@ function DOMAIN_SESSION() {
 function DOMAIN_NULLIFIER() {
     return 0x549af6b19b175d04713b4a1255b6052daf944f02dde28eddd3f9010fd98bb46;
 }
+// knowni:co-sanctions:v1
+function DOMAIN_SANCTIONS_LIST_SET() {
+    return 0x9339c2aac83a79fb739ac7a6bb9509b69ff6ea2fbfff94a2e0db8b03d576e38;
+}
+// knowni:subject-ref:v1
+function DOMAIN_SUBJECT_REF() {
+    return 0xbddd87950bd36a7ef54a5fc0d41a42f7e46b7d36a951b21c58d92834db08d2a;
+}
+// knowni:snapshot:v1
+function DOMAIN_SNAPSHOT() {
+    return 0x2b7f26637989fb7f5459891110efe5009b3c0674781cccddd52aa43f01e7200c;
+}

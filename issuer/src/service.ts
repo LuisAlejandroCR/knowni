@@ -20,7 +20,7 @@ import type { SessionRequest } from "@knowni/core";
 import { toHex } from "@knowni/core";
 import { attestResults, type AttestedAnswer } from "@knowni/attestation";
 import { nodeSignatures } from "@knowni/attestation/node";
-import type { PublicSourceState } from "@knowni/sources";
+import type { CromaClient, PublicSourceState } from "@knowni/sources";
 import {
   createCromaClient,
   createRegistraduriaPersonhoodSource,
@@ -114,7 +114,9 @@ export const DEFAULT_SOURCE_DEADLINE_MS = 60_000;
 interface SourceTask {
   readonly predicate: string;
   readonly sourceId: string;
-  run(): Promise<SourceOutcome>;
+  // The client arrives from outside, built with this task's own budget: the
+  // deadline that stops the waiting must stop the calling too.
+  run(client: CromaClient): Promise<SourceOutcome>;
 }
 
 // Why an answer is missing, for the person whose verification it is. It rides
@@ -133,18 +135,28 @@ interface SourceOutcome {
 
 const outcome = (answer: AttestedAnswer, state: PublicSourceState): SourceOutcome => ({ answer, state });
 
-async function withDeadline(task: SourceTask, deadlineMs: number): Promise<SourceOutcome> {
+async function withDeadline(
+  task: SourceTask,
+  deadlineMs: number,
+  clientFor: (signal: AbortSignal) => CromaClient,
+): Promise<SourceOutcome> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   // A rejection and a deadline are both the source failing to answer in time,
   // which is `degraded` and never `failed`: nothing came back to judge.
   const gaveUp = outcome(answerOf(task.predicate, task.sourceId, "unavailable"), "degraded");
-  const started = task.run();
+  // One budget per source. Giving up on the wait used to leave the client
+  // retrying and polling against a paid API for an answer nobody would read;
+  // now the same deadline cancels the work — D-41, D-69.
+  const budget = new AbortController();
+  const started = task.run(clientFor(budget.signal));
   const settled = started.catch(() => gaveUp);
   const expired = new Promise<undefined>((resolve) => {
     timer = setTimeout(() => resolve(undefined), deadlineMs);
   });
   try {
-    return (await Promise.race([settled, expired])) ?? gaveUp;
+    const raced = await Promise.race([settled, expired]);
+    if (raced === undefined) budget.abort();
+    return raced ?? gaveUp;
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
@@ -159,7 +171,8 @@ export async function issueAnswers(
   readonly results: ReturnType<typeof attestResults>;
   readonly sourceStates: readonly SourceState[];
 }> {
-  const client = createCromaClient({ apiKey: options.apiKey, fetchImpl: options.fetchImpl });
+  const clientFor = (signal: AbortSignal): CromaClient =>
+    createCromaClient({ apiKey: options.apiKey, fetchImpl: options.fetchImpl, signal });
   const subject = {
     documentKind: body.documentKind,
     documentNumber: body.documentNumber,
@@ -177,7 +190,7 @@ export async function issueAnswers(
   const tasks: SourceTask[] = [];
 
   if (body.consented.includes("registraduria")) {
-    tasks.push({ predicate: "personhood", sourceId: "registraduria", run: async () => {
+    tasks.push({ predicate: "personhood", sourceId: "registraduria", run: async (client) => {
       const result = await createRegistraduriaPersonhoodSource(client).fetch(subject, nowUnix);
       return outcome(
         answerOf(
@@ -193,7 +206,7 @@ export async function issueAnswers(
   }
 
   if (body.consented.includes("sicaac")) {
-    tasks.push({ predicate: "capacity", sourceId: "sicaac", run: async () => {
+    tasks.push({ predicate: "capacity", sourceId: "sicaac", run: async (client) => {
       const result = await createSicaacCapacitySource(client).fetch(subject, nowUnix);
       return outcome(
         answerOf(
@@ -207,7 +220,7 @@ export async function issueAnswers(
   }
 
   if (body.consented.includes("listas")) {
-    tasks.push({ predicate: "sanctions", sourceId: "procuraduria+contraloria+contaduria", run: async () => {
+    tasks.push({ predicate: "sanctions", sourceId: "procuraduria+contraloria+contaduria", run: async (client) => {
       const result = await createSanctionsSource(client, poseidonHash).fetch(subject, nowUnix);
       return outcome(
         answerOf(
@@ -222,7 +235,7 @@ export async function issueAnswers(
 
   if (body.consented.includes("vehiculo") && body.plate !== undefined) {
     const plate = body.plate;
-    tasks.push({ predicate: "assetStanding", sourceId: "runt+simit", run: async () => {
+    tasks.push({ predicate: "assetStanding", sourceId: "runt+simit", run: async (client) => {
       const result = await createVehicleStandingSource(client).fetch(
         {
           plate,
@@ -247,7 +260,7 @@ export async function issueAnswers(
   // `Promise.all` keeps the order of the tasks, not of their answers, so the
   // envelope is the same whichever source lands first.
   const outcomes = await Promise.all(
-    tasks.map((task) => withDeadline(task, options.sourceDeadlineMs ?? DEFAULT_SOURCE_DEADLINE_MS)),
+    tasks.map((task) => withDeadline(task, options.sourceDeadlineMs ?? DEFAULT_SOURCE_DEADLINE_MS, clientFor)),
   );
   const answers: readonly AttestedAnswer[] = outcomes.map((each) => each.answer);
   const sourceStates: readonly SourceState[] = outcomes.map((each, index) => ({

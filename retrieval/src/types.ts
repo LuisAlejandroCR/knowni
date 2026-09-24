@@ -24,8 +24,9 @@ export interface Candidate {
   readonly score: number;
 }
 
-// The port. An adapter is a Chroma collection, a Qdrant client, a Postgres
-// pgvector table, or the in-memory lexical index in adapters/memory.ts.
+// The port. The only adapter left is the in-memory lexical index in
+// adapters/memory.ts; the vector-database one is gone — B3 — because the source
+// this system reads is a typed API indexed by document number.
 export interface RecordIndexPort {
   readonly id: string;
   upsert(records: readonly PublicRecord[]): Promise<void>;

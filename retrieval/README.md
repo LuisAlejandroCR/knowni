@@ -17,11 +17,15 @@
 
 ## Qué se retira
 
-| Pieza | Por qué |
-|---|---|
-| `src/adapters/chroma.ts` | No hay corpus que indexar cuando la fuente es una API tipada |
-| `src/types.ts` → `RecordIndexPort`, `PublicRecord` | El puerto correcto es `SourcePort`, en `sources/` |
-| `src/adapters/memory.ts` | Existía para probar el puerto anterior |
+| Pieza | Por qué | Estado |
+|---|---|---|
+| `src/adapters/chroma.ts` | No hay corpus que indexar cuando la fuente es una API tipada | ✅ **retirado el 2026-09-24**: no lo llamaba nadie fuera de su propia prueba |
+| `src/types.ts` → `RecordIndexPort`, `PublicRecord` | El puerto correcto es `SourcePort`, en `sources/` | pendiente: hoy lo sostiene `sources/src/country/colombia/listas.ts`, y el recorrido de `journey/` tamiza listas por ahí |
+| `src/adapters/memory.ts` | Existía para probar el puerto anterior | pendiente por lo mismo: es el índice sobre el que corre ese tamizado |
+
+Retirar el puerto y el índice no es borrar dos archivos: exige que el tamizado de listas pase por
+`createSanctionsSource` —el camino de Croma— y que el recorrido de `journey/` lo ejercite así. Eso
+es trabajo de B3, no un efecto colateral de este retiro.
 
 ## Qué se conserva, y por qué sigue haciendo falta
 

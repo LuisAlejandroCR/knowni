@@ -61,6 +61,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | La plantilla de Poseidon de este repositorio es Poseidon: sobre BN254 reproduce el gadget de circomlib con el mismo número de restricciones no lineales | Testigo de `PoseidonKnowni2` compilado: `0x115cc0f5…4417189a`, 243 restricciones no lineales, igual que `Poseidon(2)` de circomlib | 2026-09-24 |
 | Sobre BLS12-381, `core/` y el circuito calculan el mismo digest | `poseidon([1n,2n])` con el spec de BLS12-381 y un testigo de `PoseidonKnowni2` compilado con `circom -p bls12381` dan ambos `0x28ce1942…7dd2a78a` | 2026-09-24 |
 | El circuito completo compila sobre BLS12-381 | 12 567 restricciones no lineales y 24 937 lineales, mismo orden de señales públicas que sobre BN254. Dejar la forma optimizada de circomlib cuesta +29% en total (28 975 → 37 504) | 2026-09-24 |
+| La plantilla llana deja de gastar señales en sumar la constante de ronda y en copiar celdas en las rondas parciales | 12 385 no lineales y 12 664 lineales, iguales sobre las dos curvas: 37 504 → 25 049 en total (−33%), por debajo de las 28 975 de la forma optimizada de circomlib. Medido por CI, job `circuits`, commit `e980c8b`. Las 182 no lineales que bajaron son el plegado de constantes de la ronda 0 que la plantilla vieja impedía: 2 por celda constante × 91 celdas, medido con sondas compiladas aparte — D-62 | 2026-09-24 |
+| El circuito y `core/` calculan el mismo Poseidon | Paso de CI en las dos curvas: testigo de `PoseidonKnowni2` contra `poseidon([1,2])` de `core/`. Antes eran dos valores copiados a mano en una prueba | 2026-09-24 |
 
 ## Verificado en otra parte, no aquí
 

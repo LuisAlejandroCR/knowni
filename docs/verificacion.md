@@ -46,6 +46,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | El `MerkleLeaf` y el `MerkleLevel` con dominio del circuito producen lo que este repositorio calcula fuera del circuito | Testigos del gadget compilado: `leaf(7) = 0x09403be3…d16a04b4` y `node(7,9) = 0x03b5f4ce…a9672e7`, reproducidos por `poseidon()` en `circuits/test/unit/merkle-domains.spec.ts` | 2026-09-24 |
 | Lo que cuesta la separación de dominios en el circuito completo | 10 932 → 12 258 restricciones no lineales (+12,1%), compilado antes y después. El orden de las señales públicas no cambia | 2026-09-24 |
 
+| Dos reclamos distintos nunca producen la misma lista de elementos de campo | `core/test/invariant/claim-fields.invariant.spec.ts`: 4000 reclamos generados de los seis tipos, con la comprobación de que el propio muestreo no es degenerado | 2026-09-24 |
+| Una referencia de 32 bytes que no cabe en el campo se rechaza, no se reduce | `core/test/unit/claim-fields.spec.ts`: `ff…ff` como `subjectRef` y como `listSetRoot` lanzan `NotInFieldError` | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

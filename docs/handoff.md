@@ -57,7 +57,8 @@ Una parte ya se recuperó: la plantilla llana gastaba una señal por sumar la co
 por cada celda que una ronda parcial se limita a copiar. Eso salió (D-62) sin tocar la permutación.
 Medido por CI: 37 504 → 25 049 restricciones (−33%), por debajo de las 28 975 que costaba la forma
 optimizada de circomlib. Lo que queda es suyo: las matrices dispersas `S` y `P`, que aquí nunca se
-reprodujeron y que D-52 dejó nombrado — más las 182 no lineales que bajaron sin explicación.
+reprodujeron y que D-52 dejó nombrado. Las 182 no lineales que también bajaron están explicadas: plegado de constantes en la ronda 0, 2
+por celda constante × 91 celdas (D-62).
 
 ### 4. `outcome` y `session` siguen en SHA-256 — **deliberado**
 

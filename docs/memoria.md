@@ -1511,9 +1511,30 @@ Queda por debajo de las 28 975 que costaba la forma optimizada de circomlib, as�
 D-61 deja de ser una deuda y pasa a ser un margen — todavía con las matrices dispersas sin
 reproducir.
 
-*Lo que no está explicado:* las 182 restricciones no lineales que también bajaron. La permutación es
-la misma —el testigo lo comprueba en las dos curvas— así que el optimizador de circom está plegando
-algo que antes no podía, pero aquí nadie ha ido a ver qué. ⏳ pendiente, y no se afirma una causa.
+*Por qué bajaron también 182 no lineales, que no era obvio:* la ronda 0 de cada instancia tiene
+celdas cuyo valor es **constante** — la celda extra vale cero por construcción, y `inputs[0]` es
+siempre un dominio (`DOMAIN_CLAIM`, `DOMAIN_MERKLE_NODE`, …). Elevar una constante a la quinta es
+una constante, así que esas multiplicaciones no tienen por qué ser restricciones. La plantilla vieja
+lo impedía: al pasar por la señal intermedia `added`, el simplificador de circom no propagaba la
+constante dentro de las cuadráticas. Escribir la suma dentro de la propia expresión que multiplica
+se lo devuelve.
+
+Medido con sondas compiladas a propósito (rama desechable, circom 2.2.3):
+
+| Sonda | Celdas constantes en la ronda 0 | Vieja | Nueva | Δ |
+|---|---|---|---|---|
+| `PoseidonKnowni2`, dos entradas variables | 1 | 243 | 241 | −2 |
+| `PoseidonKnowni2`, `inputs[0]` constante | 2 | 243 | 239 | −4 |
+| `PoseidonKnowni3`, `inputs[0]` constante | 2 | 264 | 260 | −4 |
+| `PoseidonKnowni3`, dos entradas constantes | 3 | 264 | 258 | −6 |
+
+Dos por celda constante, y la forma vieja no plegaba ninguna —243 con y sin entrada constante—. En
+`Eligibility(20)` hay 91 celdas así: 2 caminos Merkle × (1 hoja + 20 niveles) × 2, más 3 de identidad,
+3 de ingreso y 1 del nulificador. 91 × 2 = **182**, al dígito.
+
+Que el ahorro solo llegue hasta la ronda 0 es lo esperado: en cuanto la mezcla toca una celda
+variable, todo el estado deja de ser constante. Y no es una optimización de este repositorio sino del
+compilador; lo único que hizo el cambio fue dejar de estorbarla.
 
 ## Bitácora
 

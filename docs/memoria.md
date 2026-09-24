@@ -1644,6 +1644,7 @@ RUNT y SIMIT siguen sin ejercitarse contra una respuesta viva — `docs/verifica
 | 2026-09-24 | Plantilla y constantes propias de Poseidon, una por curva: el circuito compila sobre BLS12-381 con constantes derivadas para ese campo y `core/` calcula lo mismo. Cuesta +29% de restricciones por dejar la forma optimizada de circomlib — D-61. 407 pruebas |
 | 2026-09-24 | La plantilla llana deja de gastar una señal por suma de constante y tres por celda copiada en las rondas parciales; la permutación no cambia y el testigo que CI construye en cada PR lo comprueba. 37 504 → 25 049 restricciones, por debajo de la forma optimizada de circomlib — D-62. 407 pruebas |
 | 2026-09-24 | El sobre admite el perfil vehicular: `capacity` y `assetStanding` pasan de reclamo y predicado a respuesta entregable, y entran en el compromiso del resultado. El activo se compara contra la referencia que pide la contraparte, nunca contra el sujeto — D-63. 415 pruebas |
+| 2026-09-24 | Auditoría del plan contra código, suites, CI y ejercicios reales: caché C1–C8 cerrado; pago móvil completo en contrato pero no en wallets reales; A3, A7, A9, A10 y A14 parciales; A12 bloqueado por hardware. El estado vive junto al criterio para que “implementado” no se confunda con “ejercido de punta a punta” |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

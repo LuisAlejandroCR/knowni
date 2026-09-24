@@ -4,6 +4,7 @@
 
 import type { AttestedAnswer, AttestedResults, SignedRequest } from "@knowni/attestation";
 import type { SessionRequest } from "@knowni/core";
+import type { SourceStateName } from "./issuer-client.ts";
 import { DEMO_COUNTERPARTY, demoRequest, demoResults } from "./demo-issuer.ts";
 import { readAnswers, readRequest, type RequestState } from "./wallet.ts";
 
@@ -76,6 +77,27 @@ export const PREDICATE_LABEL: Record<string, string> = {
   sanctions: "Sin coincidencias en listas",
   assetStanding: "Estado del vehículo",
 };
+
+// A7 asks that a missing answer say which kind of missing it is. These are the
+// exact words a person reads, and none of them is a verdict about them: a
+// source that did not answer and a register with no record are different
+// facts, and neither is "no cumple".
+export const SOURCE_STATE_TEXT: Record<SourceStateName, string> = {
+  answered: "Respondió",
+  not_found: "El registro no tiene ese dato",
+  degraded: "La fuente no respondió a tiempo",
+  failed: "La fuente respondió algo que no pudimos usar",
+  consent_missing: "No lo autorizaste, así que no se consultó",
+  needs_human_review: "Necesita revisión de una persona",
+};
+
+// Whether the person can do something about it, which is what decides the
+// button under the message. A register with no record is not a retry.
+export const RETRYABLE_STATES: readonly SourceStateName[] = ["degraded", "failed"];
+
+export function sourceStateText(state: SourceStateName): string {
+  return SOURCE_STATE_TEXT[state];
+}
 
 export function answerText(answer: AttestedAnswer): string {
   if (answer.value === "unavailable") return "Sin respuesta";

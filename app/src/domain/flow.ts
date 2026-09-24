@@ -6,7 +6,7 @@ import { useSyncExternalStore } from "react";
 import type { AttestedAnswer, AttestedResults, SignedRequest } from "@knowni/attestation";
 import type { SessionRequest } from "@knowni/core";
 import { demoRequest } from "./demo-issuer.ts";
-import { fetchIssuer, requestIssuance, verifyIssued, type IssuerIdentity } from "./issuer-client.ts";
+import { fetchIssuer, requestIssuance, verifyIssued, type IssuerIdentity, type SourceState } from "./issuer-client.ts";
 import { readRequest, type RequestState } from "./wallet.ts";
 import { DEMO_COUNTERPARTY } from "./demo-issuer.ts";
 
@@ -28,6 +28,9 @@ export interface FlowState {
   readonly issuer: IssuerIdentity | undefined;
   readonly results: AttestedResults | undefined;
   readonly answers: readonly AttestedAnswer[] | undefined;
+  // Why each source did or did not answer. Read by the degradation screen so
+  // that "no respondió" and "no tiene el dato" stop looking the same.
+  readonly sourceStates: readonly SourceState[];
   readonly error: string | undefined;
   readonly busy: boolean;
 }
@@ -46,6 +49,7 @@ function initial(): FlowState {
     issuer: undefined,
     results: undefined,
     answers: undefined,
+    sourceStates: [],
     error: undefined,
     busy: false,
   };
@@ -125,5 +129,12 @@ export async function issue(): Promise<void> {
     return;
   }
 
-  set({ busy: false, issuer, results: outcome.results, answers: verified.answers, step: "review" });
+  set({
+    busy: false,
+    issuer,
+    results: outcome.results,
+    answers: verified.answers,
+    sourceStates: outcome.sourceStates,
+    step: "review",
+  });
 }

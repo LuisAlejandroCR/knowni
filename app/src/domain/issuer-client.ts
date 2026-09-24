@@ -23,8 +23,55 @@ export interface IssuerIdentity {
   readonly registry: IssuerRegistry;
 }
 
+// Why a source did not answer, as the issuer describes it to the person whose
+// verification it is. It arrives beside the signed results and is never part of
+// them: what the counterparty receives says `unavailable` and nothing else.
+export type SourceStateName =
+  | "answered"
+  | "not_found"
+  | "degraded"
+  | "failed"
+  | "consent_missing"
+  | "needs_human_review";
+
+export interface SourceState {
+  readonly predicate: string;
+  readonly source: string;
+  readonly state: SourceStateName;
+}
+
+const STATE_NAMES: readonly SourceStateName[] = [
+  "answered",
+  "not_found",
+  "degraded",
+  "failed",
+  "consent_missing",
+  "needs_human_review",
+];
+
+// Validated like anything else off the wire: a state this app does not know is
+// dropped rather than rendered, because a screen must not print a word the
+// issuer invented.
+export function readSourceStates(value: unknown): readonly SourceState[] {
+  if (!Array.isArray(value)) return [];
+  const states: SourceState[] = [];
+  for (const entry of value) {
+    if (typeof entry !== "object" || entry === null) continue;
+    const fields = entry as Record<string, unknown>;
+    const { predicate, source, state } = fields;
+    if (typeof predicate !== "string" || typeof source !== "string") continue;
+    if (typeof state !== "string" || !STATE_NAMES.includes(state as SourceStateName)) continue;
+    states.push({ predicate, source, state: state as SourceStateName });
+  }
+  return states;
+}
+
 export type IssuanceOutcome =
-  | { readonly status: "issued"; readonly results: AttestedResults }
+  | {
+      readonly status: "issued";
+      readonly results: AttestedResults;
+      readonly sourceStates: readonly SourceState[];
+    }
   | { readonly status: "failed"; readonly reason: string };
 
 export interface IssuerQuote {
@@ -148,9 +195,11 @@ export async function requestIssuance(
           : "El emisor no pudo completar la consulta.",
     };
   }
-  const body = (await response.json().catch(() => undefined)) as { results?: AttestedResults } | undefined;
+  const body = (await response.json().catch(() => undefined)) as
+    | { results?: AttestedResults; sourceStates?: unknown }
+    | undefined;
   if (body?.results === undefined) return { status: "failed", reason: "El emisor respondió algo ilegible." };
-  return { status: "issued", results: body.results };
+  return { status: "issued", results: body.results, sourceStates: readSourceStates(body.sourceStates) };
 }
 
 const SOURCE_PREDICATE: Readonly<Record<string, string>> = {

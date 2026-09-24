@@ -12,7 +12,7 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 | Artifact | State |
 |---|---|
 | `eligibility.circom`, `merkle.circom` | **Written, and compiled** — 2026-09-23, circom 2.2.3. |
-| Compiled R1CS | **Built.** 12 567 non-linear and 16 408 linear constraints, 8 public inputs, 5 public outputs, 29 034 wires. Not committed: it is generated. |
+| Compiled R1CS | **Built.** 12 567 non-linear constraints, 8 public inputs, 5 public outputs. Not committed: it is generated. The linear count moved when the Poseidon template stopped spending a signal per round-key addition (D-62) and has not been measured again here: CI prints it on every compile. |
 | Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
 | WASM prover, trusted setup, proving key | **Not run.** |
 | On-chain verification against Soroban | **Not run.** No real proof has ever been produced or verified. |
@@ -108,6 +108,7 @@ constants with it, for state widths 2 and 3, and compares them. They match.
 | The Poseidon permutation, outside a circuit | **`tools/poseidon.ts`, and it computes what the gadget computes** for the same inputs. |
 | The same over BLS12-381 | **Generated and deterministic.** Nothing has been proved about it: no second implementation exists to check it against, and no security review has been done. |
 | `core/`'s `FieldHash` | Still SHA-256. Swapping it changes every commitment, so it is its own change. |
+| The circuit and `core/` agreeing | **A CI step, not a copied value.** It builds a witness of `PoseidonKnowni2` on both curves and compares the output with `poseidon([1,2])` from `core/`. |
 
 Three rules decide whether any of this is right, and none can be read off the
 output:

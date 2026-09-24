@@ -54,6 +54,18 @@ jobs:
           circom eligibility.circom -l /tmp/circomlib/circuits -l . --r1cs --sym --output /tmp
           head -13 /tmp/eligibility.sym | cut -d, -f4 | sed 's/^main\.//' > /tmp/signals.txt
           grep -v '^#' eligibility.signals.txt | diff - /tmp/signals.txt
+      # Compiling proves nothing about the permutation: constants for another
+      # field are still *some* constants. Building a witness and comparing it
+      # with core is what makes the two implementations one.
+      - name: check the circuit and core agree on the digest
+        working-directory: circuits
+        run: |
+          circom test/poseidon_main.circom -l . --wasm --output /tmp
+          echo '{"inputs":["1","2"]}' > /tmp/poseidon_input.json
+          npx --yes snarkjs@0.7.5 wtns calculate \
+            /tmp/poseidon_main_js/poseidon_main.wasm /tmp/poseidon_input.json /tmp/poseidon.wtns
+          npx --yes snarkjs@0.7.5 wtns export json /tmp/poseidon.wtns /tmp/poseidon_witness.json
+          node --experimental-strip-types tools/check-poseidon-witness.ts /tmp/poseidon_witness.json
       # The curve Stellar verifies. The BLS constants file is a drop-in for the
       # BN254 one — same template names — so the swap is a directory on -l.
       - name: compile the circuit on BLS12-381 too
@@ -64,6 +76,16 @@ jobs:
             -p bls12381 --r1cs --sym --output /tmp/bls
           head -13 /tmp/bls/eligibility.sym | cut -d, -f4 | sed 's/^main\.//' > /tmp/bls/signals.txt
           grep -v '^#' eligibility.signals.txt | diff - /tmp/bls/signals.txt
+      - name: check the circuit and core agree on the digest over BLS12-381
+        working-directory: circuits
+        run: |
+          circom test/poseidon_main.circom -l /tmp/bls -l . -p bls12381 --wasm --output /tmp/bls
+          echo '{"inputs":["1","2"]}' > /tmp/bls/poseidon_input.json
+          npx --yes snarkjs@0.7.5 wtns calculate \
+            /tmp/bls/poseidon_main_js/poseidon_main.wasm /tmp/bls/poseidon_input.json \
+            /tmp/bls/poseidon.wtns
+          npx --yes snarkjs@0.7.5 wtns export json /tmp/bls/poseidon.wtns /tmp/bls/witness.json
+          node --experimental-strip-types tools/check-poseidon-witness.ts /tmp/bls/witness.json bls12381
 
   contract:
     runs-on: ubuntu-latest

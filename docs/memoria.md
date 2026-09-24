@@ -1469,6 +1469,35 @@ caro, y un circuito sobre una curva que la cadena no verifica no sirve de nada.
 que el circuito compila sobre BLS12-381 con constantes derivadas para ese campo, y que `core/` calcula
 lo mismo que él.
 
+### D-62 — Parte del 29% no era la optimización de circomlib, era contabilidad · 2026-09-24
+
+*Corrige la lectura de D-61.* Allí el +29% de restricciones quedó atribuido entero a haber dejado la
+forma optimizada de circomlib, con sus matrices dispersas `S` y `P`. Releer la plantilla generada
+muestra que una parte no tenía nada que ver con eso: era la propia plantilla llana gastando señales
+en cosas que no necesitan una.
+
+*Lo que gastaba de más, por ronda y con ancho de estado `t`:*
+
+1. `added[r][i] <== state[r][i] + C[...]` — una señal y una restricción lineal por celda, solo para
+   sumar la constante de ronda. Sumar una constante es gratis dentro de la expresión que eleva la
+   celda, así que la clave de ronda ya no tiene señal propia.
+2. En una ronda parcial, las `t - 1` celdas que **no** pasan por la S-box igual recibían
+   `squared <== 0`, `quartic <== 0` y `sboxed <== added`: tres restricciones lineales por celda para
+   copiar un valor. Ahora esas celdas entran a la mezcla como la expresión lineal que ya son.
+
+Las señales no lineales no se tocan: las mismas multiplicaciones, en las mismas rondas, sobre los
+mismos valores. La permutación es la misma y por eso ningún compromiso se mueve — la comprobación de
+que eso es cierto dejó de ser una nota y pasó a ser un paso de CI.
+
+*Lo que no se hizo:* las matrices dispersas `S` y `P` siguen sin reproducirse. El resto del sobrecoste
+frente a circomlib es suyo y D-52 lo sigue nombrando.
+
+*Cómo se comprueba, y por qué el paso nuevo importa:* compilar no dice nada sobre la permutación —
+unas constantes de otro campo siguen siendo *unas* constantes. CI ahora construye un testigo de
+`PoseidonKnowni2` en las dos curvas y compara la salida con `poseidon([1,2])` de `core/`. Antes ese
+acuerdo vivía en dos valores copiados a mano en una prueba; ahora lo recalcula la máquina en cada PR.
+Las cifras de restricciones medidas van a `docs/verificacion.md` cuando CI las imprima, no antes.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1541,6 +1570,7 @@ lo mismo que él.
 | 2026-09-24 | `commitClaim` y el plegado de Merkle pasan a Poseidon: todos los compromisos cambian de valor. El cambio destapó tres sitios en producción que producían referencias y raíces con SHA-256, fuera del campo — D-59 |
 | 2026-09-24 | El circuito y `core/` calculan **el mismo compromiso**, comprobado contra testigos del gadget. El viejo `idCommit` no ataba `attestedAt`, la jurisdicción ni el tipo de documento — D-60. 403 pruebas |
 | 2026-09-24 | Plantilla y constantes propias de Poseidon, una por curva: el circuito compila sobre BLS12-381 con constantes derivadas para ese campo y `core/` calcula lo mismo. Cuesta +29% de restricciones por dejar la forma optimizada de circomlib — D-61. 407 pruebas |
+| 2026-09-24 | La plantilla llana deja de gastar una señal por suma de constante y tres por celda copiada en las rondas parciales; la permutación no cambia. El acuerdo entre el circuito y `core/` pasa de dos valores copiados a mano a un testigo que CI construye en cada PR — D-62. 407 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

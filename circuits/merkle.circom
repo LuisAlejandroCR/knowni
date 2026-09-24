@@ -9,7 +9,7 @@
 
 pragma circom 2.1.6;
 
-include "poseidon.circom";
+include "poseidon_knowni.circom";
 include "domains.circom";
 
 // One level. `isRight` says whether the running node sits on the right, so
@@ -36,7 +36,7 @@ template MerkleLevel() {
     // The domain goes in front, exactly as core/src/merkle.ts puts it in front
     // of the bytes: a leaf and a node must not be able to hash to each other,
     // or a prover shows a node as a leaf and the tree stops meaning anything.
-    component h = Poseidon(3);
+    component h = PoseidonKnowni3();
     h.inputs[0] <== DOMAIN_MERKLE_NODE();
     h.inputs[1] <== left;
     h.inputs[2] <== right;
@@ -50,7 +50,7 @@ template MerkleLeaf() {
     signal input commitment;
     signal output out;
 
-    component h = Poseidon(2);
+    component h = PoseidonKnowni2();
     h.inputs[0] <== DOMAIN_MERKLE_LEAF();
     h.inputs[1] <== commitment;
     out <== h.out;

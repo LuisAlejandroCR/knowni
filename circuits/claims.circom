@@ -6,7 +6,7 @@
 
 pragma circom 2.1.6;
 
-include "poseidon.circom";
+include "poseidon_knowni.circom";
 include "domains.circom";
 
 template IdentityCommitment() {
@@ -20,7 +20,7 @@ template IdentityCommitment() {
     signal input salt;
     signal output out;
 
-    component h = Poseidon(10);
+    component h = PoseidonKnowni10();
     h.inputs[0] <== DOMAIN_CLAIM();
     h.inputs[1] <== KIND_IDENTITY();
     h.inputs[2] <== jurisdiction;
@@ -46,7 +46,7 @@ template IncomeCommitment() {
     signal input salt;
     signal output out;
 
-    component h = Poseidon(11);
+    component h = PoseidonKnowni11();
     h.inputs[0] <== DOMAIN_CLAIM();
     h.inputs[1] <== KIND_INCOME();
     h.inputs[2] <== jurisdiction;

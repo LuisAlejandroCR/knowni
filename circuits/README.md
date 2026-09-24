@@ -45,14 +45,14 @@ exists — but the gadget libraries do not follow automatically:
 - **Do not compile with the default `bn128`.** A BN254 proof cannot be
   verified on Stellar until CAP-0074 lands. Mismatching the curve is the
   failure that looks like everything working until the contract call.
-- **`-p bls12381` compiling is not `-p bls12381` being correct.** Measured
-  2026-09-23: the circuit compiles on both curves, to byte-identical
-  constraint counts and the same signal order. That is the danger, not the
-  good news. circomlib's Poseidon round constants are field elements derived
-  for BN254; compiled against another field they are still *some* constants,
-  so the compiler has nothing to complain about and the result is a
-  permutation nobody analysed. The gap is silent, which is why it is written
-  down here twice.
+- **`-p bls12381` compiling was never the same as `-p bls12381` being
+  correct**, because circomlib's Poseidon round constants are derived for
+  BN254 and compiling them against another field reinterprets them without
+  complaint. That is why this repository derives its own —
+  `tools/write-poseidon.ts` — and ships `poseidon_knowni.circom` and
+  `poseidon_knowni_bls12381.circom`. They are drop-in for each other: same
+  template names, different constants, so swapping curve is a directory on
+  `-l`. CI compiles the circuit both ways.
 
 This is why the architecture keeps the proof system behind a port and ships
 an attested path first. See `docs/ROADMAP.md`.

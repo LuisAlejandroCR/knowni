@@ -7,16 +7,17 @@ import assert from "node:assert/strict";
 import { SolvencyTier, commitOutcome, meetsProfile, outcomeOf, verify, verifyInclusion, verifyOutcomeCommitment, type HeldClaims, type VerificationProfile, type VerificationRequest } from "@knowni/core";
 import { poseidonHash, sha256Hash } from "@knowni/core/node";
 import {
-  createListScreeningSource,
   createPilaFormalitySource,
   createPilaIncomeSource,
-  createSyntheticNameResolver,
+  createSanctionsSource,
   createSyntheticPilaClient,
   createSyntheticRegistraduriaSource,
+  createSyntheticSanctionsClient,
   issueClaimSet,
+  listSetRoot,
+  SYNTHETIC_LIST_STAMPS,
   type SyntheticSubject,
 } from "@knowni/sources";
-import { createMemoryIndex } from "@knowni/retrieval";
 import { createMemoryAnchor, createStellarMemoAnchor, createAnchorRegistry } from "@knowni/anchoring";
 
 const h = sha256Hash;
@@ -48,25 +49,21 @@ const SUBJECT = {
   subjectRef: "07".repeat(32),
 };
 
-const LISTS = [
-  { id: "sdn-1", source: "ofac-sdn", jurisdiction: "US", text: "CARLOS ALBERTO MENDOZA RUIZ" },
-  { id: "proc-1", source: "co-procuraduria", jurisdiction: "CO", text: "JORGE ENRIQUE SALAZAR" },
-];
+// The snapshot the three registers were read against, as the relying party
+// knows it. A "clean" answer against a list nobody published is not an answer,
+// so the root travels with the verdict — see proveStanding.
+const snapshotRoot = listSetRoot(poseidonHash, [...SYNTHETIC_LIST_STAMPS]);
 
 async function issueForSubject(subject = ANA) {
   const pila = createSyntheticPilaClient([subject]);
-  const index = createMemoryIndex(poseidonHash);
-  await index.upsert(LISTS);
 
   const sources = [
     createSyntheticRegistraduriaSource([subject]),
     createPilaIncomeSource(pila),
     createPilaFormalitySource(pila),
-    createListScreeningSource({
-      index,
-      resolveName: createSyntheticNameResolver([subject]),
-      sources: ["ofac-sdn", "co-procuraduria"],
-    }),
+    // The same source production runs, with Croma answering offline: the
+    // registers are asked by document number, not screened by name — B3.
+    createSanctionsSource(createSyntheticSanctionsClient([subject]), poseidonHash),
   ];
 
   const results = await Promise.all(
@@ -82,7 +79,7 @@ async function issueForSubject(subject = ANA) {
     issuedAt: NOW,
     padTo: 1024,
   });
-  return { issued, results, snapshotRoot: await index.snapshotRoot() };
+  return { issued, results, snapshotRoot };
 }
 
 test("a tenant proves four things and the agency learns nothing else", async () => {
@@ -260,8 +257,10 @@ test("a replay of the same proof in the same session is refused on-chain", async
   assert.equal(replay.status === "degraded" && replay.degraded.reason, "nullifier_already_spent");
 });
 
-test("a tenant on a restrictive list gets no standing claim at all", async () => {
-  const flagged: SyntheticSubject = { ...ANA, name: "CARLOS ALBERTO MENDOZA RUIZ" };
+test("a tenant named by one register is claimed as listed, not left unanswered", async () => {
+  // One register out of three is enough: `listed` is their disjunction, and a
+  // clean answer from the other two does not cancel a disciplinary record.
+  const flagged: SyntheticSubject = { ...ANA, listedIn: ["procuraduria"] };
   const { results } = await issueForSubject(flagged);
   const standing = results.find(
     (r) => r.status === "claimed" && r.claim.kind === "standing",

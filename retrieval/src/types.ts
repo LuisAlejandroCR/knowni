@@ -1,5 +1,6 @@
-// types.ts: Where a vector database belongs in a privacy system, and where it does not. READ
-// THIS BEFORE ADDING A CALLER.
+// types.ts: what entity resolution works on — a public record and a score for
+// it. The index and its port are gone (B3); what a caller brings now is
+// candidates from a source that answers by name. READ THIS BEFORE ADDING ONE.
 
 export interface PublicRecord {
   readonly id: string;
@@ -13,23 +14,7 @@ export interface PublicRecord {
   readonly fields?: Readonly<Record<string, string>>;
 }
 
-export interface RecordQuery {
-  readonly text: string;
-  readonly sources?: readonly string[];
-  readonly limit?: number;
-}
-
 export interface Candidate {
   readonly record: PublicRecord;
   readonly score: number;
-}
-
-// The port. The only adapter left is the in-memory lexical index in
-// adapters/memory.ts; the vector-database one is gone — B3 — because the source
-// this system reads is a typed API indexed by document number.
-export interface RecordIndexPort {
-  readonly id: string;
-  upsert(records: readonly PublicRecord[]): Promise<void>;
-  search(query: RecordQuery): Promise<readonly Candidate[]>;
-  snapshotRoot(): Promise<string>;
 }

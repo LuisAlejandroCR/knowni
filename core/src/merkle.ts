@@ -1,5 +1,8 @@
 // merkle.ts: the issuer's tree and the inclusion check a verifier runs.
-// The same fold the circuit performs, so both sides agree on what a root means.
+// It does NOT yet fold the way circuits/merkle.circom folds: this side puts a
+// domain between leaves and nodes and that side hashes the pair bare. Measured
+// and written down in docs/memoria.md D-54; until it is settled, a root here
+// and a root there are different numbers.
 
 import type { FieldHash } from "./hash.ts";
 import { fromHex, u32be, utf8 } from "./hash.ts";

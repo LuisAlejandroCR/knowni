@@ -37,6 +37,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.18.0'
+      # The root install is what links @knowni/* into node_modules, and the
+      # generator reads the domain list from core through it.
+      - run: npm install
       - name: check the domain constants were generated, not typed
         run: node --experimental-strip-types circuits/tools/write-domains.ts | diff - circuits/domains.circom
       - name: compile the circuit and check the public signal order

@@ -40,6 +40,8 @@ export interface Outcome {
   readonly solvencyTier: number;
   readonly formality: boolean;
   readonly standing: boolean;
+  readonly capacity: boolean;
+  readonly assetStanding: boolean;
   readonly decidedAt: number; // unix seconds
 }
 
@@ -72,6 +74,8 @@ function digestOutcome(h: FieldHash, outcome: Outcome, blinding: Blinding): stri
     u64be(outcome.solvencyTier),
     u64be(outcome.formality ? 1 : 0),
     u64be(outcome.standing ? 1 : 0),
+    u64be(outcome.capacity ? 1 : 0),
+    u64be(outcome.assetStanding ? 1 : 0),
     u64be(outcome.decidedAt),
     fromHex(blinding.hex),
   ]);

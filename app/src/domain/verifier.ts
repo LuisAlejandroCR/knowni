@@ -80,6 +80,10 @@ export function disclosureFor(request: SessionRequest, nowUnix: number): Disclos
     solvency: SolvencyTier.NONE,
     formality: true,
     standing: true,
+    // The demo profile is a vehicle sale, and these are the two answers it
+    // turns on: the seller's capacity and the car's standing.
+    capacity: true,
+    assetStanding: true,
     issuerRoots: ["f".repeat(64)],
     nullifier: deriveNullifier(appHash, { hex: "5".repeat(64) }, session),
   };

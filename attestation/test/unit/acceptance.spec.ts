@@ -83,6 +83,8 @@ function setup() {
       solvency: SolvencyTier.STRONG,
       formality: true as const,
       standing: true as const,
+      capacity: "unavailable" as const,
+      assetStanding: "unavailable" as const,
       issuerRoots: [ROOT],
       nullifier: deriveNullifier(sha256Hash, SECRET, session),
     },

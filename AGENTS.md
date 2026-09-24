@@ -198,8 +198,9 @@ predicado sabe para qué contrato lo están usando.
 Cosas que tienen que ser ciertas:
 
 0. **Nada en `core/` sabe qué tipo de contrato se está firmando.** `Purpose` es una cadena abierta validada, no una unión de los contratos que existían cuando se escribió.
-1. La contraparte recibe respuestas, nunca datos. Su registro completo de la solicitud cabe en diez
-   campos y ninguno dice nada del solicitante más allá de lo que preguntó.
+1. La contraparte recibe respuestas, nunca datos. Su registro completo de la solicitud cabe en doce
+   campos —uno por respuesta del catálogo, más el sobre— y ninguno dice nada del solicitante más
+   allá de lo que preguntó. Añadir un predicado añade un campo; añadir un contrato no añade nada.
 2. La app funciona sin red una vez emitidas las credenciales. La prueba se genera en el teléfono.
 3. **Cada respuesta declara qué es y qué no estima.** Un `tier` es una banda descriptiva, no una
    probabilidad de impago, y lo dice. Nunca un número agregado que sustituya el criterio de la

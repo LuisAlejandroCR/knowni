@@ -99,6 +99,8 @@ test("no mutated envelope throws, and every refusal names a known reason", () =>
     solvency: SolvencyTier.STRONG,
     formality: true as const,
     standing: true as const,
+    capacity: "unavailable" as const,
+    assetStanding: "unavailable" as const,
     issuerRoots: ["0f".repeat(32)],
     nullifier: deriveNullifier(sha256Hash, { hex: "5".repeat(64) }, session),
   };
@@ -178,6 +180,8 @@ test("arbitrary purposes are validated rather than hashed", () => {
         solvency: SolvencyTier.NONE,
         formality: true,
         standing: true,
+        capacity: "unavailable",
+        assetStanding: "unavailable",
         issuerRoots: [],
         nullifier: "1".repeat(64),
       },

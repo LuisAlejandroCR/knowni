@@ -1536,6 +1536,40 @@ Que el ahorro solo llegue hasta la ronda 0 es lo esperado: en cuanto la mezcla t
 variable, todo el estado deja de ser constante. Y no es una optimización de este repositorio sino del
 compilador; lo único que hizo el cambio fue dejar de estorbarla.
 
+### D-63 — El sobre admite el perfil vehicular, y `meetsAll` se queda con forma de arriendo · 2026-09-24
+
+*El bloqueo que `docs/plan.md` nombró el día 8:* `capacity` y `assetStanding` existían como reclamo
+(`CapacityClaim`, `AssetStandingClaim`) y como predicado (`proveCapacity`, `proveAssetStanding`), pero
+no como **respuesta entregable**. El sobre tenía cuatro respuestas, todas del perfil de arriendo, y el
+perfil de la demo es una compraventa de vehículo. La app ya pedía `requiredPredicates:
+["personhood", "capacity"]` a la capa atestiguada, así que la incoherencia ya estaba escrita.
+
+*Lo que se hizo:* `Disclosure` gana `capacity` y `assetStanding` con el mismo tipo que las demás
+—`boolean | "unavailable"`—, `verify` las responde con el mismo patrón, y `Outcome` las incluye en lo
+que se compromete. Doce campos sin anclaje, trece con él.
+
+*Las dos decisiones que no eran obvias:*
+
+1. **El activo no se compara contra el sujeto.** `AssetStandingClaim.subjectRef` es la referencia
+   salteada del **carro**, no de la persona. El lazo de `subject_mismatch` de `verify` recorre los
+   reclamos del sujeto y habría rechazado toda venta honesta si se le añadía el del activo; la
+   referencia del activo viaja en la solicitud de la contraparte (`expectedAssetRef`) y la comprueba
+   `proveAssetStanding`. Hay una prueba que falla si alguien los junta.
+2. **Un predicado que nadie pidió responde `unavailable`, nunca `false`.** Es la regla que ya regía
+   para `solvency` y `formality`, y mantenerla evita que el sobre diga algo del sujeto por el hecho
+   de que la contraparte no preguntó. Por eso el sobre es de ancho fijo y no un mapa: el conjunto de
+   campos no revela qué perfil se usó.
+
+*Lo que queda mal, dicho en voz alta:* `meetsAll(disclosure, minimumTier)` sigue comprobando las
+cuatro respuestas del arriendo e ignora las dos nuevas en silencio. Es una función con forma de
+contrato dentro de `core/`, que es justo lo que D-14 prohíbe. No se cambia en este lote porque
+cambiar su firma toca la app y el recorrido; queda como criterio de aceptación en `docs/plan.md`
+—que un perfil componga qué exige— y con un comentario en el propio archivo para que nadie la use
+creyendo que cubre el perfil vehicular.
+
+*Lo que esto no cierra:* ninguna de las dos respuestas se ha producido a partir de una fuente real.
+RUNT y SIMIT siguen sin ejercitarse contra una respuesta viva — `docs/verificacion.md`, pendiente 6.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1609,6 +1643,7 @@ compilador; lo único que hizo el cambio fue dejar de estorbarla.
 | 2026-09-24 | El circuito y `core/` calculan **el mismo compromiso**, comprobado contra testigos del gadget. El viejo `idCommit` no ataba `attestedAt`, la jurisdicción ni el tipo de documento — D-60. 403 pruebas |
 | 2026-09-24 | Plantilla y constantes propias de Poseidon, una por curva: el circuito compila sobre BLS12-381 con constantes derivadas para ese campo y `core/` calcula lo mismo. Cuesta +29% de restricciones por dejar la forma optimizada de circomlib — D-61. 407 pruebas |
 | 2026-09-24 | La plantilla llana deja de gastar una señal por suma de constante y tres por celda copiada en las rondas parciales; la permutación no cambia y el testigo que CI construye en cada PR lo comprueba. 37 504 → 25 049 restricciones, por debajo de la forma optimizada de circomlib — D-62. 407 pruebas |
+| 2026-09-24 | El sobre admite el perfil vehicular: `capacity` y `assetStanding` pasan de reclamo y predicado a respuesta entregable, y entran en el compromiso del resultado. El activo se compara contra la referencia que pide la contraparte, nunca contra el sujeto — D-63. 415 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

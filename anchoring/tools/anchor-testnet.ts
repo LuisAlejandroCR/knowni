@@ -29,6 +29,8 @@ const outcome = {
   solvencyTier: 3,
   formality: true,
   standing: true,
+  capacity: false,
+  assetStanding: false,
   decidedAt: Math.floor(Date.now() / 1000),
 };
 const blinded = commitOutcome(sha256Hash, outcome);

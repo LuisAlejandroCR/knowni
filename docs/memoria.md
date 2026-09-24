@@ -1313,6 +1313,36 @@ pertenece al reclamo de listas y no al de identidad.
 el contrato con el que se hará el cambio, con su invariante de inyectividad sobre 4000 reclamos
 generados.
 
+### D-57 — Una sola lista de dominios, y una sal que cabe en el campo · 2026-09-24
+
+*Dos preparativos para el cambio de hash. Ninguno mueve todavía un compromiso.*
+
+**Los dominios dejan de estar en dos sitios.** `core/src/domains.ts` es ahora la definición —los
+siete: reclamo, resultado, hoja, nodo, vacío, sesión, nulificador— y `merkle.ts`, `commitment.ts` y
+`session.ts` los leen de ahí en vez de declarar los suyos. El circuito importa **esa misma lista**
+por `@knowni/core` en lugar de la copia que tenía. Una lista copiada es una lista que se desvía, y un
+dominio desviado es una raíz que dos implementaciones calculan distinto pareciendo ambas correctas
+—que es exactamente D-54—. Los valores de hoja y nodo no cambian; los otros cinco aparecen en
+`domains.circom` para cuando el circuito los use.
+
+**La sal tenía que caber en el campo.** `randomSalt()` da 32 bytes crudos, que son 256 bits, y el
+campo tiene 254: con la codificación de D-56 eso lanza `NotInFieldError` en cuanto la sal entre como
+elemento. `randomFieldSalt(prime)` la dibuja dentro del campo.
+
+*Y la parte que no es obvia, que es cómo se dibuja:*
+
+| Cómo | Qué pasa |
+|---|---|
+| 32 bytes y reducir mod p | **Sesgado.** Los valores por debajo de 2^256 mod p salen el doble de veces |
+| 32 bytes y rechazar | Correcto y caro: para BN254 se tiran **cuatro de cada cinco** |
+| Enmascarar al ancho del primo y rechazar | Correcto, y se tira **una de cada cuatro** |
+
+*Lo que costó una suposición equivocada:* la primera prueba que escribí afirmaba que enmascarar hace
+que el primer intento siempre valga. Es falso —el primo de BN254 está a tres cuartos de 2^254, así
+que un enmascarado todavía se rechaza una vez de cada cuatro— y la prueba se colgó en un bucle
+infinito en vez de fallar. La que quedó afirma lo que sí es cierto: que un valor por encima del primo
+se rechaza y se toma el siguiente.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1380,6 +1410,7 @@ generados.
 | 2026-09-24 | El circuito y `core/` no hashean igual —uno separa hoja de nodo con un dominio y el otro no— y la cabecera de `merkle.ts` afirmaba lo contrario. Corregida; la salida queda decidida con el coste medido delante — D-54 |
 | 2026-09-24 | El circuito adopta los dominios de `core/`, y al implementarlo apareció que además se saltaba el hash de la hoja entero. +12,1% de restricciones, medido. Solo queda el hash para que las raíces coincidan — D-55. 380 pruebas |
 | 2026-09-24 | Definida la codificación de un reclamo como lista de elementos de campo: tipo como etiqueta, cadenas hasheadas, anchos declarados y referencias de 32 bytes **rechazadas** si no están en el campo en vez de reducidas. Es el contrato que el circuito tendrá que adoptar — D-56. 389 pruebas |
+| 2026-09-24 | Los siete dominios pasan a una sola lista en `core/` que el circuito importa, y la sal se dibuja dentro del campo con enmascarado y rechazo en vez de 32 bytes crudos — D-57. 393 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

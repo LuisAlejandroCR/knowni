@@ -49,6 +49,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | Dos reclamos distintos nunca producen la misma lista de elementos de campo | `core/test/invariant/claim-fields.invariant.spec.ts`: 4000 reclamos generados de los seis tipos, con la comprobación de que el propio muestreo no es degenerado | 2026-09-24 |
 | Una referencia de 32 bytes que no cabe en el campo se rechaza, no se reduce | `core/test/unit/claim-fields.spec.ts`: `ff…ff` como `subjectRef` y como `listSetRoot` lanzan `NotInFieldError` | 2026-09-24 |
 
+| La sal de campo cae siempre dentro del primo, en BN254 y en BLS12-381, y un valor por encima del primo se rechaza y se vuelve a dibujar | `core/test/unit/field.spec.ts`: 500 extracciones por campo, más una fuente guionizada que devuelve el mayor valor enmascarable posible y obliga al segundo intento | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

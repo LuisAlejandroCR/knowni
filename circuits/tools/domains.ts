@@ -4,15 +4,12 @@
 // becomes one field element, derived once and pinned on both sides.
 
 import { createHash } from "node:crypto";
+import { DOMAINS, type DomainName } from "@knowni/core";
 
-/// The strings are `core/`'s, verbatim. They are the definition; everything
-/// below is a way of writing them down for a field.
-export const DOMAINS = {
-  merkleLeaf: "knowni:merkle:leaf:v1",
-  merkleNode: "knowni:merkle:node:v1",
-} as const;
-
-export type DomainName = keyof typeof DOMAINS;
+/// Imported, not copied. `core/src/domains.ts` is the definition; everything
+/// below is a way of writing those same strings down for a field. A second
+/// copy of the list is a copy that drifts.
+export { DOMAINS, type DomainName } from "@knowni/core";
 
 /// SHA-256 of the domain string, read big-endian and reduced. The hash is not
 /// doing security work here — separation is — so what matters is only that

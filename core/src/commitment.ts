@@ -6,10 +6,13 @@ import { equalBytes, fromHex as hexToBytes, toHex } from "./bytes.ts";
 import { randomBytes } from "./random.ts";
 import type { Claim } from "./claims.ts";
 import type { FieldHash } from "./hash.ts";
+import { randomFieldElement } from "./field.ts";
 import { fromHex, u64be, utf8 } from "./hash.ts";
 
-const CLAIM_DOMAIN = "knowni:claim:v1";
-const OUTCOME_DOMAIN = "knowni:outcome:v1";
+import { DOMAINS } from "./domains.ts";
+
+const CLAIM_DOMAIN = DOMAINS.claim;
+const OUTCOME_DOMAIN = DOMAINS.outcome;
 
 export interface Salt {
   readonly hex: string;
@@ -17,6 +20,15 @@ export interface Salt {
 
 export function randomSalt(): Salt {
   return { hex: toHex(randomBytes(32)) };
+}
+
+/// A salt that is an element of the field, for the commitments that will be
+/// built with a circuit's hash. `randomSalt` draws 32 bytes, which is 256 bits
+/// and does not fit a 254-bit field: encoding one refuses rather than reducing,
+/// so a salt has to be drawn in the field to begin with.
+export function randomFieldSalt(prime: bigint): Salt {
+  const value = randomFieldElement(prime);
+  return { hex: value.toString(16).padStart(64, "0") };
 }
 
 function encodeClaim(claim: Claim): Uint8Array[] {

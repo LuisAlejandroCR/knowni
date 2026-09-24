@@ -5,6 +5,7 @@
 
 import type { Digest } from "./hash.ts";
 import { utf8 } from "./bytes.ts";
+import { randomBytes } from "./random.ts";
 
 /// Reading a value into the field and reducing it is not the same as reading
 /// it: two different 256-bit numbers can land on one element. Where the value
@@ -56,4 +57,24 @@ function bytesToFieldReduced(bytes: Uint8Array, prime: bigint): bigint {
   let value = 0n;
   for (const byte of bytes) value = (value << 8n) | BigInt(byte);
   return value % prime;
+}
+
+/// A uniform element of the field.
+///
+/// Drawing 32 bytes and reducing is what everyone reaches for and it is biased:
+/// the values below 2^256 mod p occur twice. Drawing and rejecting without
+/// masking is unbiased and wasteful — for BN254, four draws in five are thrown
+/// away. Masking to the prime's own width first brings that to about one in
+/// four, and the shift keeps the high bits, which are as uniform as any.
+export function randomFieldElement(prime: bigint): bigint {
+  const bits = prime.toString(2).length;
+  const bytes = Math.ceil(bits / 8);
+  const excess = BigInt(bytes * 8 - bits);
+
+  for (;;) {
+    let value = 0n;
+    for (const byte of randomBytes(bytes)) value = (value << 8n) | BigInt(byte);
+    value >>= excess;
+    if (value < prime) return value;
+  }
 }

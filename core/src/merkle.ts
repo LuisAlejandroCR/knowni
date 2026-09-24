@@ -6,9 +6,10 @@
 
 import type { FieldHash } from "./hash.ts";
 import { fromHex, u32be, utf8 } from "./hash.ts";
+import { DOMAINS } from "./domains.ts";
 
-const LEAF_DOMAIN = "knowni:merkle:leaf:v1";
-const NODE_DOMAIN = "knowni:merkle:node:v1";
+const LEAF_DOMAIN = DOMAINS.merkleLeaf;
+const NODE_DOMAIN = DOMAINS.merkleNode;
 
 export interface MerkleProof {
   readonly leaf: string; // hex
@@ -35,7 +36,7 @@ export function buildMerkleTree(h: FieldHash, leaves: readonly string[]): Merkle
   if (leaves.length === 0) {
     // An empty set still needs a root a contract can pin, and it must not be
     // a value any leaf could hash to.
-    const empty = h.hash("knowni:merkle:empty:v1", [u32be(0)]);
+    const empty = h.hash(DOMAINS.merkleEmpty, [u32be(0)]);
     return { root: empty, size: 0, proveInclusion: () => undefined };
   }
 

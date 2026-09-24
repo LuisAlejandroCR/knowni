@@ -5,10 +5,18 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { sha256Hash } from "../../src/node.ts";
-import { outcomeOf, meetsAll } from "../../src/disclosure.ts";
+import { outcomeOf, meetsProfile, type VerificationProfile } from "../../src/disclosure.ts";
 import { SolvencyTier } from "../../src/predicates.ts";
 import { verify, type HeldClaims, type VerificationRequest } from "../../src/verify.ts";
 import { DAY, LIST_ROOT, NOW, SUBJECT_REF, formality, identity, income, standing } from "../support/fixtures.ts";
+
+// The lease profile, composed here because composing it is the caller's job.
+const LEASE = (atLeast: SolvencyTier): VerificationProfile => [
+  { answer: "personhood", mustBe: true },
+  { answer: "formality", mustBe: true },
+  { answer: "standing", mustBe: true },
+  { answer: "solvency", atLeast },
+];
 
 const h = sha256Hash;
 const IDENTITY_ROOT = "1".repeat(64);
@@ -60,7 +68,7 @@ test("a full verification answers every predicate", () => {
   assert.equal(d.solvency, SolvencyTier.STRONG);
   assert.equal(d.formality, true);
   assert.equal(d.standing, true);
-  assert.equal(meetsAll(d, SolvencyTier.COMFORTABLE), true);
+  assert.deepEqual(meetsProfile(d, LEASE(SolvencyTier.COMFORTABLE)), { status: "meets" });
 });
 
 const DIGEST_FIELDS = ["sessionId", "nullifier", "issuerRoots"] as const;
@@ -151,7 +159,10 @@ test("unavailable is not folded into a negative outcome for the relying party", 
   assert.equal(d.standing, "unavailable");
   assert.notEqual(d.standing, false);
   assert.equal(outcomeOf(d).standing, false);
-  assert.equal(meetsAll(d, SolvencyTier.BASIC), false);
+  assert.deepEqual(meetsProfile(d, LEASE(SolvencyTier.BASIC)), {
+    status: "short",
+    missing: [{ answer: "standing", reason: "unavailable" }],
+  });
 });
 
 test("an expired session is refused, not answered negatively", () => {
@@ -189,6 +200,6 @@ test("the same claims answer any contract type", () => {
     assert.equal(result.status, "disclosed");
     const d = result.status === "disclosed" ? result.disclosure : undefined!;
     assert.equal(d.purpose, purpose);
-    assert.equal(meetsAll(d, SolvencyTier.COMFORTABLE), true);
+    assert.deepEqual(meetsProfile(d, LEASE(SolvencyTier.COMFORTABLE)), { status: "meets" });
   }
 });

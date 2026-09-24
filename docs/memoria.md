@@ -1343,6 +1343,34 @@ que un enmascarado todavía se rechaza una vez de cada cuatro— y la prueba se 
 infinito en vez de fallar. La que quedó afirma lo que sí es cierto: que un valor por encima del primo
 se rechaza y se toma el siguiente.
 
+### D-58 — Poseidon baja a `core/`, y hashear en elementos es su propio puerto · 2026-09-24
+
+*Dónde vive:* Poseidon estaba en `circuits/tools/`, pero quien va a hashear con él es `core/`, y la
+dirección de las dependencias es `circuits → core`, nunca al revés. Baja a `core/src/` —es aritmética
+pura, sin dependencias, que es justo lo que `core/` admite— y `circuits/tools/` queda como
+reexportación. La derivación de un dominio también: había dos implementaciones de «lo mismo», que es
+como «lo mismo» deja de serlo.
+
+*Por qué un puerto nuevo y no el que había:* `FieldHash` toma bytes y una cadena de dominio, que es
+lo que SHA-256 quiere. El hash de un circuito toma elementos de campo. Meter uno dentro del otro es
+exactamente como un dominio deja de significar algo, así que `FieldHasher` es su propio puerto:
+`hashFields(dominio, elementos)`, con el dominio como primer elemento — la misma disposición que usa
+`circuits/merkle.circom`.
+
+*La prueba que importa:* `hashFields("merkleLeaf", [7n])` y `hashFields("merkleNode", [7n, 9n])`
+devuelven los números que salieron de los testigos del gadget compilado. **Una raíz calculada aquí es
+una raíz que el circuito puede probar.** Es la primera vez en el repositorio que los dos lados
+producen el mismo número.
+
+*Una corrección de rendimiento que no es cosmética:* `poseidon()` derivaba las constantes de ronda
+**en cada llamada** —un LFSR de Grain sobre cientos de elementos—. Con pruebas pequeñas pasó
+inadvertido; un árbol de Merkle pide miles de hashes y lo habría convertido en minutos. Las
+constantes se derivan una vez por ancho y se guardan: 2000 hashes en poco más de un segundo.
+
+*Lo que todavía no cambia:* `commitClaim`, `merkle.ts` y `session.ts` siguen con `FieldHash` y
+SHA-256. El puerto existe y está comprobado contra el circuito; conectarlo mueve todos los
+compromisos y va en su propio cambio.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1411,6 +1439,7 @@ se rechaza y se toma el siguiente.
 | 2026-09-24 | El circuito adopta los dominios de `core/`, y al implementarlo apareció que además se saltaba el hash de la hoja entero. +12,1% de restricciones, medido. Solo queda el hash para que las raíces coincidan — D-55. 380 pruebas |
 | 2026-09-24 | Definida la codificación de un reclamo como lista de elementos de campo: tipo como etiqueta, cadenas hasheadas, anchos declarados y referencias de 32 bytes **rechazadas** si no están en el campo en vez de reducidas. Es el contrato que el circuito tendrá que adoptar — D-56. 389 pruebas |
 | 2026-09-24 | Los siete dominios pasan a una sola lista en `core/` que el circuito importa, y la sal se dibuja dentro del campo con enmascarado y rechazo en vez de 32 bytes crudos — D-57. 393 pruebas |
+| 2026-09-24 | Poseidon baja a `core/` y hashear en elementos pasa a ser su propio puerto, `FieldHasher`. Reproduce los valores de hoja y nodo del gadget compilado: por primera vez los dos lados dan el mismo número. Y las constantes dejan de derivarse en cada llamada — D-58. 399 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

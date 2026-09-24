@@ -127,6 +127,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
    Es el requisito de D-11 y no está medido.
 8. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.
 9. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista.
+9b. **El documento de registro, servido y anclado de verdad.** El código existe —`attestation/tools/publish-registry.ts` lo firma e imprime su digest, y `createStellarRegistryReader` lo lee de Horizon—, pero nadie lo ha servido por HTTPS ni ha anclado su digest en testnet. El entorno de esta sesión no alcanza `horizon-testnet.stellar.org`: su política de red deniega el host. Hasta ejecutarlo, A3 está probado contra respuestas controladas y no contra la red.
 10. **Fecha y rúbrica del hackathon.**
 
 ## Deuda conocida

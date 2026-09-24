@@ -37,7 +37,9 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | El generador de constantes de ronda de Poseidon de este repositorio reproduce las que circomlib publica para BN254, en anchos de estado 2 y 3 | `circuits/test/unit/poseidon-params.spec.ts` contra los valores de `circomlib/circuits/poseidon_constants.circom`, cuyo encabezado nombra el `generate_parameters_grain.sage` de referencia como su origen | 2026-09-24 |
 | `Poseidon(1,2)` sobre BN254 vale `0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a` | Producido por el propio gadget: `circom p.circom --wasm` sobre `Poseidon(2)` de circomlib y un testigo para las entradas `1, 2`. No tomado de una tabla | 2026-09-24 |
-| ⏳ **Pendiente y nombrado:** la matriz MDS de Poseidon no se reproduce | Una Cauchy sobre los mismos `x`/`y` coincide con la publicada por circomlib en la primera fila y en una más, y discrepa en el resto. Sin ella no hay permutación que escribir — ver D-52 | 2026-09-24 |
+| La matriz MDS generada aquí reproduce la `POSEIDON_M(3)` publicada por circomlib, entrada por entrada, una vez transpuesta | `circuits/test/unit/poseidon.spec.ts`. Cierra el pendiente de D-52: la matriz **reduce** los valores ≥ p donde las constantes los **rechazan** — ver D-53 | 2026-09-24 |
+| La implementación de Poseidon de este repositorio calcula lo mismo que el gadget de circomlib | `poseidon([1n,2n])` sobre BN254 da `0x115cc0f5…4417189a`, el valor del testigo del propio gadget | 2026-09-24 |
+| ⏳ **Pendiente:** nada está comprobado sobre la salida de Poseidon en BLS12-381 | Se genera y es determinista y está en el campo. No hay segunda implementación contra la cual compararla ni revisión de seguridad. Y `core/` sigue hasheando con SHA-256 | 2026-09-24 |
 
 ## Verificado en otra parte, no aquí
 

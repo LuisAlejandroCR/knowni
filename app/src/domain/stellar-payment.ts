@@ -187,11 +187,21 @@ export async function payQuote(input: PayQuoteInput): Promise<PaymentResult> {
     return { status: "failed", reason: "unreachable" };
   }
 
+  // Building the transaction and signing it fail for different reasons, so they
+  // are caught apart: terms the module refuses to encode are `invalid_terms`,
+  // and anything the wallet does — refusing, crashing, answering nonsense — is
+  // `wallet_rejected`. One try around both would call a broken signer bad terms.
+  let source: Uint8Array;
   let transaction: Uint8Array;
+  try {
+    source = accountKey(accountId);
+    transaction = transactionXdr(source, sequence, input.terms);
+  } catch {
+    return { status: "failed", reason: "invalid_terms" };
+  }
+
   let envelope: string;
   try {
-    const source = accountKey(accountId);
-    transaction = transactionXdr(source, sequence, input.terms);
     if (input.wallet.signingMethod === "raw_hash") {
       const signatureHex = await input.wallet.signTransaction(toHex(transactionHash(transaction)));
       if (signatureHex === undefined) return { status: "failed", reason: "wallet_rejected" };
@@ -204,7 +214,7 @@ export async function payQuote(input: PayQuoteInput): Promise<PaymentResult> {
       envelope = signed;
     }
   } catch {
-    return { status: "failed", reason: "invalid_terms" };
+    return { status: "failed", reason: "wallet_rejected" };
   }
 
   try {

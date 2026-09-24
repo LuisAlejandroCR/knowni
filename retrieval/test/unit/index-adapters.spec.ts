@@ -1,13 +1,12 @@
-// index-adapters.spec.ts: Both adapters against the same corpus and the same questions,
-// because the port's whole claim is that the resolution policy means the same thing whichever
-// index is underneath.
+// index-adapters.spec.ts: the in-memory index against the resolution policy.
+// The Chroma adapter that used to share this corpus is gone — B3 — and what is
+// left is the index the list screening actually runs on.
 
 import { test } from "node:test";
 import { poseidonHash } from "@knowni/core/node";
 import assert from "node:assert/strict";
 
 import { createMemoryIndex } from "../../src/adapters/memory.ts";
-import { createChromaIndex, toSimilarity, type ChromaCollection } from "../../src/adapters/chroma.ts";
 import { resolve, screen } from "../../src/resolve.ts";
 import type { PublicRecord } from "../../src/types.ts";
 
@@ -65,54 +64,4 @@ test("the snapshot root changes when the corpus changes", async () => {
   const before = await index.snapshotRoot();
   await index.upsert([{ id: "sdn-2", source: "ofac-sdn", jurisdiction: "US", text: "NEW ENTRY" }]);
   assert.notEqual(await index.snapshotRoot(), before);
-});
-
-// A Chroma collection reduced to what the adapter calls.
-function fakeCollection(rows: { id: string; text: string; distance: number | null }[]): ChromaCollection {
-  return {
-    async add() {},
-    async query() {
-      return {
-        ids: [rows.map((r) => r.id)],
-        documents: [rows.map((r) => r.text)],
-        metadatas: [rows.map(() => ({ source: "ofac-sdn", jurisdiction: "US" }))],
-        distances: [rows.map((r) => r.distance)],
-      };
-    },
-  };
-}
-
-test("the chroma adapter maps distances onto the same 0..1 scale the policy reads", async () => {
-  const index = createChromaIndex(
-    fakeCollection([
-      { id: "sdn-1", text: "CARLOS MENDOZA", distance: 0.1 }, // cosine → 0.95
-      { id: "sdn-9", text: "OTHER PERSON", distance: 1.6 }, // cosine → 0.20
-    ]),
-    { space: "cosine", snapshotRoot: "f".repeat(64) },
-  );
-  const resolution = resolve(await index.search({ text: "Carlos Mendoza" }));
-  assert.equal(resolution.status, "matched");
-  assert.equal(resolution.status === "matched" && resolution.candidate.record.id, "sdn-1");
-});
-
-test("a row with no usable distance is dropped, not scored as a perfect match", async () => {
-  const index = createChromaIndex(
-    fakeCollection([{ id: "sdn-1", text: "X", distance: null }]),
-    { space: "cosine", snapshotRoot: "f".repeat(64) },
-  );
-  assert.deepEqual(await index.search({ text: "anything" }), []);
-});
-
-test("every space maps into 0..1, including values outside its nominal range", () => {
-  // Floating point returns -1e-17 for an identical vector, and inner product
-  // is unbounded in both directions.
-  for (const space of ["cosine", "l2", "ip"] as const) {
-    for (const distance of [-1e-17, -5, 0, 0.5, 2, 1e9, Number.NaN, Number.POSITIVE_INFINITY]) {
-      const score = toSimilarity(distance, space);
-      assert.ok(score >= 0 && score <= 1, `${space}/${distance} produced ${score}`);
-    }
-  }
-  assert.equal(toSimilarity(0, "cosine"), 1);
-  assert.equal(toSimilarity(2, "cosine"), 0);
-  assert.equal(toSimilarity(0, "l2"), 1);
 });

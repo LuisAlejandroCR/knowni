@@ -134,7 +134,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | Deuda | Dónde | Bloque |
 |---|---|---|
-| `retrieval/` está construido sobre la lectura de Chroma. El adaptador, el puerto y el índice sobran; la normalización y la política de resolución se quedan | `retrieval/` | B3 |
+| `retrieval/` está construido sobre la lectura de Chroma. **El adaptador se retiró el 2026-09-24** —nadie lo llamaba fuera de su prueba—; el puerto y el índice siguen porque `listas.ts` y el recorrido de `journey/` tamizan listas por ahí, y sacarlos exige mover ese tamizado al camino de Croma. La normalización y la política de resolución se quedan | `retrieval/` | B3 |
 | ~~El sobre `Disclosure` no admite el perfil vehicular~~ **Saldada el 2026-09-24:** `capacity` y `assetStanding` son respuestas entregables y entran en el compromiso del resultado — D-63, A15. A16 saldada el mismo día: `meetsAll` desaparece y `meetsProfile` recibe el perfil de quien pregunta — D-66 | `core/src/disclosure.ts` | ✅ |
 | `ofAge` se deriva de que la cédula de ciudadanía solo se expide a mayores de edad. Es una regla jurídica, no un dato que devuelva la fuente | `sources/src/country/colombia/registraduria.ts` | confirmar con el concepto legal |
 | Ningún adaptador se ha ejercido contra una respuesta real sobre una persona: los esquemas vienen del OpenAPI de Croma, no de una llamada | `sources/src/country/colombia/` | requiere un titular que autorice |

@@ -103,10 +103,22 @@ constants with it, for state widths 2 and 3, and compares them. They match.
 
 | Piece | State |
 |---|---|
-| Grain LFSR and the round constants | **Reproduces circomlib's BN254 values exactly.** Same generator answers for BLS12-381. |
-| The MDS matrix | **Not reproduced.** A plain Cauchy matrix over the same generated `x`/`y` matches circomlib's published matrix in its first row and one other, and disagrees elsewhere. Until that is understood, no matrix here is trustworthy. |
-| A Poseidon permutation, in or out of circuit | **Not written.** Without the matrix there is nothing to write it against. |
-| `core/`'s `FieldHash` | Still SHA-256, which is what the port exists to let us change. |
+| Grain LFSR and the round constants | **Reproduces circomlib's BN254 values exactly.** |
+| The MDS matrix | **Reproduces circomlib's published matrix**, which is the reference script's matrix transposed — circomlib's `Mix` indexes `M[j][i]`, so it stores it turned around. |
+| The Poseidon permutation, outside a circuit | **`tools/poseidon.ts`, and it computes what the gadget computes** for the same inputs. |
+| The same over BLS12-381 | **Generated and deterministic.** Nothing has been proved about it: no second implementation exists to check it against, and no security review has been done. |
+| `core/`'s `FieldHash` | Still SHA-256. Swapping it changes every commitment, so it is its own change. |
+
+Three rules decide whether any of this is right, and none can be read off the
+output:
+
+1. The LFSR emits a bit only when the preceding bit was a `1`, consuming the
+   pair either way.
+2. Round constants use **rejection** sampling: a draw at or above the prime is
+   thrown away.
+3. The matrix's `x` and `y` use **reduction**, not rejection — the reference
+   builds them with `F(bits)`. Rejecting there shifts every bit that follows
+   and produces a matrix that is wrong in a way nothing complains about.
 
 The ground truth for whatever comes next, produced by the gadget itself
 (`circom --wasm` and a witness for inputs `1, 2` on BN254):
@@ -116,7 +128,7 @@ Poseidon(1, 2) = 0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a44171
 ```
 
 An implementation that does not reproduce that number is wrong, whatever else
-it reproduces.
+it reproduces. `test/unit/poseidon.spec.ts` is that check.
 
 ## What the circuit must keep agreeing with
 

@@ -1180,6 +1180,37 @@ no una tabla de internet — `circom --wasm` y un testigo para las entradas `1, 
 `Poseidon(1,2) = 0x115cc0f5…4417189a`. Una implementación que no reproduzca ese número está mal,
 reproduzca lo que reproduzca.
 
+### D-53 — La matriz de Poseidon: el guion de referencia no rechaza, reduce · 2026-09-24
+
+*Corrige a D-52, que dejó la matriz MDS como pendiente y nombró el supuesto dudoso.* El supuesto era
+el correcto y la respuesta estaba en el guion, no en las constantes publicadas: el
+`generate_parameters_grain.sage` original está en `extgit.iaik.tugraz.at`, que el proxy de esta
+sesión rechaza, pero hay copias públicas del repositorio en GitHub. Leerlo cerró en minutos lo que
+tres intentos de deducción no cerraron.
+
+*Las dos cosas que decía, y que no se pueden deducir mirando la salida:*
+
+| | Constantes de ronda | Matriz MDS |
+|---|---|---|
+| Un valor ≥ p | **se descarta** y se toma el siguiente | **se reduce** mod p |
+
+Rechazar en la matriz consume bits distintos y corre toda la secuencia a partir de ahí. Por eso la
+primera entrada coincidía —salió menor que p por casualidad— y el resto no: la coincidencia parcial
+que D-52 no supo explicar era exactamente esa.
+
+*Y la tercera:* circomlib publica la **transpuesta** de la matriz del guion, porque su plantilla
+`Mix` indexa `M[j][i]`. Con eso, `parameters()` reproduce `POSEIDON_M(3)` entrada por entrada.
+
+*Lo que cierra el círculo:* `circuits/tools/poseidon.ts` implementa la permutación fuera del
+circuito, y la prueba la compara contra el número que produce el propio gadget de circomlib —
+`Poseidon(1,2) = 0x115cc0f5…4417189a`, sacado de un testigo, no de una tabla—. Coincide. El orden es
+sumar constantes, s-box, mezclar, cada ronda; la variante de sumar una vez al principio no coincide.
+
+*Lo que sigue sin ser cierto, y ahora es lo único:* la misma construcción responde sobre BLS12-381 y
+**nadie ha comprobado nada sobre esa salida**: no hay segunda implementación contra la cual
+compararla ni revisión de seguridad. Y `core/` sigue con SHA-256 — cambiarlo mueve todos los
+compromisos, así que es un cambio propio.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1243,6 +1274,7 @@ reproduzca lo que reproduzca.
 | 2026-09-23 | Fuzz sobre los cuatro adaptadores de Croma: cero hallazgos. Ya validaban y reducían de verdad, a diferencia del emisor y el anclaje. La diferencia no era la disciplina sino dónde estaba dibujado el límite — D-50. 368 pruebas |
 | 2026-09-23 | Los circuitos compilan por primera vez, y la tabla de símbolos delató que el contrato leía `listSetRoot` del índice 11, que es `minMonthsPaid`. El orden de señales deja de ser una lectura: lo escribe el compilador y CI lo comprueba — D-51 |
 | 2026-09-24 | Las constantes de ronda de Poseidon se generan en el repositorio y la prueba las compara con las BN254 publicadas por circomlib: coinciden. La matriz MDS no se reproduce y el trabajo se para ahí, nombrado — D-52. 371 pruebas |
+| 2026-09-24 | Leer el guion de referencia cerró lo que D-52 dejó abierto: la matriz MDS **reduce** donde las constantes **rechazan**, y circomlib publica la transpuesta. La permutación fuera del circuito ya reproduce el valor del propio gadget — D-53. 376 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

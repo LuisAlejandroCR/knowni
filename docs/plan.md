@@ -431,7 +431,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | **Parcial** | A9 | Hay catálogo y llamadas reales sanitizadas a Croma, incluida una empresa pública; faltan llamadas consentidas y fechadas por cada fuente personal habilitada del perfil vehicular |
 | **Parcial** | A10 | Existen anclaje y pago USDC reales en Stellar testnet; falta que el recorrido principal del teléfono produzca su propia transacción con una wallet real |
 | **Bloqueado** | A12 | La suite demuestra operación sin red, pero nunca se ejecutó en un dispositivo físico en modo avión |
-| **Parcial** | A14 | CI instala desde cero, ejecuta lint, typecheck y tests, y compila circuitos y contrato; todavía no genera el bundle Expo de la app en CI |
+| **Cumplido** | A14 | CI instala desde cero, ejecuta lint, typecheck y tests, compila circuitos y contrato, y empaqueta la app con Metro para iOS y Android: `npm run bundle` en el job `app`, que falla si alguno de los dos `.hbc` no sale |
 | **Cumplido** | A15 | `core/test/unit/verify-vehicle.spec.ts` y el invariante de campos exactos del sobre: `capacity` y `assetStanding` son respuestas entregables, el activo se compara contra la referencia que pide la contraparte y un predicado no pedido vale `unavailable` — D-63 |
 | **Futuro** | A16 | `meetsAll(disclosure, tier)` sigue con forma de arriendo e ignora las dos respuestas nuevas; falta sustituirla por una comprobación parametrizada probada con dos perfiles |
 
@@ -440,14 +440,14 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | Estado | Criterios | Evidencia y brecha restante |
 |---|---|---|
 | **Cumplido** | P1–P5, P9 | `app/test/unit/stellar-payment.spec.ts` cubre XDR, memo, secuencia y ambos contratos de firma; `issuer-client.spec.ts` fija el orden `quote → pago → issue` |
-| **Parcial** | P6 | Los resultados tipados existen, pero faltan tests explícitos de rechazo de Horizon y caída de red en el módulo móvil |
-| **Parcial** | P7 | El módulo no registra firma, XDR ni respuestas de Horizon; falta el test de serialización pública exigido por el criterio |
-| **Parcial** | P8 | El código portable no importa `node:crypto`, `Buffer` ni el SDK de Stellar y pasa typecheck; falta una prueba de imports propia de `app/` |
+| **Cumplido** | P6 | `app/test/unit/payment-failures.spec.ts`: rechazo de Horizon, envío aceptado sin hash, caída de red antes y durante el envío, Horizon caído en la lectura de cuenta y wallet sin firma; la última prueba comprueba que las cinco razones no colapsan en una — D-64 |
+| **Cumplido** | P7 | `app/test/unit/payment-redaction.spec.ts` serializa los seis desenlaces y comprueba que ninguno lleva firma, sobre, llave de la contraparte ni cuerpo crudo de Horizon, con la consola interceptada en todos los caminos |
+| **Cumplido** | P8 | `app/test/unit/portable.spec.ts` recorre `app/src` y `app/app`, y el bundle de Metro en CI lo comprueba contra el empaquetador, no solo contra el compilador |
 | **Cumplido** | C1–C8 | Tests unitarios, concurrentes y de persistencia prueban HMAC opaco, separación por sujeto y pago, single-flight, no-cache de fallos, expiración y límite de capacidad |
 
 ### Lo que falta, en orden de cierre
 
-1. Completar la evidencia automatizable: tests P6–P8, bundle Expo en CI y contract test de A3.
+1. Completar la evidencia automatizable que queda: el contract test de A3 contra registro web y cadena.
 2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet.
 3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
 4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo

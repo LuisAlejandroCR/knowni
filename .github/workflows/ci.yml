@@ -115,3 +115,14 @@ jobs:
         working-directory: app
       - run: npm test
         working-directory: app
+      # Typecheck and tests both run under Node, where `Buffer` and the node
+      # builtins exist. Only the bundler answers whether the app Metro packages
+      # actually resolves on a phone — criterio P8 y A14.
+      - name: bundle the app for iOS and Android
+        working-directory: app
+        run: npm run bundle
+      - name: check both bundles were produced
+        working-directory: app
+        run: |
+          test -n "$(find dist/_expo/static/js/ios -name '*.hbc' -print -quit)"
+          test -n "$(find dist/_expo/static/js/android -name '*.hbc' -print -quit)"

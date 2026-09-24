@@ -1245,6 +1245,37 @@ las 10 932 actuales — **un 7,7%**.
 seguridad, y es la única salida que deja verdadera la frase que este commit tuvo que borrar. La
 decisión es de producto y toca el circuito, el hashing de `core/` y todos los compromisos, así que
 no se ejecuta desde aquí.
+### D-55 — El circuito adopta los dominios, y le faltaba además un nivel entero · 2026-09-24
+
+*Decisión (la recomendada en D-54, confirmada):* el circuito se acerca a `core/`, no al revés.
+`core/` es la implementación de referencia —lo dice `circuits/README.md`— y quitar la separación
+hoja/nodo para que dos implementaciones coincidan es debilitar una defensa por conveniencia.
+
+*Lo que se hizo:* `MerkleLeaf` y `MerkleLevel` reciben un elemento de dominio como primera entrada, y
+`MerklePath` toma el **compromiso** y lo hashea él mismo, para que nadie se olvide.
+
+*Lo que apareció al implementarlo, que D-54 no había visto:* el circuito no solo no separaba
+dominios — **se saltaba el hash de la hoja entero**. `core/` hace `hashLeaf(h, commitClaim(...))` y
+el circuito metía `idCommit.out` directo en el camino. Eran dos divergencias, no una.
+
+*El coste, medido antes y después:*
+
+| | Restricciones no lineales |
+|---|---|
+| Antes | 10 932 |
+| Después | 12 258 |
+
+**+12,1%.** De esos, +840 son el dominio del nodo en 40 niveles y +486 los dos hashes de hoja que
+faltaban. La estimación de D-54 decía +7,7% y se quedó corta por exactamente esa razón: contaba los
+dominios y no el nivel ausente. El orden de las señales públicas no cambia, y la prueba que lo fija
+lo confirma.
+
+*Las constantes no se escriben a mano:* `tools/domains.ts` deriva un elemento de campo por cadena de
+dominio y `domains.circom` es su salida. CI la regenera y rechaza un fichero que se haya desviado —
+el mismo trato que el orden de señales.
+
+*Lo que sigue faltando para que las raíces coincidan:* `core/` hashea con SHA-256. Ahora los dos
+lados son la **misma construcción** y solo queda el hash.
 
 ## Bitácora
 
@@ -1311,6 +1342,7 @@ no se ejecuta desde aquí.
 | 2026-09-24 | Las constantes de ronda de Poseidon se generan en el repositorio y la prueba las compara con las BN254 publicadas por circomlib: coinciden. La matriz MDS no se reproduce y el trabajo se para ahí, nombrado — D-52. 371 pruebas |
 | 2026-09-24 | Leer el guion de referencia cerró lo que D-52 dejó abierto: la matriz MDS **reduce** donde las constantes **rechazan**, y circomlib publica la transpuesta. La permutación fuera del circuito ya reproduce el valor del propio gadget — D-53. 376 pruebas |
 | 2026-09-24 | El circuito y `core/` no hashean igual —uno separa hoja de nodo con un dominio y el otro no— y la cabecera de `merkle.ts` afirmaba lo contrario. Corregida; la salida queda decidida con el coste medido delante — D-54 |
+| 2026-09-24 | El circuito adopta los dominios de `core/`, y al implementarlo apareció que además se saltaba el hash de la hoja entero. +12,1% de restricciones, medido. Solo queda el hash para que las raíces coincidan — D-55. 380 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

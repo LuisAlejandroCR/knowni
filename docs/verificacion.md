@@ -43,6 +43,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | `circuits/merkle.circom` y `core/src/merkle.ts` **no** producen la misma raíz: el circuito hashea el par desnudo, `core/` antepone un dominio | `MerkleLevel(7, 9, izquierda)` compilado con circom 2.2.3 y evaluado sobre un testigo da `0x2f447495cd13dfa223b07ada1d51ac114901e15056a30f8bf28f6fbb4a27376a`, idéntico a `poseidon([7n,9n])` de este repositorio — ver D-54 | 2026-09-24 |
 | El coste de reconciliarlos por el lado del circuito | `Poseidon(2)` son 243 restricciones no lineales y `Poseidon(3)` con constante de dominio 264: +21 por hash, +840 sobre las 10 932 del circuito completo (+7,7%). Compilado, no estimado | 2026-09-24 |
+| El `MerkleLeaf` y el `MerkleLevel` con dominio del circuito producen lo que este repositorio calcula fuera del circuito | Testigos del gadget compilado: `leaf(7) = 0x09403be3…d16a04b4` y `node(7,9) = 0x03b5f4ce…a9672e7`, reproducidos por `poseidon()` en `circuits/test/unit/merkle-domains.spec.ts` | 2026-09-24 |
+| Lo que cuesta la separación de dominios en el circuito completo | 10 932 → 12 258 restricciones no lineales (+12,1%), compilado antes y después. El orden de las señales públicas no cambia | 2026-09-24 |
 
 ## Verificado en otra parte, no aquí
 

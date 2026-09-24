@@ -106,7 +106,7 @@ template Eligibility(depth) {
     idCommit.inputs[5] <== idSalt;
 
     component idPath = MerklePath(depth);
-    idPath.leaf <== idCommit.out;
+    idPath.commitment <== idCommit.out;
     for (var i = 0; i < depth; i++) {
         idPath.siblings[i] <== idSiblings[i];
         idPath.isRight[i] <== idIsRight[i];
@@ -119,7 +119,7 @@ template Eligibility(depth) {
     incCommit.inputs[2] <== incSalt;
 
     component incPath = MerklePath(depth);
-    incPath.leaf <== incCommit.out;
+    incPath.commitment <== incCommit.out;
     for (var i = 0; i < depth; i++) {
         incPath.siblings[i] <== incSiblings[i];
         incPath.isRight[i] <== incIsRight[i];

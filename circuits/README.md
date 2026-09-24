@@ -12,7 +12,7 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 | Artifact | State |
 |---|---|
 | `eligibility.circom`, `merkle.circom` | **Written, and compiled** — 2026-09-23, circom 2.2.3. |
-| Compiled R1CS | **Built.** 10 932 non-linear and 12 212 linear constraints, 8 public inputs, 5 public outputs, 23 194 wires. Not committed: it is generated. |
+| Compiled R1CS | **Built.** 12 258 non-linear and 15 440 linear constraints, 8 public inputs, 5 public outputs, 27 748 wires. Not committed: it is generated. |
 | Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
 | WASM prover, trusted setup, proving key | **Not run.** |
 | On-chain verification against Soroban | **Not run.** No real proof has ever been produced or verified. |
@@ -129,6 +129,32 @@ Poseidon(1, 2) = 0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a44171
 
 An implementation that does not reproduce that number is wrong, whatever else
 it reproduces. `test/unit/poseidon.spec.ts` is that check.
+
+## Domain separation, and what it cost
+
+`core/` puts a domain string in front of every construction so a leaf can never
+be read as a node. The circuit did not, and it also skipped the leaf hash
+entirely — it folded starting from the bare commitment. Both are fixed here:
+`MerkleLeaf` and `MerkleLevel` take a domain element as their first input, and
+`MerklePath` takes the commitment and hashes it itself, so a caller cannot
+forget to.
+
+The constants are generated, not typed: `tools/domains.ts` derives one field
+element per domain string and `domains.circom` is its output. CI regenerates it
+and refuses a file that drifted.
+
+| | Non-linear constraints |
+|---|---|
+| Before | 10 932 |
+| After | 12 258 |
+
+**+12.1%**, of which +840 is the node domain over 40 levels and +486 is the two
+leaf hashes that were missing. An estimate made before implementing said +7.7%:
+it counted the domains and not the absent leaf hash.
+
+`core/` still hashes with SHA-256, so the two sides still do not produce the
+same root. What changed is that they are now the same *construction*, and only
+the hash is left.
 
 ## What the circuit must keep agreeing with
 

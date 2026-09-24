@@ -89,6 +89,35 @@ proofs for that circuit. Production needs a real multi-party ceremony, and
 the verifying key is pinned in the contract's constructor so changing it is
 a visible deployment event.
 
+## Poseidon over BLS12-381 — what is done and what is not
+
+The blocker is not the toolchain. It is that circomlib's Poseidon round
+constants are derived for BN254's field, and `-p bls12381` recompiles them
+into another field without complaining.
+
+`tools/poseidon-params.ts` is a port of the reference
+`generate_parameters_grain.sage` — the script circomlib's own header names as
+the source of its constants. It is not trusted because it looks right:
+`test/unit/poseidon-params.spec.ts` regenerates circomlib's published BN254
+constants with it, for state widths 2 and 3, and compares them. They match.
+
+| Piece | State |
+|---|---|
+| Grain LFSR and the round constants | **Reproduces circomlib's BN254 values exactly.** Same generator answers for BLS12-381. |
+| The MDS matrix | **Not reproduced.** A plain Cauchy matrix over the same generated `x`/`y` matches circomlib's published matrix in its first row and one other, and disagrees elsewhere. Until that is understood, no matrix here is trustworthy. |
+| A Poseidon permutation, in or out of circuit | **Not written.** Without the matrix there is nothing to write it against. |
+| `core/`'s `FieldHash` | Still SHA-256, which is what the port exists to let us change. |
+
+The ground truth for whatever comes next, produced by the gadget itself
+(`circom --wasm` and a witness for inputs `1, 2` on BN254):
+
+```
+Poseidon(1, 2) = 0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a
+```
+
+An implementation that does not reproduce that number is wrong, whatever else
+it reproduces.
+
 ## What the circuit must keep agreeing with
 
 `core/src/predicates.ts` is the reference implementation and

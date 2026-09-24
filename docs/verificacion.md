@@ -35,6 +35,10 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | `circuits/eligibility.circom` compila, y el orden de sus señales públicas es el que dice el compilador y no el que decía el contrato | circom 2.2.3 construido desde fuente. 10 932 restricciones no lineales, 12 212 lineales, 8 entradas públicas, 5 salidas, 23 194 cables. La tabla de símbolos pone `listSetRoot` en el índice 12; el contrato lo leía del 11, que es `minMonthsPaid`. Corregido y fijado en `contracts/knowni-verifier/src/test.rs` contra `circuits/eligibility.signals.txt` | 2026-09-23 |
 | Compilar con `-p bls12381` **no** prueba que el circuito sea correcto sobre esa curva | Mismo comando con `-p bls12381`: mismas 10 932 restricciones y mismo orden de señales que con `bn128`. Las constantes de Poseidon de circomlib son de BN254 y compilan igual contra otro campo. Sigue pendiente generar las de BLS12-381 | 2026-09-23 |
 
+| El generador de constantes de ronda de Poseidon de este repositorio reproduce las que circomlib publica para BN254, en anchos de estado 2 y 3 | `circuits/test/unit/poseidon-params.spec.ts` contra los valores de `circomlib/circuits/poseidon_constants.circom`, cuyo encabezado nombra el `generate_parameters_grain.sage` de referencia como su origen | 2026-09-24 |
+| `Poseidon(1,2)` sobre BN254 vale `0x115cc0f5e7d690413df64c6b9662e9cf2a3617f2743245519e19607a4417189a` | Producido por el propio gadget: `circom p.circom --wasm` sobre `Poseidon(2)` de circomlib y un testigo para las entradas `1, 2`. No tomado de una tabla | 2026-09-24 |
+| ⏳ **Pendiente y nombrado:** la matriz MDS de Poseidon no se reproduce | Una Cauchy sobre los mismos `x`/`y` coincide con la publicada por circomlib en la primera fila y en una más, y discrepa en el resto. Sin ella no hay permutación que escribir — ver D-52 | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

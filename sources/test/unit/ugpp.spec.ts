@@ -15,7 +15,7 @@ import {
 
 // 2026-09-21, so "this month" is 202609.
 const NOW = 1_789_000_000;
-const subject = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "a".repeat(64) };
+const subject = { documentKind: "CC", documentNumber: "1020304050", subjectRef: "0a".repeat(32) };
 
 const statement = (over: Partial<UgppStatement> = {}): UgppStatement => ({
   periods: [

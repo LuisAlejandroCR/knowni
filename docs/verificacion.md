@@ -53,6 +53,8 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | El puerto de hash de `core/` reproduce los valores que el circuito compilado calcula para una hoja y para un nodo | `core/test/unit/field-hasher.spec.ts`: `hashFields("merkleLeaf",[7n])` da `0x09403be3…d16a04b4` y `hashFields("merkleNode",[7n,9n])` da `0x03b5f4ce…a9672e7`, los mismos que los testigos del gadget | 2026-09-24 |
 
+| `commitClaim`, `hashLeaf` y el plegado de Merkle hashean con Poseidon, y la suite entera sigue verde | 399 pruebas. Tres productores de valores fuera del campo —`subjectRef` del emisor, raíz de listas y raíz de snapshot— quedaron al descubierto y se corrigieron; los encontró el rechazo de D-56, no una revisión | 2026-09-24 |
+
 ## Verificado en otra parte, no aquí
 
 | Qué | Fuente | Fecha original | Estado aquí |

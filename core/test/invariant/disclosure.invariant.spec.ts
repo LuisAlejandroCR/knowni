@@ -162,7 +162,7 @@ test("a bundle mixing two subjects is refused rather than partly scored", () => 
   const mixed: HeldClaims = {
     ...held,
     income: {
-      claim: { ...income, subjectRef: { hex: "f".repeat(64) } },
+      claim: { ...income, subjectRef: { hex: "0f".repeat(32) } },
       issuerRoot: INCOME_ROOT,
     },
   };

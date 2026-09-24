@@ -1371,6 +1371,39 @@ constantes se derivan una vez por ancho y se guardan: 2000 hashes en poco más d
 SHA-256. El puerto existe y está comprobado contra el circuito; conectarlo mueve todos los
 compromisos y va en su propio cambio.
 
+### D-59 — El compromiso de un reclamo se hace con el hash del circuito, y lo que eso arrastró · 2026-09-24
+
+*El cambio:* `commitClaim`, `hashLeaf` y el plegado de Merkle pasan de `FieldHash` (bytes, SHA-256) a
+`FieldHasher` (elementos, Poseidon). **Todos los compromisos del repositorio cambian de valor.** El
+compromiso de un resultado y la sesión siguen en bytes: no los pide el circuito todavía.
+
+*Lo que el cambio destapó, que es más interesante que el cambio:* una vez que un valor tiene que ser
+un elemento del campo, **tiene que nacer siéndolo**. Tres sitios en producción lo producían con
+SHA-256 y quedaban fuera del campo de 254 bits:
+
+| Dónde | Qué producía |
+|---|---|
+| `issuer/src/service.ts` | El `subjectRef` del sujeto, que acaba dentro de cada reclamo |
+| `sources/.../sanctions.ts` | La raíz del conjunto de listas, que va en el reclamo de standing |
+| `retrieval/.../memory.ts` | La raíz del snapshot, que alimenta a la anterior |
+
+Ninguno se veía: `commitClaim` con SHA-256 aceptaba cualquier cosa de 32 bytes. El primero que falló
+fue un fixture, y detrás venían los tres. La comprobación de D-56 —rechazar en vez de reducir— es lo
+único que los hizo visibles, y es exactamente el trabajo que se le pedía.
+
+*Una sola forma de hacer una sal:* `randomSalt()` daba 32 bytes crudos, que el compromiso ahora
+rechaza. Deja de existir; la única que queda es la que dibuja dentro del campo, y toma el primo como
+argumento.
+
+*Código muerto que el lint encontró solo:* `encodeClaim` —la serialización de un reclamo a bytes con
+`u64be` y UTF-8— ya no la usa nadie. Borrada. Su reemplazo es `encodeClaimFields`, y tener las dos
+habría sido tener dos definiciones de qué es un reclamo.
+
+*Lo que todavía no se toca:* el circuito. `idCommit` sigue siendo `Poseidon(6)` con las señales
+viejas, así que un compromiso de `core/` y uno del circuito **aún no coinciden**. Lo que sí coincide
+ya, y está comprobado contra los testigos del gadget, es el plegado de Merkle: hoja y nodo dan el
+mismo número en los dos lados. Alinear `idCommit`/`incCommit` es el cambio que falta.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1440,6 +1473,7 @@ compromisos y va en su propio cambio.
 | 2026-09-24 | Definida la codificación de un reclamo como lista de elementos de campo: tipo como etiqueta, cadenas hasheadas, anchos declarados y referencias de 32 bytes **rechazadas** si no están en el campo en vez de reducidas. Es el contrato que el circuito tendrá que adoptar — D-56. 389 pruebas |
 | 2026-09-24 | Los siete dominios pasan a una sola lista en `core/` que el circuito importa, y la sal se dibuja dentro del campo con enmascarado y rechazo en vez de 32 bytes crudos — D-57. 393 pruebas |
 | 2026-09-24 | Poseidon baja a `core/` y hashear en elementos pasa a ser su propio puerto, `FieldHasher`. Reproduce los valores de hoja y nodo del gadget compilado: por primera vez los dos lados dan el mismo número. Y las constantes dejan de derivarse en cada llamada — D-58. 399 pruebas |
+| 2026-09-24 | `commitClaim` y el plegado de Merkle pasan a Poseidon: todos los compromisos cambian de valor. El cambio destapó tres sitios en producción que producían referencias y raíces con SHA-256, fuera del campo — D-59 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

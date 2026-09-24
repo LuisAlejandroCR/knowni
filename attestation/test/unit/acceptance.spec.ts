@@ -23,7 +23,7 @@ import { nodeSignatures } from "../../src/node.ts";
 const NOW = 1_760_000_000;
 const ISSUER = "knowni-demo-issuer";
 const AGENCY = "notaria-17";
-const ROOT = "f".repeat(64);
+const ROOT = "0f".repeat(32);
 const SECRET = { hex: "7".repeat(64) };
 
 const request: SessionRequest = {

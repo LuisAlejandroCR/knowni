@@ -99,7 +99,7 @@ test("no mutated envelope throws, and every refusal names a known reason", () =>
     solvency: SolvencyTier.STRONG,
     formality: true as const,
     standing: true as const,
-    issuerRoots: ["f".repeat(64)],
+    issuerRoots: ["0f".repeat(32)],
     nullifier: deriveNullifier(sha256Hash, { hex: "5".repeat(64) }, session),
   };
   const good = attestResults(sha256Hash, nodeSignatures, issuer.privateKeySeed, {
@@ -129,7 +129,7 @@ test("no mutated envelope throws, and every refusal names a known reason", () =>
         revocation: { stateOf: () => ({ status: "live", checkedAt: NOW - 10 }) },
         policy: { maxSnapshotAgeSeconds: 3_600, onUnknown: "refuse" },
         nowUnix: NOW,
-        issuerRoot: "f".repeat(64),
+        issuerRoot: "0f".repeat(32),
       });
     } catch (error) {
       assert.fail(`threw on mutation ${i}: ${String(error)}`);
@@ -154,7 +154,7 @@ test("no mutated envelope throws, and every refusal names a known reason", () =>
     revocation: { stateOf: () => ({ status: "live", checkedAt: NOW - 10 }) },
     policy: { maxSnapshotAgeSeconds: 3_600, onUnknown: "refuse" },
     nowUnix: NOW,
-    issuerRoot: "f".repeat(64),
+    issuerRoot: "0f".repeat(32),
   });
   assert.deepEqual(accepted, { status: "accepted", idempotent: false, notes: [] });
 });
@@ -187,7 +187,7 @@ test("arbitrary purposes are validated rather than hashed", () => {
       ledger: createMemoryNullifierLedger(),
       policy: { maxSnapshotAgeSeconds: 3_600, onUnknown: "refuse" },
       nowUnix: NOW,
-      issuerRoot: "f".repeat(64),
+      issuerRoot: "0f".repeat(32),
     });
     assert.equal(outcome.status, "refused");
   }

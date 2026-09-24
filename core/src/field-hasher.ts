@@ -5,7 +5,7 @@
 
 import { DOMAINS, type DomainName } from "./domains.ts";
 import type { Digest } from "./hash.ts";
-import { fieldFromString } from "./field.ts";
+import { fieldFromHex, fieldFromString } from "./field.ts";
 import { poseidon } from "./poseidon.ts";
 import { circomlibSpec, parameters, type GrainSpec } from "./poseidon-params.ts";
 
@@ -14,6 +14,14 @@ export interface FieldHasher {
   /// The prime every element it accepts and returns belongs to.
   readonly prime: bigint;
   hashFields(domain: DomainName, elements: readonly bigint[]): bigint;
+  /// An open string as an element. On the port because the derivation has to
+  /// be the same one the domains use, and a caller should not get to pick.
+  element(text: string): bigint;
+  /// An element written the way a claim, a leaf and a root are written: 32
+  /// bytes of hex, which is what every interface in the product already
+  /// passes around.
+  toHex(value: bigint): string;
+  fromHex(hex: string, what: string): bigint;
 }
 
 /// Poseidon over the given field, with the domain as the first element — the
@@ -41,6 +49,15 @@ export function createPoseidonHasher(digest: Digest, prime: bigint, bits: number
   return {
     id: `poseidon/${prime.toString(16).slice(0, 8)}`,
     prime,
+    element(text) {
+      return fieldFromString(digest, text, prime);
+    },
+    toHex(value) {
+      return value.toString(16).padStart(64, "0");
+    },
+    fromHex(hex, what) {
+      return fieldFromHex(hex, prime, what);
+    },
     hashFields(domain, elements) {
       const separator = domainElements.get(domain) ?? fieldFromString(digest, DOMAINS[domain], prime);
       domainElements.set(domain, separator);

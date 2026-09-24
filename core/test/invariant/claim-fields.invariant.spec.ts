@@ -10,8 +10,11 @@ import type { Claim, DocumentKind, IncomeBasis } from "../../src/claims.ts";
 import { encodeClaimFields } from "../../src/claim-fields.ts";
 
 const PRIME = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001n;
-const digest = (bytes: Uint8Array) => Uint8Array.from(createHash("sha256").update(bytes).digest());
-const encode = (claim: Claim) => encodeClaimFields(digest, claim, PRIME).join(",");
+/// The same derivation the hasher uses, written out here so the test does not
+/// depend on the hasher to check the encoder.
+const text = (value: string) =>
+  BigInt(`0x${createHash("sha256").update(value, "utf8").digest("hex")}`) % PRIME;
+const encode = (claim: Claim) => encodeClaimFields(text, claim, PRIME).join(",");
 
 function rng(seed: number): () => number {
   let state = seed >>> 0;

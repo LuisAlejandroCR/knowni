@@ -2,8 +2,8 @@
 // (disciplinary), Contraloría (fiscal) and Contaduría (state debtors), reduced to one boolean
 // plus the snapshot it was read against.
 
-import type { FieldHash, StandingClaim } from "@knowni/core";
-import { utf8 } from "@knowni/core";
+import type { FieldHasher, StandingClaim } from "@knowni/core";
+
 import type { SourcePort, SourceResult, SubjectLookup } from "../../types.ts";
 import { degraded } from "../../types.ts";
 import type { CromaClient } from "../../providers/croma/client.ts";
@@ -33,14 +33,19 @@ function readVerdict(data: unknown, field: string): Verdict | undefined {
   return { listed, stamp: stampOf(record) };
 }
 
-export function listSetRoot(h: FieldHash, stamps: readonly string[]): string {
-  return h.hash("knowni/co-sanctions/v1", [
-    utf8(["procuraduria", "contraloria", "contaduria"].join("|")),
-    utf8(stamps.join("|")),
-  ]);
+/// A root that ends up inside a claim has to be an element of the field the
+/// claim is committed in. Computed with a byte hash it is 256 bits, and
+/// committing it refuses — so it is computed with the field hash instead.
+export function listSetRoot(h: FieldHasher, stamps: readonly string[]): string {
+  return h.toHex(
+    h.hashFields("sanctionsListSet", [
+      h.element(["procuraduria", "contraloria", "contaduria"].join("|")),
+      h.element(stamps.join("|")),
+    ]),
+  );
 }
 
-export function createSanctionsSource(client: CromaClient, h: FieldHash): SourcePort {
+export function createSanctionsSource(client: CromaClient, h: FieldHasher): SourcePort {
   return {
     id: "co-sanctions",
     jurisdiction: "CO",

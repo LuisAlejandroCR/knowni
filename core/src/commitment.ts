@@ -7,81 +7,32 @@ import { randomBytes } from "./random.ts";
 import type { Claim } from "./claims.ts";
 import type { FieldHash } from "./hash.ts";
 import { randomFieldElement } from "./field.ts";
-import { fromHex, u64be, utf8 } from "./hash.ts";
+import { encodeClaimFields } from "./claim-fields.ts";
+import type { FieldHasher } from "./field-hasher.ts";
+import { fromHex, u64be } from "./hash.ts";
 
 import { DOMAINS } from "./domains.ts";
 
-const CLAIM_DOMAIN = DOMAINS.claim;
 const OUTCOME_DOMAIN = DOMAINS.outcome;
 
 export interface Salt {
   readonly hex: string;
 }
 
-export function randomSalt(): Salt {
-  return { hex: toHex(randomBytes(32)) };
-}
-
-/// A salt that is an element of the field, for the commitments that will be
-/// built with a circuit's hash. `randomSalt` draws 32 bytes, which is 256 bits
-/// and does not fit a 254-bit field: encoding one refuses rather than reducing,
-/// so a salt has to be drawn in the field to begin with.
-export function randomFieldSalt(prime: bigint): Salt {
+/// A salt is an element of the field. Thirty-two random bytes are 256 bits and
+/// the field is 254: committing one refuses rather than reducing, so there is
+/// no second way to make a salt and this is it.
+export function randomSalt(prime: bigint): Salt {
   const value = randomFieldElement(prime);
   return { hex: value.toString(16).padStart(64, "0") };
 }
 
-function encodeClaim(claim: Claim): Uint8Array[] {
-  const head = [utf8(claim.kind), utf8(claim.jurisdiction), fromHex(claim.subjectRef.hex)];
-  switch (claim.kind) {
-    case "identity":
-      return [
-        ...head,
-        utf8(claim.documentKind),
-        u64be(claim.documentValid ? 1 : 0),
-        u64be(claim.subjectAlive ? 1 : 0),
-        u64be(claim.ofAge ? 1 : 0),
-        u64be(claim.attestedAt),
-      ];
-    case "income":
-      return [
-        ...head,
-        u64be(claim.monthlyMinor),
-        utf8(claim.currency),
-        utf8(claim.basis),
-        u64be(claim.periodsObserved),
-        u64be(claim.periodsWindow),
-        u64be(claim.attestedAt),
-      ];
-    case "formality":
-      return [
-        ...head,
-        u64be(claim.lastContributionMonth),
-        u64be(claim.monthsContributedLast12),
-        u64be(claim.attestedAt),
-      ];
-    case "standing":
-      return [
-        ...head,
-        u64be(claim.listed ? 1 : 0),
-        fromHex(claim.listSetRoot),
-        u64be(claim.attestedAt),
-      ];
-    case "capacity":
-      return [...head, u64be(claim.restricted ? 1 : 0), utf8(claim.basis), u64be(claim.attestedAt)];
-    case "assetStanding":
-      return [
-        ...head,
-        u64be(claim.registered ? 1 : 0),
-        u64be(claim.encumbered ? 1 : 0),
-        u64be(claim.finesOutstanding ? 1 : 0),
-        u64be(claim.attestedAt),
-      ];
-  }
-}
-
-export function commitClaim(h: FieldHash, claim: Claim, salt: Salt): string {
-  return h.hash(CLAIM_DOMAIN, [...encodeClaim(claim), fromHex(salt.hex)]);
+/// The claim as elements, then the salt, under the claim domain. The byte
+/// encoding below is what the sha256 hash used; this is the shape a circuit
+/// can reproduce, and `encodeClaimFields` is where it is decided.
+export function commitClaim(h: FieldHasher, claim: Claim, salt: Salt): string {
+  const fields = encodeClaimFields((value) => h.element(value), claim, h.prime);
+  return h.toHex(h.hashFields("claim", [...fields, h.fromHex(salt.hex, "salt")]));
 }
 
 export interface Outcome {

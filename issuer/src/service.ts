@@ -15,7 +15,7 @@ import {
 import { checkAccess, createMemoryRequestQuota, type AccessPolicy, type RequestQuota } from "./access.ts";
 import { createMemoryIssuanceCache, issuanceCacheKey, type IssuanceCache } from "./cache.ts";
 import { noNotifier, type Notifier } from "./notify.ts";
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash, sha256Hash } from "@knowni/core/node";
 import type { SessionRequest } from "@knowni/core";
 import { toHex } from "@knowni/core";
 import { attestResults, type AttestedAnswer } from "@knowni/attestation";
@@ -137,9 +137,13 @@ export async function issueAnswers(
   const subject = {
     documentKind: body.documentKind,
     documentNumber: body.documentNumber,
-    subjectRef: sha256Hash.hash("knowni/subject-ref/v1", [
-      new TextEncoder().encode(`${body.documentKind}:${body.documentNumber}`),
-    ]),
+    // An element, not a digest: this reference ends up inside a claim, and a
+    // claim is committed in the field. A 256-bit hash does not fit one.
+    subjectRef: poseidonHash.toHex(
+      poseidonHash.hashFields("subjectRef", [
+        poseidonHash.element(`${body.documentKind}:${body.documentNumber}`),
+      ]),
+    ),
   };
 
   // One task per consented source, all in flight at once. They were sequential
@@ -172,7 +176,7 @@ export async function issueAnswers(
 
   if (body.consented.includes("listas")) {
     tasks.push({ predicate: "sanctions", sourceId: "procuraduria+contraloria+contaduria", run: async () => {
-      const result = await createSanctionsSource(client, sha256Hash).fetch(subject, nowUnix);
+      const result = await createSanctionsSource(client, poseidonHash).fetch(subject, nowUnix);
       return answerOf(
         "sanctions",
         "procuraduria+contraloria+contaduria",

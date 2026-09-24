@@ -4,9 +4,9 @@
 
 import type { FormalityClaim, IdentityClaim, IncomeClaim, StandingClaim } from "../../src/claims.ts";
 
-export const SUBJECT_REF = "a".repeat(64);
-export const OTHER_REF = "b".repeat(64);
-export const LIST_ROOT = "c".repeat(64);
+export const SUBJECT_REF = "0a".repeat(32);
+export const OTHER_REF = "0b".repeat(32);
+export const LIST_ROOT = "0c".repeat(32);
 export const NOW = 1_760_000_000; // unix seconds
 export const DAY = 86_400;
 

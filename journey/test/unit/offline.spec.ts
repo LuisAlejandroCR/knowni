@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { SolvencyTier, deriveNullifier, sessionId, type SessionRequest } from "@knowni/core";
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash, sha256Hash } from "@knowni/core/node";
 import { issueClaimSet } from "@knowni/sources";
 import {
   acceptAnswer,
@@ -24,6 +24,8 @@ import { nodeSignatures } from "@knowni/attestation/node";
 import { createMemoryAnchor, createStellarMemoAnchor } from "@knowni/anchoring";
 
 const h = sha256Hash;
+/// El camino reclamo/Merkle hashea en elementos; el resto sigue en bytes.
+const fh = poseidonHash;
 const NOW = 1_760_000_000;
 const ISSUER = "co-operador-demo";
 const NOTARY = "notaria-17";
@@ -71,13 +73,13 @@ const answers: AttestedAnswer[] = [
 function issuedBeforehand() {
   const issuer = generateIssuerKeypair(nodeSignatures);
   const counterparty = generateIssuerKeypair(nodeSignatures);
-  const set = issueClaimSet(h, {
+  const set = issueClaimSet(fh, {
     issuerId: ISSUER,
     claims: [
       {
         kind: "capacity",
         jurisdiction: "CO",
-        subjectRef: { hex: "a".repeat(64) },
+        subjectRef: { hex: "0a".repeat(32) },
         restricted: false,
         basis: "insolvency_proceeding",
         attestedAt: NOW - 300,
@@ -108,7 +110,7 @@ function issuedBeforehand() {
 test("the wallet verifies its own credential with no network at all", () => {
   const { credential, registry } = issuedBeforehand();
   const result = withoutNetwork(() =>
-    verifyCredential(h, credential, { signatures: nodeSignatures, registry, nowUnix: NOW, maxRootAgeSeconds: ROOT_AGE }),
+    verifyCredential(fh, credential, { signatures: nodeSignatures, registry, nowUnix: NOW, maxRootAgeSeconds: ROOT_AGE }),
   );
   assert.deepEqual(result, { status: "valid" });
 });
@@ -138,7 +140,7 @@ test("a signed request is read and answered offline, and the counterparty accept
       revocation: live,
       policy: { maxSnapshotAgeSeconds: 3_600, onUnknown: "refuse" },
       nowUnix: NOW,
-      issuerRoot: "f".repeat(64),
+      issuerRoot: "0f".repeat(32),
       requiredPredicates: ["personhood", "capacity"],
     });
   });
@@ -187,7 +189,7 @@ test("an accepted answer needed no anchor, and says so by not carrying one", () 
       revocation: { stateOf: () => ({ status: "live", checkedAt: NOW - 30 }) },
       policy: { maxSnapshotAgeSeconds: 3_600, onUnknown: "refuse" },
       nowUnix: NOW,
-      issuerRoot: "f".repeat(64),
+      issuerRoot: "0f".repeat(32),
     }),
   );
   assert.equal(outcome.status, "accepted");
@@ -205,7 +207,7 @@ function attestedSession(sessionRequest: SessionRequest) {
       solvency: SolvencyTier.STRONG,
       formality: true as const,
       standing: true as const,
-      issuerRoots: ["f".repeat(64)],
+      issuerRoots: ["0f".repeat(32)],
       nullifier: deriveNullifier(h, { hex: "9".repeat(64) }, session),
     },
   };

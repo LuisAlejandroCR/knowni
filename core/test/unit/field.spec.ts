@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { randomBytes as nodeRandomBytes } from "node:crypto";
 import "../../src/node.ts";
 import { randomFieldElement } from "../../src/field.ts";
-import { randomFieldSalt } from "../../src/commitment.ts";
+import { randomSalt } from "../../src/commitment.ts";
 import { setRandomSource } from "../../src/random.ts";
 
 const BN254 = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001n;
@@ -24,7 +24,7 @@ test("every element drawn is in the field, for either field", () => {
 
 test("a salt is an element, written as 32 bytes of hex", () => {
   for (let i = 0; i < 100; i += 1) {
-    const salt = randomFieldSalt(BN254);
+    const salt = randomSalt(BN254);
     assert.equal(salt.hex.length, 64);
     assert.ok(BigInt(`0x${salt.hex}`) < BN254);
   }

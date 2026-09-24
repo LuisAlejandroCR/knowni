@@ -55,7 +55,7 @@ export type { MerkleProof, MerkleTree } from "./merkle.ts";
 export { buildMerkleTree, constantTimeEqualHex, hashLeaf, verifyInclusion } from "./merkle.ts";
 
 export type { Blinding, BlindedCommitment, Outcome, Salt } from "./commitment.ts";
-export { commitClaim, commitOutcome, randomFieldSalt, randomSalt, verifyOutcomeCommitment } from "./commitment.ts";
+export { commitClaim, commitOutcome, randomSalt, verifyOutcomeCommitment } from "./commitment.ts";
 export { CLAIM_WIDTH, encodeClaimFields } from "./claim-fields.ts";
 export { DOMAINS, type DomainName } from "./domains.ts";
 export {

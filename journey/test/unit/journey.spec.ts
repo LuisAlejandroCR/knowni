@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { SolvencyTier, commitOutcome, meetsAll, outcomeOf, verify, verifyInclusion, verifyOutcomeCommitment, type HeldClaims, type VerificationRequest } from "@knowni/core";
-import { sha256Hash } from "@knowni/core/node";
+import { poseidonHash, sha256Hash } from "@knowni/core/node";
 import {
   createListScreeningSource,
   createPilaFormalitySource,
@@ -20,6 +20,8 @@ import { createMemoryIndex } from "@knowni/retrieval";
 import { createMemoryAnchor, createStellarMemoAnchor, createAnchorRegistry } from "@knowni/anchoring";
 
 const h = sha256Hash;
+/// El camino reclamo/Merkle hashea en elementos; el resto sigue en bytes.
+const fh = poseidonHash;
 const NOW = 1_760_000_000; // 2025-10-09
 const NOW_MONTH = 202_510;
 const DAY = 86_400;
@@ -43,7 +45,7 @@ const SUBJECT = {
   documentNumber: ANA.documentNumber,
   // In the product this is H(documentKind, documentNumber, per-relying-party
   // salt); pinned here so the test is deterministic.
-  subjectRef: "7".repeat(64),
+  subjectRef: "07".repeat(32),
 };
 
 const LISTS = [
@@ -53,7 +55,7 @@ const LISTS = [
 
 async function issueForSubject(subject = ANA) {
   const pila = createSyntheticPilaClient([subject]);
-  const index = createMemoryIndex();
+  const index = createMemoryIndex(poseidonHash);
   await index.upsert(LISTS);
 
   const sources = [
@@ -74,7 +76,7 @@ async function issueForSubject(subject = ANA) {
 
   // One issuer, one published root. Padded to 1024 leaves so the root does
   // not tell an observer how many claims were written this round.
-  const issued = issueClaimSet(h, {
+  const issued = issueClaimSet(fh, {
     issuerId: "co-operador-pila",
     claims,
     issuedAt: NOW,
@@ -89,7 +91,7 @@ test("a tenant proves four things and the agency learns nothing else", async () 
   assert.equal(issued.size, 1024, "the published tree is padded");
 
   for (const credential of issued.credentials) {
-    assert.equal(verifyInclusion(h, credential.proof), true);
+    assert.equal(verifyInclusion(fh, credential.proof), true);
     assert.equal(credential.proof.root, issued.root);
   }
 

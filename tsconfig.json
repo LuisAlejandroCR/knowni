@@ -19,7 +19,8 @@
     "attestation/**/*.ts",
     "issuer/**/*.ts",
     "journey/**/*.ts",
-    "circuits/**/*.ts"
+    "circuits/**/*.ts",
+    "web/**/*.ts"
   ],
   "exclude": ["**/node_modules/**", "app/**"]
 }

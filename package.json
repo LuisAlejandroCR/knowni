@@ -16,7 +16,7 @@
     "issuer"
   ],
   "scripts": {
-    "test": "node --test --experimental-strip-types \"{core,sources,retrieval,anchoring,attestation,issuer,journey,circuits}/test/**/*.spec.ts\"",
+    "test": "node --test --experimental-strip-types \"{core,sources,retrieval,anchoring,attestation,issuer,journey,circuits,web}/test/**/*.spec.ts\"",
     "verify": "npm run lint && npm run typecheck && npm test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."

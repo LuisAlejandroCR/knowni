@@ -1780,6 +1780,21 @@ pedía sesión y el teléfono no podría bajarla; eligió el despliegue web. La 
 fijado. Es una llave de **desarrollo**: pública, de un solo contribuyente, y quien la generó puede
 forjar pruebas. Sirve para demostrar el camino, no para producción.
 
+### D-82 — La prueba en el teléfono tiene su propio banco, no se cuela en el recorrido · 2026-09-25
+
+*El problema:* el recorrido de la app es la compraventa de un vehículo, con respuestas atestiguadas
+por el emisor. El circuito prueba otro perfil —identidad, ingreso, formalidad, sanciones— y no hay
+reclamos reales de una persona para alimentarlo. Meter la prueba en el recorrido habría sido vestir
+un ejemplo de producto funcionando.
+
+*Qué se hizo:* una pantalla aparte, `/prueba` (`knowni://prueba`), que descarga la llave, prueba
+sobre `app/src/proof-fixture.ts` —generado del mismo fixture que usan las pruebas del circuito, con
+revisión de deriva en CI— y dice cuánto tardó. Solo informa éxito si las cuatro salidas son las del
+ejemplo; el sello y la nota dicen que son datos inventados y llave de desarrollo.
+
+*Para qué sirve:* es el banco para el criterio "generar y verificar una prueba Groth16 en el
+teléfono". Lo que falta es correrlo en un teléfono físico, con una build de desarrollo.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1875,6 +1890,7 @@ forjar pruebas. Sirve para demostrar el camino, no para producción.
 | 2026-09-25 | Prover nativo en Rust (`prover/`): el testigo coincide con el de snarkjs en los 12 693 valores, y snarkjs acepta la prueba nativa. Dos fallos silenciosos cerrados: las raíces de unidad de BLS12-381 difieren entre snarkjs (5) y arkworks (7), y `circom-prover` descarta las entradas escalares. Sin bindings móviles todavía — D-79. 5 pruebas del prover |
 | 2026-09-25 | El prover como módulo Expo: una llamada JSON por C (iOS) y JNI (Android), y un puerto en la app que responde `unsupported` en Expo Go y rechaza toda prueba incompleta. CI compila para Android y iOS; nunca corrido en un teléfono, y la zkey aún no llega al dispositivo — D-80. 8 pruebas del prover y 6 del puerto |
 | 2026-09-25 | La zkey se descarga una vez a los documentos de la app, y Rust comprueba su SHA-256 antes de leerla; un `zkey_mismatch` borra y descarga una sola vez más. Publicada en el despliegue web — D-81. 9 pruebas del prover y 18 de la app sobre el prover |
+| 2026-09-25 | Banco `/prueba`: el teléfono descarga la llave, prueba sobre un ejemplo generado del fixture del circuito y dice cuánto tardó. Fuera del recorrido, porque el recorrido es otro perfil y no hay reclamos reales para el circuito — D-82. 77 pruebas de la app |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

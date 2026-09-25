@@ -50,7 +50,7 @@ export async function proveWithDeviceKey(
   files: KeyFiles,
   input: Readonly<Record<string, string | readonly string[]>>,
   url: string | undefined,
-): Promise<ProveOutcome | KeyState> {
+): Promise<ProveOutcome | Exclude<KeyState, { kind: "ready" }>> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const state = await ensureProvingKey(files, url);
     if (state.kind !== "ready") return state;

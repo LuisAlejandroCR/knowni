@@ -101,6 +101,8 @@ jobs:
         run: |
           node --experimental-strip-types tools/write-eligibility-input.ts bls12381 > /tmp/bls/input.json
           npx --yes snarkjs@0.7.5 wtns calculate             /tmp/bls/eligibility_js/eligibility.wasm /tmp/bls/input.json /tmp/bls/eligibility.wtns
+      - name: check the app's proof fixture was generated, not typed
+        run: node --experimental-strip-types circuits/tools/write-app-fixture.ts | diff - app/src/proof-fixture.ts
       - name: check the Soroban proof fixture was generated from the committed proof
         run: |
           node --experimental-strip-types circuits/tools/write-soroban-proof.ts             | diff - contracts/knowni-verifier/src/real_proof.rs

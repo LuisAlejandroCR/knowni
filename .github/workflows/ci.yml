@@ -6,8 +6,62 @@ on:
   push:
     branches: [main]
   pull_request:
+  # The iOS build runs only from here: a macOS minute costs ten Linux ones.
+  workflow_dispatch:
+
+# A newer push to the same branch makes the older run worthless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  # Which heavy jobs this change can affect. The Node suite always runs; the
+  # circuit, prover, contract and app jobs run only when their inputs move.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      circuits: ${{ steps.filter.outputs.circuits }}
+      prover: ${{ steps.filter.outputs.prover }}
+      contract: ${{ steps.filter.outputs.contract }}
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared: &shared
+              - '.github/workflows/**'
+              - 'package.json'
+              - 'package-lock.json'
+            circuits:
+              - *shared
+              - 'circuits/**'
+              - 'core/**'
+              - 'app/src/proof-fixture.ts'
+              - 'contracts/knowni-verifier/src/real_proof.rs'
+            prover:
+              - *shared
+              - 'prover/**'
+              - 'circuits/**'
+              - 'core/**'
+              - 'web/public/keys/**'
+            contract:
+              - *shared
+              - 'contracts/**'
+              - 'circuits/groth16/**'
+              - 'circuits/eligibility.signals.txt'
+            app:
+              - *shared
+              - 'app/**'
+              - 'core/**'
+              - 'attestation/**'
+              - 'anchoring/**'
+              - 'issuer/**'
+              - 'sources/**'
+              - 'circuits/groth16/**'
+              - 'web/public/keys/**'
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -29,10 +83,18 @@ jobs:
   # The signal order the contract asserts against is written by the Circom
   # compiler, so CI regenerates it and refuses a fixture that has drifted.
   circuits:
+    needs: changes
+    if: needs.changes.outputs.circuits == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo install --locked --git https://github.com/iden3/circom.git --tag v2.2.3 circom
+      - uses: actions/cache@v4
+        id: circom
+        with:
+          path: ~/.cargo/bin/circom
+          key: circom-v2.2.3-${{ runner.os }}
+      - if: steps.circom.outputs.cache-hit != 'true'
+        run: cargo install --locked --git https://github.com/iden3/circom.git --tag v2.2.3 circom
       - run: git clone --depth 1 https://github.com/iden3/circomlib.git /tmp/circomlib
       - uses: actions/setup-node@v4
         with:
@@ -121,12 +183,23 @@ jobs:
   # Rust, and snarkjs verifying it against the zkey's own key. Two different
   # implementations agreeing is the only check that means anything here.
   prover:
+    needs: changes
+    if: needs.changes.outputs.prover == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: cargo install --locked --git https://github.com/iden3/circom.git --tag v2.2.3 circom
+      - uses: actions/cache@v4
+        id: circom
+        with:
+          path: ~/.cargo/bin/circom
+          key: circom-v2.2.3-${{ runner.os }}
+      - if: steps.circom.outputs.cache-hit != 'true'
+        run: cargo install --locked --git https://github.com/iden3/circom.git --tag v2.2.3 circom
       - run: git clone --depth 1 https://github.com/iden3/circomlib.git /tmp/circomlib
       - run: sudo apt-get install -y cmake clang
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: prover
       - uses: actions/setup-node@v4
         with:
           node-version: '22.18.0'
@@ -153,6 +226,7 @@ jobs:
   # Expo module vendors. Only macOS has xcodebuild.
   prover-ios:
     needs: prover
+    if: github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -166,9 +240,14 @@ jobs:
           KNOWNI_WITNESS_WASM_DIR: /tmp/groth16/eligibility_js
 
   contract:
+    needs: changes
+    if: needs.changes.outputs.contract == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: contracts/knowni-verifier
       # `Cargo.lock` está versionado a propósito: `soroban-env-host` pide
       # `ed25519-dalek >= 2.0.0`, sin techo, y la 3.0.0 no compila con él.
       - run: rustup target add wasm32-unknown-unknown
@@ -178,6 +257,8 @@ jobs:
         working-directory: contracts/knowni-verifier
 
   app:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

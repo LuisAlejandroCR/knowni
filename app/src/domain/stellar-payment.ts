@@ -103,6 +103,30 @@ function crc16(data: Uint8Array): number {
   return crc & 0xffff;
 }
 
+function base32Encode(bytes: Uint8Array): string {
+  let bits = 0;
+  let value = 0;
+  let output = "";
+  for (const byte of bytes) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) output += BASE32[(value << (5 - bits)) & 31];
+  return output;
+}
+
+// The `G…` account id of an ed25519 public key: version byte, key, CRC16.
+export function accountIdOf(publicKey: Uint8Array): string {
+  if (publicKey.length !== 32) throw new TypeError("invalid public key");
+  const body = concat(Uint8Array.of(6 << 3), publicKey);
+  const crc = crc16(body);
+  return base32Encode(concat(body, Uint8Array.of(crc & 0xff, crc >>> 8)));
+}
+
 function accountKey(accountId: string): Uint8Array {
   const raw = base32Decode(accountId);
   if (raw.length !== 35 || raw[0] !== 6 << 3) throw new TypeError("invalid account");

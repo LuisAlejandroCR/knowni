@@ -10,8 +10,9 @@ export interface PayerWalletPort {
   // not been connected yet, not an empty one.
   accountId(): Promise<string | undefined>;
   connect(): Promise<string | undefined>;
-  // The payload follows signingMethod: a hex transaction hash for Privy or an
-  // unsigned base64 envelope for Freighter. The caller validates the result.
+  // The payload follows signingMethod: a hex transaction hash for Privy or the
+  // device keypair, or an unsigned base64 envelope for Freighter. The caller
+  // validates the result.
   signTransaction(unsignedXdr: string): Promise<string | undefined>;
   disconnect(): Promise<void>;
 }

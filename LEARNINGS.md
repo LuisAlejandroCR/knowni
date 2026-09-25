@@ -12,7 +12,7 @@
 **Fecha límite:** `—` (hackathon Stellar, fecha ⏳ pendiente)
 **Alias calendario:** `—`
 **URL:** —
-**Última actualización de este archivo:** `2026-09-20`
+**Última actualización de este archivo:** `2026-09-25`
 
 ---
 
@@ -25,6 +25,12 @@ regional. La restricción que lo define: **el dato no sale del dispositivo**, y 
 nativo y prohíbe cualquier atajo de servidor.
 
 ## 1. ¿Qué aprendí que no sabía antes de empezarlo?
+
+- `2026-09-25` — En un pitch técnico, movimiento útil significa causalidad
+  visual: documentos entran, respuestas salen, una historia avanza. Si una
+  animación no cambia qué mira primero el jurado, es ruido. La versión con
+  movimiento reducido es una prueba de esa regla: la tesis debe sobrevivir
+  completa cuando todo queda quieto.
 
 - `2026-09-20` — La curva embebida de BLS12-381 es **Jubjub**, la misma sobre la que estaba escrito
   el Schnorr del proyecto ZK anterior para Midnight. Stellar verifica BLS12-381 nativamente desde CAP-0059

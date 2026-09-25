@@ -75,8 +75,10 @@ firma el hash de la transacción como `raw_hash`, que es exactamente lo que Stel
 queda **no es el app id**:
 
 1. `EXPO_PUBLIC_PRIVY_RP` — un dominio HTTPS que sirva `apple-app-site-association` y
-   `assetlinks.json`. Vacío, `loginWithPasskey` no tiene contra qué validar. Puede ser el mismo
-   dominio de 2c, y entonces una sola página estática cierra los dos.
+   `assetlinks.json`. Vacío, `loginWithPasskey` no tiene contra qué validar. **El sitio ya está
+   escrito**: `web/`, y es el mismo dominio de 2c. Faltan dos valores que no están en el
+   repositorio: `KNOWNI_APPLE_TEAM_ID` y `KNOWNI_ANDROID_CERT_SHA256` —la huella del certificado
+   con el que se firma el build que se instala, la de Play si hay Play App Signing—.
 2. Un dev build. Expo Go no carga `@privy-io/expo/passkey` ni `extended-chains`: son nativos.
 
 Y hay un rodeo, si el passkey estorba: un adaptador de keypair local detrás del mismo
@@ -84,11 +86,16 @@ Y hay un rodeo, si el passkey estorba: un adaptador de keypair local detrás del
 produce su propia transacción* y deja pendiente solo *con una wallet real*. Cambiar de adaptador
 después no toca el recorrido.
 
-### 2c. Servir el documento de registro por HTTPS — **falta una URL**
+### 2c. Servir el documento de registro por HTTPS — **el sitio existe; falta desplegarlo**
 
-El ancla ya es real. Lo que falta del camino web de A3 es publicar el JSON firmado en algún sitio:
-en el ejercicio se sirvió desde memoria, y `docs/verificacion.md` lo dice así. Una página estática
-basta; `attestation/tools/publish-registry.ts` imprime el documento y su digest.
+El ancla ya es real. Lo que falta del camino web de A3 es publicar el JSON firmado: en el ejercicio
+se sirvió desde memoria, y `docs/verificacion.md` lo dice así.
+
+`web/` es ese sitio, para Vercel: Root Directory `web`, Output Directory `public`, **sin build
+command y sin una sola variable de entorno**. Eso último es deliberado — el documento lo firma
+`KNOWNI_REGISTRY_SEED`, y firmarlo en el build del proveedor pondría la semilla en su CDN. Se firma
+en local con `attestation/tools/publish-registry.ts`, `web/build.ts` deja el resultado en `public/`,
+y se commitea. `web/README.md` tiene los tres pasos en orden.
 
 ### 3. El sobrecoste de restricciones — **cerrado; lo que queda es el margen**
 

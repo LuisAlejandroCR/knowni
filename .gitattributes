@@ -1,1 +1,2 @@
 *.zkey binary
+*.sh text eol=lf

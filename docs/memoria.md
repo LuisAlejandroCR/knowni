@@ -1795,6 +1795,29 @@ ejemplo; el sello y la nota dicen que son datos inventados y llave de desarrollo
 *Para qué sirve:* es el banco para el criterio "generar y verificar una prueba Groth16 en el
 teléfono". Lo que falta es correrlo en un teléfono físico, con una build de desarrollo.
 
+### D-83 — El contrato desplegado en testnet verifica la prueba real · 2026-09-25
+
+*Qué se hizo:* `contracts/knowni-verifier/tools/testnet.sh` despliega el verificador en Stellar
+testnet con la llave de verificación de desarrollo en el constructor, registra la raíz del emisor
+del fixture y llama `anchor` con la prueba comprometida. La red corrió el emparejamiento:
+
+- contrato `CAGZRVSLNFIFHZHLVA34422YGAUBRXMP37IDXPWOIKCQQIEQGBAL3O6U`;
+- `anchor` en `0db7a4790d02c3277877ef4b9e79b3449004735928cb73b192bc7694003b0191`, ledger 4866679,
+  `successful: true` en Horizon, evento `anchored` y `spent(nullifier) = true`;
+- simulado contra la red, sin enviar: la misma prueba otra vez → `#6` (nulificador gastado); una
+  señal pública alterada contra un despliegue gemelo sin gastar (`CAIITJ…`) → `#4` (prueba inválida).
+
+Los argumentos salen de `circuits/tools/soroban-encoding.ts`, la misma codificación que genera
+`real_proof.rs`, así que la prueba de `cargo test` y la de la red son los mismos bytes.
+
+*Lo que encontró:* el `.wasm` que CI construía para `wasm32-unknown-unknown` no se podía desplegar.
+El Rust reciente emite *reference types* para ese target y la red rechaza la subida
+(`reference-types not enabled`). Compilaba desde el 2026-09-23 y nunca se había intentado subir. El
+target correcto es `wasm32v1-none`; CI lo usa ahora.
+
+*Lo que no cierra:* la llave es de desarrollo; la transacción salió del portátil, no del teléfono; y
+el recorrido de la app no llama a este contrato. Son los pendientes 1 y 3, no este.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1891,6 +1914,7 @@ teléfono". Lo que falta es correrlo en un teléfono físico, con una build de d
 | 2026-09-25 | El prover como módulo Expo: una llamada JSON por C (iOS) y JNI (Android), y un puerto en la app que responde `unsupported` en Expo Go y rechaza toda prueba incompleta. CI compila para Android y iOS; nunca corrido en un teléfono, y la zkey aún no llega al dispositivo — D-80. 8 pruebas del prover y 6 del puerto |
 | 2026-09-25 | La zkey se descarga una vez a los documentos de la app, y Rust comprueba su SHA-256 antes de leerla; un `zkey_mismatch` borra y descarga una sola vez más. Publicada en el despliegue web — D-81. 9 pruebas del prover y 18 de la app sobre el prover |
 | 2026-09-25 | Banco `/prueba`: el teléfono descarga la llave, prueba sobre un ejemplo generado del fixture del circuito y dice cuánto tardó. Fuera del recorrido, porque el recorrido es otro perfil y no hay reclamos reales para el circuito — D-82. 77 pruebas de la app |
+| 2026-09-25 | El verificador, desplegado en testnet, acepta la prueba Groth16 real: `anchor` en `0db7a479…` gasta el nulificador; una señal alterada da `#4` en la red. Y el `.wasm` de CI no era desplegable: `wasm32-unknown-unknown` emite *reference types*; pasa a `wasm32v1-none` — D-83 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real
@@ -1903,7 +1927,7 @@ menos una vez.
 | Croma REST | ✅ **ejercido el 2026-09-20**: `/catalog` (200), 16 rutas sondeadas con cuerpo vacío (400/404) y `/co/rues/entities-by-name/v1` (200) sobre una empresa pública. Ninguna llamada sobre una persona |
 | Stellar Horizon / RPC | ✅ **ejercido el 2026-09-20**: cuenta creada con friendbot y transacción `0dc0fdf4…` aceptada en el ledger 4783364 |
 | Pago en USDC de punta a punta | ✅ **ejercido el 2026-09-22**: el XDR construido a mano por `stellar-payment.ts` —activo de crédito, `MEMO_HASH`, firma por hash crudo— aceptado por Horizon en `fb64700b…`, y `verifyPayment` lo acepta de vuelta. Con un activo `USDC` emitido para la prueba, porque el USDC de Circle no se puede acuñar. Falta la firma real de Privy, que necesita un app id |
-| Contrato Soroban | ⚠️ **compila desde el 2026-09-23**; desde el 2026-09-25 verifica una prueba Groth16 real en `cargo test` (15 pruebas), contra el host BLS12-381 del SDK. Nunca desplegado |
+| Contrato Soroban | ✅ **desplegado en testnet el 2026-09-25** (`CAGZRVSL…`) y verificó la prueba Groth16 real en la red: `anchor` en `0db7a479…` — D-83. Llave de desarrollo |
 | Circom / snarkjs | ✅ **ejercido el 2026-09-25**: prueba Groth16 sobre BLS12-381 generada con snarkjs 0.7.5 y verificada en Node y en el contrato — D-78. Llave de desarrollo; nunca generada en el teléfono |
 | Registro anclado en cadena | ✅ **ejercido el 2026-09-24**: digest del documento firmado en `MEMO_HASH` de `66bf1b7d…`, leído de vuelta por `createStellarRegistryReader` y aceptado por `createChainRegistry`. El documento se sirvió desde memoria; publicarlo por HTTPS sigue pendiente |
 | Teléfono físico | ⏳ nunca ejecutado |

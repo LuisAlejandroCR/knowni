@@ -45,6 +45,11 @@ test("a key that fails its digest is its own reason, so the caller can refetch",
   assert.deepEqual(outcome, { kind: "failed", reason: "zkey_mismatch" });
 });
 
+test("a module whose native library is missing from the build is unsupported, not failed", async () => {
+  const outcome = await createNativeProver(answering({ error: "libknowni_prover.so is not in this build", code: "unsupported" })).prove({}, KEY);
+  assert.deepEqual(outcome, { kind: "unsupported" });
+});
+
 test("a native error is a failure that does not carry the native text", async () => {
   const outcome = await createNativeProver(answering({ error: "opening /data/user/0/co.knowni/eligibility.zkey" })).prove({}, KEY);
   assert.deepEqual(outcome, { kind: "failed", reason: "prover_error" });

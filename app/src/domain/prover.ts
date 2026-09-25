@@ -79,6 +79,8 @@ export function createNativeProver(native: NativeProver | undefined): ProverPort
       // The native error text can name a file path; it stays on the device.
       // Only the code travels, and only the one a caller can act on.
       if (typeof error === "string") {
+        // The module is linked but its native library is not in this build.
+        if (code === "unsupported") return { kind: "unsupported" };
         return { kind: "failed", reason: code === "zkey_mismatch" ? "zkey_mismatch" : "prover_error" };
       }
 

@@ -10,15 +10,20 @@ record that the nullifier is spent.
 
 ## Status
 
-**Compiles, its policy is tested, and it verifies a real proof. Not deployed.**
+**Deployed on testnet, and it verified a real proof there.** Contract
+`CAGZRVSLNFIFHZHLVA34422YGAUBRXMP37IDXPWOIKCQQIEQGBAL3O6U`; the `anchor` call is
+transaction `0db7a479…` (D-83). `tools/testnet.sh` reproduces it. Build for
+**`wasm32v1-none`**: recent Rust emits reference types for
+`wasm32-unknown-unknown`, and the network refuses that upload.
+
+**Its policy is tested, and it verifies a real proof in `cargo test` too.**
 `cargo test` runs fifteen tests. Eleven cover the three rules below and are
 refused *before* the pairing, which is the order the contract promises. Four,
 in `test_real_proof.rs`, run a real Groth16 proof over BLS12-381 from
 `circuits/tools/groth16.sh` through `anchor`: it verifies, spends its
 nullifier, is refused as a replay, and fails the pairing when a point or an
-unread signal is changed. The key is a development key. No fee,
-proof-verification time or deployment address is claimed anywhere in this
-repository.
+unread signal is changed. The key is a development key. No fee or
+proof-verification time is claimed anywhere in this repository.
 
 `Cargo.lock` is committed. `soroban-env-host` asks for `ed25519-dalek
 >= 2.0.0` with no upper bound, and 3.0.0 does not compile against it — an

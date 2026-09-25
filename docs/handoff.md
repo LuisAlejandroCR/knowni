@@ -69,6 +69,8 @@ teléfono del humano; no hay forma de hacerlo desde aquí.
 
 ### 2b. Wallets reales y una transacción del teléfono (A10) — **falta un dominio y un dev build**
 
+Guía de llaves y comprobación de firma: `docs/wallets.md`.
+
 El pago en USDC ya se ejerció contra la testnet (`fb64700b…`), pero con una firma construida aquí.
 `EXPO_PUBLIC_PRIVY_APP_ID` ya existe (2026-09-25), y el adaptador está completo: `wallet-privy.ts`
 firma el hash de la transacción como `raw_hash`, que es exactamente lo que Stellar firma. Lo que

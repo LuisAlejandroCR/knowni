@@ -6,6 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { payQuote, type PaymentTerms } from "../../src/domain/stellar-payment.ts";
 import type { PayerWalletPort } from "../../src/domain/wallet-port.ts";
+import { SIGNER_ACCOUNT, signEnvelope, signHash } from "../support/signer.ts";
 
 const ACCOUNT = "GAZONAKJ7XIJVQI37HR2ZZKMQIISUIFAYXVCXJOCXVGQQNGM24BF2UZD";
 const terms: PaymentTerms = {
@@ -16,16 +17,16 @@ const terms: PaymentTerms = {
   paymentRef: "ab".repeat(32),
 };
 
-function privy(signature: string | null = "11".repeat(64)): PayerWalletPort {
+function privy(signs = true): PayerWalletPort {
   return {
     id: "privy",
     label: "Privy",
     signingMethod: "raw_hash",
-    accountId: async () => ACCOUNT,
-    connect: async () => ACCOUNT,
+    accountId: async () => SIGNER_ACCOUNT,
+    connect: async () => SIGNER_ACCOUNT,
     signTransaction: async (hash) => {
       assert.match(hash, /^[0-9a-f]{64}$/);
-      return signature ?? undefined;
+      return signs ? signHash(hash) : undefined;
     },
     disconnect: async () => {},
   };
@@ -34,7 +35,7 @@ function privy(signature: string | null = "11".repeat(64)): PayerWalletPort {
 test("Privy signs the transaction hash and Horizon receives only a signed envelope", async () => {
   let submitted = "";
   const fetchImpl = (async (url: string | URL | Request, init?: RequestInit) => {
-    if (String(url).endsWith(`/accounts/${ACCOUNT}`)) {
+    if (String(url).endsWith(`/accounts/${SIGNER_ACCOUNT}`)) {
       return new Response(JSON.stringify({ sequence: "7" }), { status: 200 });
     }
     submitted = String(init?.body);
@@ -45,7 +46,6 @@ test("Privy signs the transaction hash and Horizon receives only a signed envelo
   assert.match(submitted, /^tx=/);
   const xdr = Buffer.from(decodeURIComponent(submitted.slice(3)), "base64");
   assert.ok(xdr.includes(Buffer.from(terms.paymentRef, "hex")));
-  assert.ok(!submitted.includes("11".repeat(64)));
 });
 
 test("an expired quote is refused before account lookup or signature", async () => {
@@ -67,7 +67,7 @@ test("an expired quote is refused before account lookup or signature", async () 
 test("wallet rejection and an unfunded account remain distinct", async () => {
   const account = (async () => new Response(JSON.stringify({ sequence: "7" }), { status: 200 })) as typeof fetch;
   assert.deepEqual(
-    await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: privy(null), fetchImpl: account }),
+    await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: privy(false), fetchImpl: account }),
     { status: "failed", reason: "wallet_rejected" },
   );
   const missing = (async () => new Response("{}", { status: 404 })) as typeof fetch;
@@ -82,15 +82,9 @@ test("Freighter signs the unsigned envelope and cannot swap the transaction", as
     id: "freighter",
     label: "Freighter",
     signingMethod: "envelope",
-    accountId: async () => ACCOUNT,
-    connect: async () => ACCOUNT,
-    signTransaction: async (unsigned) => {
-      const bytes = Buffer.from(unsigned, "base64");
-      const count = Buffer.from([0, 0, 0, 1]);
-      const hint = Buffer.alloc(4);
-      const length = Buffer.from([0, 0, 0, 64]);
-      return Buffer.concat([bytes.subarray(0, -4), count, hint, length, Buffer.alloc(64, 7)]).toString("base64");
-    },
+    accountId: async () => SIGNER_ACCOUNT,
+    connect: async () => SIGNER_ACCOUNT,
+    signTransaction: async (unsigned) => signEnvelope(unsigned),
     disconnect: async () => {},
   };
   let calls = 0;
@@ -116,4 +110,72 @@ test("an invalid payment reference is never sent for signature", async () => {
     { status: "failed", reason: "invalid_terms" },
   );
   assert.equal(signed, false);
+});
+
+// A signature nobody checks is only discovered when Horizon refuses it, and then
+// the wallet's fault reads as the network's. These pin that it is caught first.
+const OTHER_SEED = new Uint8Array(32).fill(9);
+
+function submitCounter() {
+  let submissions = 0;
+  const fetchImpl = (async (url: string | URL | Request) => {
+    if (String(url).includes("/accounts/")) return new Response(JSON.stringify({ sequence: "7" }), { status: 200 });
+    submissions += 1;
+    return new Response(JSON.stringify({ hash: "cd".repeat(32) }), { status: 200 });
+  }) as typeof fetch;
+  return { fetchImpl, submissions: () => submissions };
+}
+
+test("a raw-hash signature from another key is refused before Horizon", async () => {
+  const horizon = submitCounter();
+  const wallet = { ...privy(), signTransaction: async (hash: string) => signHash(hash, OTHER_SEED) };
+  assert.deepEqual(await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet, fetchImpl: horizon.fetchImpl }), {
+    status: "failed",
+    reason: "wallet_rejected",
+  });
+  assert.equal(horizon.submissions(), 0);
+});
+
+test("a raw-hash signature over a different hash is refused too", async () => {
+  const horizon = submitCounter();
+  const wallet = { ...privy(), signTransaction: async () => signHash("00".repeat(32)) };
+  assert.deepEqual(await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet, fetchImpl: horizon.fetchImpl }), {
+    status: "failed",
+    reason: "wallet_rejected",
+  });
+  assert.equal(horizon.submissions(), 0);
+});
+
+test("a Freighter envelope signed by another account is refused before Horizon", async () => {
+  const horizon = submitCounter();
+  const wallet: PayerWalletPort = {
+    ...privy(),
+    id: "freighter",
+    signingMethod: "envelope",
+    signTransaction: async (unsigned) => signEnvelope(unsigned, OTHER_SEED),
+  };
+  assert.deepEqual(await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet, fetchImpl: horizon.fetchImpl }), {
+    status: "failed",
+    reason: "wallet_rejected",
+  });
+  assert.equal(horizon.submissions(), 0);
+});
+
+test("a Freighter envelope with the payer's hint but a forged signature is refused", async () => {
+  const horizon = submitCounter();
+  const wallet: PayerWalletPort = {
+    ...privy(),
+    id: "freighter",
+    signingMethod: "envelope",
+    signTransaction: async (unsigned) => {
+      const signed = Buffer.from(signEnvelope(unsigned), "base64");
+      signed[signed.length - 1]! ^= 1;
+      return signed.toString("base64");
+    },
+  };
+  assert.deepEqual(await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet, fetchImpl: horizon.fetchImpl }), {
+    status: "failed",
+    reason: "wallet_rejected",
+  });
+  assert.equal(horizon.submissions(), 0);
 });

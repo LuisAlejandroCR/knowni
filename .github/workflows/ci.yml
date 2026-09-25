@@ -129,7 +129,11 @@ jobs:
         with:
           node-version: '22.18.0'
       - run: npm install
-      - run: WORK=/tmp/groth16 bash circuits/tools/groth16.sh /tmp/circomlib/circuits
+      # The published key, not a fresh setup: it is what the phone downloads,
+      # and its verifying key must be the one the contract tests pin.
+      - run: WORK=/tmp/groth16 ZKEY=web/public/keys/eligibility-dev.zkey bash circuits/tools/groth16.sh /tmp/circomlib/circuits
+      - name: the published key is the committed verifying key
+        run: git diff --exit-code circuits/groth16/verification_key.json
       - run: bash prover/tools/check.sh /tmp/groth16
       # The runner ships an NDK; the .so must cross-compile, witness included.
       - name: cross-compile the prover for Android

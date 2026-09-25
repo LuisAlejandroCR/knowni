@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<!-- index.html: el pitch de Knowni para un jurado, en una sola página.
-     El orden lo fija docs/plan.md → W1-W7: promesa, frontera, recorrido,
-     recibos, lo que falta y cierre. Se recorre con scroll y cada sección
-     tiene ancla, porque un jurado enlaza, no pagina.
+<!-- index.html: el pitch de Knowni contado con dibujos, en una sola página.
+     El orden lo fija docs/plan.md -> W1-W7. Los diagramas son HTML y CSS, no
+     imagenes: el texto sigue siendo texto, reflue en un telefono estrecho y
+     aguanta el zoom al 500% que responsive.md exige.
      Tokens de app/src/theme.ts; contraste comprobado por
-     web/test/unit/contrast.spec.ts; reglas de pantalla de responsive.md.
-     Sin JavaScript y sin peticiones a terceros (W7). Ver web/DESIGN.md. -->
+     web/test/unit/contrast.spec.ts. Sin JavaScript y sin peticiones a
+     terceros (W7): el QR se genera con web/tools/write-qr.ts y se sirve de
+     aqui. Ver web/DESIGN.md. -->
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex" />
     <meta name="theme-color" content="#193e36" />
-    <meta name="description" content="Knowni — demuestra que puedes firmar, sin entregar quién eres. Registros consentidos convertidos en respuestas verificables." />
+    <meta name="description" content="Knowni — demuestra que puedes firmar, sin entregar quién eres." />
     <title>Knowni — demuestra que puedes firmar</title>
     <style>
       :root {
@@ -32,99 +33,124 @@
         margin: 0; padding: var(--s-lg) var(--s-md) var(--s-xl);
         background: var(--page); color: var(--ink);
         font: 15px/22px ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        display: flex; justify-content: center;
+        -webkit-font-smoothing: antialiased; display: flex; justify-content: center;
       }
       main { width: 100%; max-width: 30rem; min-width: 0; }
 
       .brand { display: flex; align-items: center; gap: var(--s-sm); margin-bottom: var(--s-xl); }
-      .mark {
-        width: 34px; height: 34px; flex: none; border-radius: var(--r-icon);
-        background: var(--deep); color: var(--lime);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 16px; font-weight: 800; letter-spacing: -0.04em;
-      }
+      .mark { width: 34px; height: 34px; flex: none; border-radius: var(--r-icon);
+        background: var(--deep); color: var(--lime); display: flex; align-items: center;
+        justify-content: center; font-size: 16px; font-weight: 800; letter-spacing: -0.04em; }
       .brand b { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
 
       section { margin-bottom: var(--s-xl); scroll-margin-top: var(--s-md); }
-      .eyebrow {
-        font-size: 11px; letter-spacing: 1.8px; font-weight: 700;
-        text-transform: uppercase; color: var(--ink-soft); margin: 0 0 var(--s-sm);
-      }
+      .eyebrow { font-size: 11px; letter-spacing: 1.8px; font-weight: 700; text-transform: uppercase;
+        color: var(--ink-soft); margin: 0 0 var(--s-sm); }
       h1 { font-size: 30px; line-height: 34px; letter-spacing: -1.3px; font-weight: 800; margin: 0 0 var(--s-md); }
       h2 { font-size: 20px; line-height: 25px; letter-spacing: -0.5px; font-weight: 800; margin: 0 0 var(--s-sm); }
-      h3 { font-size: 11px; letter-spacing: 1.3px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 var(--s-sm); }
+      h3 { font-size: 11px; letter-spacing: 1.3px; font-weight: 700; text-transform: uppercase;
+        color: var(--ink-soft); margin: 0 0 var(--s-sm); }
       p { margin: 0 0 var(--s-md); }
       .lede { color: var(--ink-soft); }
 
-      .card {
-        background: var(--card); border: 1px solid var(--line);
-        border-radius: var(--r-card); padding: var(--s-md); margin-bottom: var(--s-md);
-      }
+      .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
+        padding: var(--s-md); margin-bottom: var(--s-md); }
       .card:last-child { margin-bottom: 0; }
-      .card > p:last-child, .card > ul:last-child { margin-bottom: 0; }
+      .card > :last-child { margin-bottom: 0; }
 
-      ul { margin: 0 0 var(--s-md); padding: 0; list-style: none; }
-      li { padding: var(--s-sm) 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; }
-      li:first-child { border-top: 0; padding-top: 0; }
-      li:last-child { padding-bottom: 0; }
-      li b { display: block; }
-      li span { color: var(--ink-soft); font-size: 13px; line-height: 19px; }
+      /* --- El dibujo principal: quien habla con quien --- */
+      .flow { display: grid; gap: var(--s-xs); }
+      .node { display: flex; align-items: center; gap: var(--s-sm);
+        border: 1px solid var(--line); border-radius: var(--r-button); padding: var(--s-sm) var(--s-md); }
+      .node.seal { background: var(--deep); border-color: var(--deep); color: var(--canvas); }
+      .node.seal small { color: var(--lime); }
+      .node b { font-size: 14px; }
+      .node small { display: block; font-size: 12px; line-height: 17px; color: var(--ink-soft); }
+      .node i { flex: none; width: 26px; height: 26px; border-radius: var(--r-pill);
+        background: var(--lime-soft); color: var(--deep); display: flex; align-items: center;
+        justify-content: center; font-style: normal; font-size: 13px; font-weight: 800; }
+      .node.seal i { background: var(--lime); color: var(--deep); }
+      .arrow { text-align: center; color: var(--ink-soft); font-size: 15px; line-height: 15px; }
+      .cut { display: flex; align-items: center; gap: var(--s-sm); margin-top: var(--s-sm);
+        border: 1px dashed var(--amber-line); border-radius: var(--r-button);
+        padding: var(--s-sm) var(--s-md); background: var(--amber); color: var(--amber-ink); }
+      .cut b { font-size: 13px; }
+      .cut i { flex: none; font-style: normal; font-size: 15px; font-weight: 800; }
 
-      ol { margin: 0; padding: 0; list-style: none; counter-reset: paso; }
-      ol li { counter-increment: paso; display: flex; gap: var(--s-sm); padding: var(--s-md) 0; }
-      ol li::before {
-        content: counter(paso); flex: none;
-        width: 24px; height: 24px; border-radius: var(--r-pill);
-        background: var(--lime-soft); color: var(--deep);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 12px; font-weight: 800;
-      }
-      ol li div { min-width: 0; }
-
-      .ans {
-        display: inline-flex; align-items: center; gap: 5px;
-        border-radius: var(--r-pill); padding: 3px 10px;
-        font-size: 12px; font-weight: 700;
-      }
+      /* --- El sello: lo que va dentro y lo que no --- */
+      .rows { margin: 0; padding: 0; list-style: none; }
+      .rows li { display: flex; align-items: center; gap: var(--s-sm); padding: var(--s-sm) 0;
+        border-top: 1px solid var(--line); font-size: 14px; }
+      .rows li:first-child { border-top: 0; padding-top: 0; }
+      .rows li:last-child { padding-bottom: 0; }
+      .rows span { margin-left: auto; flex: none; }
+      .ans { display: inline-flex; align-items: center; gap: 5px; border-radius: var(--r-pill);
+        padding: 3px 10px; font-size: 12px; font-weight: 700; }
       .ans.yes { background: var(--lime-soft); color: var(--deep); }
       .ans.no { background: var(--amber); border: 1px solid var(--amber-line); color: var(--amber-ink); }
       .ans::before { font-size: 13px; line-height: 1; }
-      .ans.yes::before { content: "\2713"; }
-      .ans.no::before { content: "\2014"; }
+      .ans.yes::before { content: "✓"; }
+      .ans.no::before { content: "—"; }
+      .struck { color: var(--ink-soft); text-decoration: line-through; }
+      /* La tachadura es del texto, no de la etiqueta: «nunca» tiene que
+         poder leerse, que es justo lo que la fila afirma. */
+      .struck .ans { text-decoration: none; }
+
+      /* --- El recorrido, como un riel --- */
+      ol { margin: 0; padding: 0; list-style: none; counter-reset: paso; }
+      ol li { counter-increment: paso; display: flex; gap: var(--s-md); padding-bottom: var(--s-md); position: relative; }
+      ol li:last-child { padding-bottom: 0; }
+      ol li::before { content: counter(paso); flex: none; width: 26px; height: 26px; z-index: 1;
+        border-radius: var(--r-pill); background: var(--lime-soft); color: var(--deep);
+        display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+      ol li:not(:last-child)::after { content: ""; position: absolute; left: 13px; top: 26px; bottom: 0;
+        width: 1px; background: var(--line); }
+      ol li div { min-width: 0; }
+      ol b { display: block; font-size: 14px; }
+      ol span { color: var(--ink-soft); font-size: 13px; line-height: 19px; }
+
+      /* --- Huecos que todavia no tienen contenido --- */
+      .slot { border: 1px dashed var(--amber-line); background: var(--amber); color: var(--amber-ink);
+        border-radius: var(--r-card); padding: var(--s-lg) var(--s-md); text-align: center; }
+      .slot.video { aspect-ratio: 16 / 9; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: var(--s-xs); }
+      .slot b { display: block; font-size: 14px; }
+      .slot small { font-size: 12px; line-height: 17px; }
+      .qr { display: flex; gap: var(--s-md); align-items: center; }
+      .qr .box { flex: none; width: 92px; height: 92px; border-radius: var(--r-button);
+        border: 1px dashed var(--amber-line); background: var(--card);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--amber-ink); font-size: 11px; font-weight: 700; text-align: center; padding: var(--s-sm); }
+      .qr div { min-width: 0; text-align: left; }
 
       .proof { border-top: 1px solid var(--line); padding: var(--s-md) 0; }
       .proof:first-of-type { border-top: 0; padding-top: 0; }
+      .proof:last-of-type { padding-bottom: 0; }
       .proof b { display: block; font-size: 14px; margin-bottom: 6px; }
       .proof dl { margin: 0; }
-      .proof dt {
-        font-size: 11px; letter-spacing: 1.3px; font-weight: 700; text-transform: uppercase;
-        margin-top: var(--s-sm);
-      }
+      .proof dt { font-size: 11px; letter-spacing: 1.3px; font-weight: 700; text-transform: uppercase; margin-top: var(--s-sm); }
       .proof dt.si { color: var(--deep); }
       .proof dt.no { color: var(--amber-ink); }
       .proof dd { margin: 2px 0 0; font-size: 13px; line-height: 19px; color: var(--ink-soft); }
 
       .actions { display: flex; flex-direction: column; gap: var(--s-sm); }
-      .cta, .ghost, .soon {
-        display: flex; align-items: center; justify-content: center;
-        min-height: var(--tap); padding: 0 var(--s-md);
-        border-radius: var(--r-button); font-size: 15px; font-weight: 700;
-        text-decoration: none; text-align: center;
-      }
+      .cta, .ghost, .soon { display: flex; align-items: center; justify-content: center;
+        min-height: var(--tap); padding: 0 var(--s-md); border-radius: var(--r-button);
+        font-size: 15px; font-weight: 700; text-decoration: none; text-align: center; }
       .cta { background: var(--deep); color: var(--canvas); }
       .ghost { background: var(--card); border: 1px solid var(--line); color: var(--ink); }
-      /* Una acción que todavía no tiene destino se dibuja como pendiente, no
-         como enlace muerto: W6 pide que ninguna se presente como otra. */
-      .soon { background: var(--amber); border: 1px solid var(--amber-line); color: var(--amber-ink); font-weight: 700; }
+      .soon { background: var(--amber); border: 1px solid var(--amber-line); color: var(--amber-ink); }
       .cta:focus-visible, .ghost:focus-visible, a:focus-visible { outline: 3px solid var(--deep); outline-offset: 2px; }
 
-      .note { border-left: 3px solid var(--lime); padding: 2px 0 2px var(--s-sm); margin: 0 0 var(--s-md); font-size: 13px; line-height: 19px; color: var(--ink-soft); }
+      .note { border-left: 3px solid var(--lime); padding: 2px 0 2px var(--s-sm); margin: 0 0 var(--s-md);
+        font-size: 13px; line-height: 19px; color: var(--ink-soft); }
       .note.warn { border-left-color: var(--amber-line); color: var(--amber-ink); }
 
-      footer { border-top: 1px solid var(--line); padding-top: var(--s-md); color: var(--ink-soft); font-size: 12px; line-height: 17px; }
+      footer { border-top: 1px solid var(--line); padding-top: var(--s-md); color: var(--ink-soft);
+        font-size: 12px; line-height: 17px; }
       footer p { margin: 0 0 var(--s-xs); }
-      footer a { display: inline-flex; align-items: center; min-height: var(--tap); padding-right: var(--s-sm); color: var(--ink); font-weight: 700; }
+      footer a { display: inline-flex; align-items: center; min-height: var(--tap);
+        padding-right: var(--s-sm); color: var(--ink); font-weight: 700; }
 
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
@@ -139,11 +165,18 @@
       <section id="promesa">
         <p class="eyebrow">Stellar Odyssey 2026 · Privacidad</p>
         <h1>Demuestra que puedes firmar. Sin entregar quién eres.</h1>
-        <p class="lede">
-          Knowni convierte registros consentidos en respuestas verificables. La
-          contraparte comprueba lo que pidió; nunca recibe tu cédula, tus
-          ingresos ni el expediente de la fuente.
-        </p>
+        <div class="card">
+          <div class="flow">
+            <div class="node"><i aria-hidden="true">1</i><div><b>La fuente</b><small>Responde una vez, con tu consentimiento.</small></div></div>
+            <p class="arrow" aria-hidden="true">↓</p>
+            <div class="node"><i aria-hidden="true">2</i><div><b>Tu teléfono</b><small>Guarda el reclamo. Construye la respuesta.</small></div></div>
+            <p class="arrow" aria-hidden="true">↓</p>
+            <div class="node seal"><i aria-hidden="true">✓</i><div><b>Un sobre firmado</b><small>Cuatro respuestas. Nada más.</small></div></div>
+            <p class="arrow" aria-hidden="true">↓</p>
+            <div class="node"><i aria-hidden="true">3</i><div><b>La contraparte</b><small>Comprueba lo que pidió.</small></div></div>
+          </div>
+          <div class="cut"><i aria-hidden="true">✕</i><b>La contraparte nunca habla con la fuente.</b></div>
+        </div>
         <div class="actions">
           <a class="cta" href="#recorrido">Ver el recorrido</a>
           <a class="ghost" href="#evidencia">Abrir evidencia real</a>
@@ -151,21 +184,21 @@
       </section>
 
       <section id="frontera">
-        <h2>La contraparte recibe respuestas, no documentos.</h2>
+        <h2>Respuestas, no documentos.</h2>
         <div class="card">
           <h3>Sí demuestra</h3>
-          <ul>
-            <li><b>Que el emisor firmó las respuestas pedidas.</b><span>Y que son exactamente las que la solicitud nombró.</span></li>
-            <li><b>Que pertenecen a esa solicitud.</b><span>Ligadas a su finalidad, su reto y su vencimiento.</span></li>
-            <li><b>Que el registro aceptado estaba vigente.</b><span>Comprobado contra la firma de la autoridad y contra el digest anclado.</span></li>
+          <ul class="rows">
+            <li>El emisor firmó las respuestas pedidas <span class="ans yes">sí</span></li>
+            <li>Pertenecen a esa solicitud <span class="ans yes">sí</span></li>
+            <li>El registro estaba vigente <span class="ans yes">sí</span></li>
           </ul>
         </div>
         <div class="card">
           <h3>No demuestra</h3>
-          <ul>
-            <li><b>Identidad universal.</b><span>Responde a una contraparte, para un contrato, una vez.</span></li>
-            <li><b>Historial crediticio ni probabilidad de pago.</b><span>No hay puntaje. Hay predicados que se cumplen o no.</span></li>
-            <li><b>Que el dato de origen sea cierto.</b><span>Una transacción en cadena no vuelve verdadero lo que dijo una fuente.</span></li>
+          <ul class="rows">
+            <li class="struck">Identidad universal <span class="ans no">no</span></li>
+            <li class="struck">Historial crediticio <span class="ans no">no</span></li>
+            <li class="struck">Que la fuente dijera la verdad <span class="ans no">no</span></li>
           </ul>
         </div>
       </section>
@@ -173,106 +206,101 @@
       <section id="recorrido">
         <p class="eyebrow">El recorrido defendible</p>
         <h2>Compraventa de vehículo, ante notario.</h2>
-        <p class="lede">
-          Es el caso que las fuentes disponibles cierran de punta a punta:
-          persona y activo en la misma pregunta.
-        </p>
         <div class="card">
           <ol>
-            <li><div><b>La notaría solicita un perfil.</b><span>Identidad vigente, capacidad para contratar, ausencia de sanciones y estado del vehículo. Finalidad, reto y vencimiento quedan ligados a la solicitud.</span></div></li>
-            <li><div><b>El titular consiente las fuentes.</b><span>El emisor consulta una vez y reduce cada respuesta dentro del adaptador. La notaría nunca consulta la fuente.</span></div></li>
-            <li><div><b>El teléfono prepara la presentación.</b><span>Conserva el reclamo y la sal; comparte solo respuestas firmadas, ligadas a esa notaría y esa solicitud.</span></div></li>
-            <li><div><b>La contraparte verifica.</b><span>Firma, registro, vigencia, finalidad y reuso. Una fuente no disponible nunca se convierte en un «no cumple».</span></div></li>
-            <li><div><b>Queda un recibo auditable.</b><span>El digest se comprueba por HTTPS y contra Stellar, sin poner documento, placa, resultado ni identidad en cadena.</span></div></li>
+            <li><div><b>La notaría pide un perfil.</b><span>Identidad, capacidad, sanciones y estado del vehículo.</span></div></li>
+            <li><div><b>El titular consiente.</b><span>El emisor consulta una vez. La notaría nunca consulta.</span></div></li>
+            <li><div><b>El teléfono prepara.</b><span>Comparte respuestas firmadas, atadas a esa notaría.</span></div></li>
+            <li><div><b>La contraparte verifica.</b><span>Firma, registro, vigencia, finalidad y reuso.</span></div></li>
+            <li><div><b>Queda un recibo.</b><span>Comprobable por HTTPS y contra Stellar.</span></div></li>
           </ol>
         </div>
         <div class="card">
-          <h3>Lo que cruza</h3>
-          <ul>
-            <li><b>Identidad vigente <span class="ans yes">sí</span></b></li>
-            <li><b>Capacidad para contratar <span class="ans yes">sí</span></b></li>
-            <li><b>Sin sanciones vigentes <span class="ans yes">sí</span></b></li>
-            <li><b>Estado del vehículo <span class="ans yes">sí</span></b></li>
-            <li><b>Ingreso <span class="ans no">no pedido</span></b><span>Un predicado que no se pidió vale «no pedido», no «falso».</span></li>
+          <h3>Lo que va dentro del sobre</h3>
+          <ul class="rows">
+            <li>Identidad vigente <span class="ans yes">sí</span></li>
+            <li>Capacidad para contratar <span class="ans yes">sí</span></li>
+            <li>Sin sanciones vigentes <span class="ans yes">sí</span></li>
+            <li>Estado del vehículo <span class="ans yes">sí</span></li>
+            <li>Ingreso <span class="ans no">no pedido</span></li>
           </ul>
         </div>
         <div class="card">
-          <h3>Lo que no cruza, nunca</h3>
-          <ul>
-            <li><b>Tu número de documento <span class="ans no">nunca</span></b></li>
-            <li><b>Tu salario <span class="ans no">nunca</span></b></li>
-            <li><b>El expediente de la fuente <span class="ans no">nunca</span></b></li>
+          <h3>Lo que nunca sale de tu teléfono</h3>
+          <ul class="rows">
+            <li class="struck">Tu número de documento <span class="ans no">nunca</span></li>
+            <li class="struck">Tu salario <span class="ans no">nunca</span></li>
+            <li class="struck">El expediente de la fuente <span class="ans no">nunca</span></li>
           </ul>
         </div>
-        <p class="note">
-          El arriendo es otro perfil posible: quien pregunta compone sus
-          requisitos. No es la demo, porque la solvencia de una persona natural
-          sigue sin una fuente ejercida.
+        <p class="note">Un predicado que no se pidió vale <b>no pedido</b>, no <b>falso</b>.</p>
+      </section>
+
+      <section id="demo">
+        <p class="eyebrow">En movimiento</p>
+        <h2>El recorrido, grabado.</h2>
+        <div class="slot video">
+          <b>Video pendiente</b>
+          <small>Se servirá desde este dominio, no incrustado de un tercero.</small>
+        </div>
+      </section>
+
+      <section id="apps">
+        <p class="eyebrow">Pruébalo</p>
+        <h2>Llévatelo al teléfono.</h2>
+        <div class="card">
+          <div class="qr">
+            <div class="box">QR pendiente</div>
+            <div>
+              <b>Build de prueba</b>
+              <p class="lede" style="margin:4px 0 0;font-size:13px;line-height:19px">
+                Falta el enlace de EAS o TestFlight. El QR se genera aquí y se
+                sirve de aquí: ninguna API de terceros ve quién lo escanea.
+              </p>
+            </div>
+          </div>
+        </div>
+        <p class="note warn">
+          La app nunca se ha ejecutado en un teléfono físico. El build de prueba
+          es para verla, no para creerle.
         </p>
       </section>
 
       <section id="evidencia">
         <p class="eyebrow">Evidencia</p>
         <h2>Qué prueba cada recibo, y qué no.</h2>
-        <p class="lede">
-          Las cifras y los hashes con fecha viven en <code>docs/verificacion.md</code>.
-          Esta página no los duplica.
-        </p>
         <div class="card">
-          <div class="proof">
-            <b>Registro HTTPS firmado</b>
-            <dl>
-              <dt class="si">Prueba</dt><dd>Que esa autoridad publicó esas llaves, esquemas y revocaciones.</dd>
-              <dt class="no">No prueba</dt><dd>Que una fuente personal haya dicho la verdad.</dd>
-            </dl>
-          </div>
-          <div class="proof">
-            <b>Ancla del registro en Stellar testnet</b>
-            <dl>
-              <dt class="si">Prueba</dt><dd>Que ese digest exacto existía en ese ledger.</dd>
-              <dt class="no">No prueba</dt><dd>El contenido del documento ni la identidad del sujeto.</dd>
-            </dl>
-          </div>
-          <div class="proof">
-            <b>Pago USDC en testnet</b>
-            <dl>
-              <dt class="si">Prueba</dt><dd>Que el sobre portable fue aceptado y el emisor pudo comprobarlo.</dd>
-              <dt class="no">No prueba</dt><dd>Una compra real ni valor económico.</dd>
-            </dl>
-          </div>
-          <div class="proof">
-            <b>Suite e integración continua</b>
-            <dl>
-              <dt class="si">Prueba</dt><dd>Que invariantes, adaptadores, circuitos, contrato y empaquetado pasan lo automatizado.</dd>
-              <dt class="no">No prueba</dt><dd>Ejecución en un teléfono físico.</dd>
-            </dl>
-          </div>
-          <div class="proof">
-            <b>Fuente ejercida</b>
-            <dl>
-              <dt class="si">Prueba</dt><dd>Que el contrato HTTP, el catálogo y las rutas respondieron como se documenta.</dd>
-              <dt class="no">No prueba</dt><dd>Cobertura ni exactitud sobre una persona real.</dd>
-            </dl>
-          </div>
+          <div class="proof"><b>Registro HTTPS firmado</b><dl>
+            <dt class="si">Prueba</dt><dd>Que esa autoridad publicó esas llaves y revocaciones.</dd>
+            <dt class="no">No prueba</dt><dd>Que una fuente personal dijera la verdad.</dd></dl></div>
+          <div class="proof"><b>Ancla en Stellar testnet</b><dl>
+            <dt class="si">Prueba</dt><dd>Que ese digest exacto existía en ese ledger.</dd>
+            <dt class="no">No prueba</dt><dd>El contenido del documento ni la identidad del sujeto.</dd></dl></div>
+          <div class="proof"><b>Pago USDC en testnet</b><dl>
+            <dt class="si">Prueba</dt><dd>Que el sobre portable fue aceptado y comprobado.</dd>
+            <dt class="no">No prueba</dt><dd>Una compra real ni valor económico.</dd></dl></div>
+          <div class="proof"><b>Suite e integración continua</b><dl>
+            <dt class="si">Prueba</dt><dd>Que invariantes, circuitos, contrato y empaquetado pasan.</dd>
+            <dt class="no">No prueba</dt><dd>Ejecución en un teléfono físico.</dd></dl></div>
         </div>
       </section>
 
       <section id="falta">
         <p class="eyebrow">Antes del cierre</p>
         <h2>Lo que todavía no está listo.</h2>
-        <p class="lede">
-          Esta lista no debilita nada. Delimita qué compra cada enlace, y evita
-          que una pieza real parezca validar el sistema entero.
-        </p>
         <div class="card">
-          <ul>
-            <li><b>Nunca se ejecutó en un teléfono físico.</b><span>Ni se probó el almacenamiento real en modo avión.</span></li>
-            <li><b>Ningún adaptador se ejercitó sobre una persona con consentimiento.</b></li>
-            <li><b>Las wallets reales no han firmado el recorrido de la app.</b></li>
-            <li><b>No hay prueba Groth16 generada y verificada de punta a punta.</b></li>
-            <li><b>El contrato compila y está probado, pero no desplegado.</b></li>
+          <ul class="rows">
+            <li class="struck">Ejecución en un teléfono físico <span class="ans no">no</span></li>
+            <li class="struck">Fuentes consentidas sobre una persona real <span class="ans no">no</span></li>
+            <li class="struck">Wallets reales firmando el recorrido <span class="ans no">no</span></li>
+            <li class="struck">Prueba Groth16 de punta a punta <span class="ans no">no</span></li>
+            <li class="struck">Contrato desplegado <span class="ans no">no</span></li>
           </ul>
         </div>
+        <p class="note">
+          Esta lista no debilita nada: delimita qué compra cada enlace, y evita
+          que una pieza real parezca validar el sistema entero.
+        </p>
       </section>
 
       <section id="cierre">
@@ -283,17 +311,13 @@
           <span class="soon">Revisar código · pendiente</span>
         </div>
         <p class="note warn">
-          Las dos acciones pendientes no llevan a ningún sitio todavía y por eso
-          no se dibujan como enlaces: el video no está grabado y el repositorio
-          es privado.
+          Las dos pendientes no llevan a ningún sitio y por eso no se dibujan
+          como enlaces: el video no está grabado y el repositorio es privado.
         </p>
       </section>
 
       <footer>
-        <p>
-          Infraestructura del dominio, no parte del pitch: el documento de
-          registro firmado que la contraparte usa como raíz de confianza.
-        </p>
+        <p>Infraestructura del dominio, no parte del pitch: el documento de registro firmado.</p>
         <a href="/registry.json">/registry.json</a>
       </footer>
     </main>

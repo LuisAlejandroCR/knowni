@@ -1721,6 +1721,29 @@ forjar pruebas—. El contrato no está desplegado. Y la prueba no se ha generad
 Hermes no trae WebAssembly, así que snarkjs no corre ahí; hace falta un prover nativo. Es el
 siguiente PR, no este.
 
+### D-79 — Un prover nativo en Rust, con las raíces de unidad de snarkjs · 2026-09-25
+
+*El problema:* Hermes no trae WebAssembly, así que snarkjs no puede probar en el teléfono.
+
+*Qué se hizo:* `prover/` prueba `eligibility.circom` sobre BLS12-381 en Rust. El testigo sale de
+`rust-witness`, que transpila a C el WASM que ya genera circom, así que vale para cualquier primo. La
+prueba sale de arkworks, leyendo la zkey con el lector de `circom-prover`. snarkjs verifica la prueba
+nativa contra la llave de la propia zkey: dos implementaciones distintas que coinciden.
+
+*Dos fallos silenciosos que hubo que cerrar:*
+
+1. **Las raíces de unidad.** ffjavascript deriva las de BLS12-381 del generador 5; arkworks, del 7.
+   El dominio del mismo tamaño enumera otros puntos y `h(x)` cae donde la zkey no lo espera: la prueba
+   sale inválida sin ningún error. El camino BLS de `circom-prover` tiene ese defecto. `reduction.rs`
+   construye el dominio con el generador de snarkjs y una prueba fija su raíz mayor contra el valor
+   que imprime ffjavascript. En BN254 los dos generadores son 5, por eso nadie lo había visto.
+2. **Las entradas escalares.** `circom-prover` descarta toda señal que no sea lista, y el testigo
+   transpilado no avisa si falta una entrada: vale cero. Se detectó porque las 13 señales públicas
+   salían en cero. `lib.rs` convierte cada señal en lista y rechaza lo que no sea texto decimal.
+
+*Lo que no cierra:* los bindings para iOS y Android no existen aún, y ningún tiempo de prueba se ha
+medido en un teléfono. Es el siguiente PR.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1813,6 +1836,7 @@ siguiente PR, no este.
 | 2026-09-25 | Bloque de agentes: las tres preguntas contestadas (el agente presenta, nunca sostiene) y primer corte, la delegación firmada de `attestation/` (G2) — D-76. 479 pruebas |
 | 2026-09-25 | Bloque de agentes completo en `attestation/`: paquete endosado por el dispositivo, firma del agente, `presentedBy` como única marca, mismo libro de nulificadores y revocación de delegaciones — D-77. 489 pruebas |
 | 2026-09-25 | Primera prueba Groth16 real: sobre BLS12-381, con setup de desarrollo, verificada por snarkjs y por el contrato en `cargo test`. Encontró dos errores que no avisaban: los dominios del circuito eran los de BN254 en las dos curvas, y la compilación BLS de CI usaba las constantes de BN254 porque circom resuelve el `include` vecino antes que `-l`. La prueba en el teléfono sigue pendiente — D-78. 496 pruebas y 15 del contrato |
+| 2026-09-25 | Prover nativo en Rust (`prover/`): el testigo coincide con el de snarkjs en los 12 693 valores, y snarkjs acepta la prueba nativa. Dos fallos silenciosos cerrados: las raíces de unidad de BLS12-381 difieren entre snarkjs (5) y arkworks (7), y `circom-prover` descarta las entradas escalares. Sin bindings móviles todavía — D-79. 5 pruebas del prover |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

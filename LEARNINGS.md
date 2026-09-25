@@ -76,6 +76,10 @@ nativo y prohíbe cualquier atajo de servidor.
 - `2026-09-25` — En este Windows, Smart App Control bloquea los build scripts de Rust de crates
   nuevos (`os error 4551`). Los tests del contrato corren en Docker (`rust:1-bookworm`).
 
+- `2026-09-25` — Dos bibliotecas Groth16 pueden estar de acuerdo en la curva y en el formato y aun
+  así producir pruebas que la otra rechaza: snarkjs y arkworks eligen distinto generador para las
+  raíces de unidad de BLS12-381 (5 contra 7). Coincidir en BN254 no dice nada de otra curva — D-79.
+
 ## 2. ¿Qué costó más de lo esperado, y por qué?
 
 - `2026-09-20` — Un workspace entero (`retrieval/`) construido sobre la lectura equivocada de

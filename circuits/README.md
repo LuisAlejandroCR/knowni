@@ -16,7 +16,7 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 | Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
 | WASM prover, trusted setup, proving key | **Run, 2026-09-25**, with `tools/groth16.sh`: a **development** setup (one contributor per phase), a proof in 2.5 s on a laptop, verified by snarkjs. Key, proof and signals in `groth16/`, checked by `test/unit/groth16.spec.ts`. |
 | On-chain verification against Soroban | **Verified in `cargo test`** against the SDK's BLS12-381 host functions (`contracts/knowni-verifier/src/test_real_proof.rs`). Never deployed. |
-| Proving on the phone | **Not run.** Hermes has no WebAssembly, so snarkjs cannot run there; it needs a native prover. |
+| Proving on the phone | **Native prover in `prover/`**, Rust, accepted by snarkjs. Not yet wrapped for iOS or Android, never run on a phone. |
 | The same predicates, evaluated and tested | **Done** — in `core/`. |
 
 Compiling found one thing, and it is the kind this file warned about: the

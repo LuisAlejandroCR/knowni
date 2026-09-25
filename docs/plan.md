@@ -545,7 +545,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 5. Generar la prueba Groth16 en el teléfono con un prover nativo, sustituir la llave de desarrollo
    por una ceremonia, desplegar el contrato Soroban y ejecutar el recorrido contra ese despliegue.
    Ya hecho: prueba real sobre BLS12-381 verificada en Node y por el contrato en `cargo test` — D-78;
-   y un prover nativo en Rust cuya prueba acepta snarkjs — D-79. Falta envolverlo para iOS y Android. F2–F5 siguen siendo roadmap, no trabajo cumplido.
+   un prover nativo en Rust cuya prueba acepta snarkjs — D-79; envuelto para iOS y Android con banco `/prueba` — D-80 a D-82; y el contrato desplegado en testnet verificó la prueba real — D-83. Falta correrlo en un teléfono físico y sustituir la llave de desarrollo. F2–F5 siguen siendo roadmap, no trabajo cumplido.
 
 ## Referencias primarias
 

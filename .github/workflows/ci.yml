@@ -171,10 +171,12 @@ jobs:
       - uses: actions/checkout@v4
       # `Cargo.lock` está versionado a propósito: `soroban-env-host` pide
       # `ed25519-dalek >= 2.0.0`, sin techo, y la 3.0.0 no compila con él.
-      - run: rustup target add wasm32-unknown-unknown
+      # wasm32v1-none, not wasm32-unknown-unknown: recent Rust emits reference
+      # types for the latter and the network refuses the upload — D-83.
+      - run: rustup target add wasm32v1-none
       - run: cargo test --locked
         working-directory: contracts/knowni-verifier
-      - run: cargo build --locked --release --target wasm32-unknown-unknown
+      - run: cargo build --locked --release --target wasm32v1-none
         working-directory: contracts/knowni-verifier
 
   app:

@@ -18,7 +18,7 @@
 //!
 //! STATUS: compiles, the policy above is tested in `test.rs`, and a real
 //! Groth16 proof over BLS12-381 verifies in `test_real_proof.rs` against a
-//! development key. Never deployed. No measured fee or proof-verification
+//! development key, and on Stellar testnet (D-83). No measured fee or proof-verification
 //! time is claimed anywhere in this repository.
 
 #![no_std]

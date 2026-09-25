@@ -13,6 +13,7 @@ el tercero es el documento de registro que A3 necesita publicar.
 | `/.well-known/apple-app-site-association` | iOS valida el dominio contra el team id y el bundle de la app antes de dejar usar una passkey |
 | `/.well-known/assetlinks.json` | lo mismo en Android, contra el paquete y la huella del certificado de firma |
 | `/registry.json` | el documento de registro firmado, la raíz de confianza *web* de `RegistryPort` |
+| `/index.html` | la raíz. No es producto: dice qué sirve el dominio, para que un 404 no haga dudar del despliegue |
 
 El mismo dominio cierra dos pendientes: es el `EXPO_PUBLIC_PRIVY_RP` de la app y
 la URL del documento de registro. Uno, no dos.
@@ -46,7 +47,12 @@ KNOWNI_ANDROID_CERT_SHA256=AA:BB:…:99 \
 ```
 
 En Vercel: **Root Directory** `web`, **Output Directory** `public`, sin build
-command. `vercel.json` fija los `Content-Type`, que es lo que importa: iOS pide
+command. El Root Directory importa por una razón que no es de gusto: Vercel lee
+`vercel.json` desde ahí. Con la raíz del repositorio se ignora este fichero, se
+pierden los `Content-Type` y iOS deja de aceptar el `apple-app-site-association`.
+
+`public/index.html` está commiteado, así que el proyecto despliega verde antes de
+que existan los otros tres ficheros. `build.ts` no lo toca. `vercel.json` fija los `Content-Type`, que es lo que importa: iOS pide
 `apple-app-site-association` **sin extensión** y servido como `application/json`.
 
 Después, `EXPO_PUBLIC_PRIVY_RP` es ese dominio, sin esquema ni barra.

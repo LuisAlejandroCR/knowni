@@ -255,6 +255,7 @@ emisor. No añade custodia, contrato Soroban, activo distinto de XLM ni persiste
 | P7 | Ningún log ni error expone firma, XDR completo, llave de contraparte o respuesta cruda de Horizon | revisión de código y tests de serialización pública |
 | P8 | El módulo es portable a Expo: no importa `node:crypto`, `Buffer` ni `@stellar/stellar-sdk` | typecheck de `app/` y prueba de imports |
 | P9 | Un coordinador ejecuta `quote → pago → issue`; nunca llama `/issue` si falló firma o Horizon, y solo omite pago cuando `/quote` declara el cobro desactivado | prueba de secuencia HTTP completa y de downgrade |
+| P10 | Una llave del dispositivo firma el hash de la transacción detrás del mismo `PayerWalletPort` (`raw_hash`), su cuenta se deriva de la llave pública y la semilla nunca sale en un resultado | prueba de firma verificable contra el hash de la base de firma, y de que la semilla no aparece en el sobre enviado — D-75 |
 
 La moneda comercial y el activo de red no se infieren entre sí. `/quote` debe publicar términos de
 pago completos; si cobra USDC, incluye código e emisor del activo. El emisor rechaza otro activo,
@@ -440,7 +441,7 @@ casualidad.
 | Permisos con límites del cliente | La sesión ata contraparte, finalidad, reto y fecha — A5 |
 | Trazabilidad y auditabilidad | Raíz firmada por el emisor, anclaje opcional, nulificador de un solo uso |
 | No repetición | El conjunto gastado sobrevive al reinicio, en el emisor y en el dispositivo — D-34, D-36, D-37 |
-| Una superficie pensada para que del otro lado haya una máquina | **Falta.** `issuer/` habla HTTP con llave de contraparte, pero nada está diseñado como superficie de agente |
+| Una superficie pensada para que del otro lado haya una máquina | Delegación firmada y aceptación de un agente en `attestation/` (D-76, D-77); falta exponerla por HTTP |
 
 ### Lo que este bloque **no** hace
 
@@ -462,6 +463,9 @@ con su decisión y su fecha— antes de que exista una línea que la suponga.
    con límites?** Es el *«permisos delegados»* del marco, y hoy no existe.
 
 ### Criterios de aceptación
+
+**Estado 2026-09-25:** las tres preguntas están contestadas en `docs/memoria.md` D-76, a favor de
+construirlo sin que el secreto salga del dispositivo, y aprobadas por el humano. G1–G6 están cumplidos (D-77); falta un adaptador real para la revocación de delegaciones.
 
 Vigentes solo si las tres preguntas se responden a favor de construirlo. Un criterio que dependa de
 una respuesta que no se ha dado no se implementa.
@@ -521,16 +525,18 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 
 | Estado | Criterios | Evidencia y brecha restante |
 |---|---|---|
-| **Cumplido** | P1–P5, P9 | `app/test/unit/stellar-payment.spec.ts` cubre XDR, memo, secuencia y ambos contratos de firma; `issuer-client.spec.ts` fija el orden `quote → pago → issue` |
+| **Cumplido** | P1–P5, P9, P10 | `app/test/unit/stellar-payment.spec.ts` cubre XDR, memo, secuencia y ambos contratos de firma; `issuer-client.spec.ts` fija el orden `quote → pago → issue`; `wallet-keypair.spec.ts` verifica la firma de la llave del dispositivo contra el hash de la transacción — D-75 |
 | **Cumplido** | P6 | `app/test/unit/payment-failures.spec.ts`: rechazo de Horizon, envío aceptado sin hash, caída de red antes y durante el envío, Horizon caído en la lectura de cuenta y wallet sin firma; la última prueba comprueba que las cinco razones no colapsan en una — D-64 |
 | **Cumplido** | P7 | `app/test/unit/payment-redaction.spec.ts` serializa los seis desenlaces y comprueba que ninguno lleva firma, sobre, llave de la contraparte ni cuerpo crudo de Horizon, con la consola interceptada en todos los caminos |
 | **Cumplido** | P8 | `app/test/unit/portable.spec.ts` recorre `app/src` y `app/app`, y el bundle de Metro en CI lo comprueba contra el empaquetador, no solo contra el compilador |
+| **Cumplido** | G2 | `attestation/src/delegation.ts`: firma del sujeto, ventana, agente, finalidad y contraparte, con `delegation.spec.ts`, fuzz e invariante de campos — D-76 |
+| **Cumplido** | G1, G3–G6 | `attestation/src/agent.ts` y `agent.spec.ts`: paquete sin secretos, `presentedBy` como única marca, replay sujeto/agente, revocación de delegaciones en tres estados; `agent-boundary.invariant.spec.ts` para G6 — D-77 |
 | **Cumplido** | C1–C8 | Tests unitarios, concurrentes y de persistencia prueban HMAC opaco, separación por sujeto y pago, single-flight, no-cache de fallos, expiración y límite de capacidad |
 
 ### Lo que falta, en orden de cierre
 
 1. Servir el documento de registro por HTTPS. Anclarlo ya está hecho —`anchoring/tools/anchor-registry.ts` lo ejerció contra testnet—, así que lo que falta del camino web de A3 es una URL que lo publique.
-2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet.
+2. Ejecutar Privy y Freighter reales, y el recorrido móvil con una transacción propia en testnet. El adaptador de llave del dispositivo ya existe (D-75): falta ejecutarlo contra testnet.
 3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
 4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo
    evidencia sanitizada y medir cobertura antes de usar una fuente en decisiones.

@@ -13,7 +13,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, `CLAUDE.md`, est
 
 | | Estado |
 |---|---|
-| Pruebas | **454 del repositorio** + **54 de la app**, verdes en CI |
+| Pruebas | **489 del repositorio** + **59 de la app**, verdes en CI |
 | CI | cinco jobs: suite en Node 22 y 24, app (typecheck, pruebas y bundle de Metro para iOS y Android), contrato Soroban, circuitos |
 | Ramas | solo `main` (`20ae2a4`); 83 PRs integrados; sin PRs abiertos |
 | Lenguaje | todo el repositorio pasa por `tsc --strict` con `noUncheckedIndexedAccess`, y por ESLint con reglas de tipos |
@@ -22,7 +22,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, `CLAUDE.md`, est
 
 La tabla completa vive en `docs/plan.md` → *Auditoría de ejecución*. En resumen:
 
-- **Cumplidos:** A1–A8, A11, A13, A14, A15, A16 y todo el bloque de pago móvil (P1–P9) y de caché (C1–C8).
+- **Cumplidos:** A1–A8, A11, A13, A14, A15, A16 y todo el bloque de pago móvil (P1–P10) y de caché (C1–C8).
 - **Parciales, y por qué:** A9 (faltan llamadas consentidas sobre personas reales) y A10 (el app id
   de Privy ya existe; faltan el dominio de passkey, un dev build, y que la transacción la produzca el
   teléfono).
@@ -81,10 +81,10 @@ queda **no es el app id**:
    con el que se firma el build que se instala, la de Play si hay Play App Signing—.
 2. Un dev build. Expo Go no carga `@privy-io/expo/passkey` ni `extended-chains`: son nativos.
 
-Y hay un rodeo, si el passkey estorba: un adaptador de keypair local detrás del mismo
-`PayerWalletPort`, con `signingMethod: "raw_hash"`, cierra la mitad de A10 que dice *el recorrido
-produce su propia transacción* y deja pendiente solo *con una wallet real*. Cambiar de adaptador
-después no toca el recorrido.
+El rodeo ya está escrito (2026-09-25, D-75): `wallet-keypair.ts`, un adaptador de keypair local
+detrás del mismo `PayerWalletPort`, con `signingMethod: "raw_hash"`. Falta ⏳ ejecutarlo contra
+testnet con una cuenta fondeada y conectarlo a una pantalla con la semilla en almacén seguro; eso
+cierra la mitad de A10 que dice *el recorrido produce su propia transacción*.
 
 ### 2c. Servir el documento de registro por HTTPS — **el sitio existe; falta desplegarlo**
 
@@ -130,17 +130,17 @@ de lo que pide, las tres preguntas de producto que hay que responder antes de es
 criterios G1–G6 viven ahora en [`plan.md`](plan.md) → *Bloque futuro — el portador puede ser un
 agente*, que es donde el ciclo del proyecto los pone.
 
-**Las tres preguntas siguen sin responder**, y ninguna se contesta escribiendo código: si un agente
-puede sostener una credencial o solo presentarla, qué distingue a un agente de un replay, y si el
-consentimiento por fuente sigue siendo del sujeto o hay uno delegado con límites. Van a
-`docs/memoria.md` como decisión, con fecha, antes de que exista una línea que las suponga.
+**Las tres preguntas están contestadas (2026-09-25, D-76):** el agente presenta y nunca sostiene,
+el nulificador sigue siendo el control de replay, y el consentimiento por fuente no se delega. G1–G6
+están implementados en `attestation/` (D-77); falta un adaptador real de revocación de
+delegaciones y exponerlo por HTTP.
 
 ## Cómo arrancar el chat nuevo
 
 ```bash
 npm install           # enlaza los workspaces
-npm run verify        # lint + typecheck + 454 pruebas
-cd app && npm install && npm test   # 54 pruebas, proyecto aparte
+npm run verify        # lint + typecheck + 489 pruebas
+cd app && npm install && npm test   # 59 pruebas, proyecto aparte
 ```
 
 Para los circuitos y el contrato hace falta `cargo` y `circom` construido desde fuente; CI lo hace

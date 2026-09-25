@@ -71,13 +71,15 @@ negrita); `NO` = prohibido.
 
 ### Cómo se comprueba
 
-```bash
-node /ruta/contrast.mjs   # la fórmula, sobre los valores de theme.ts
-```
+**No se cree: se recalcula en cada corrida.** `web/src/contrast.ts` tiene la
+fórmula, `web/test/unit/contrast.spec.ts` lee los valores de `theme.ts`, los
+compara con los números de esta tabla y falla si difieren en la segunda decimal.
+Las tres prohibiciones están también como aserciones, porque una prohibición que
+nadie comprueba es una sugerencia.
 
-El guion vive fuera del repositorio porque la tabla es el resultado, no el
-proceso. Si cambia un token de `theme.ts`, esta tabla se recalcula antes de
-usarse.
+La paleta se lee de `theme.ts` **como texto**: vive en `app/`, que el `tsconfig`
+de la raíz excluye, y copiar sus valores aquí sería la segunda fuente que todo
+esto existe para evitar.
 
 ## Pantallas
 

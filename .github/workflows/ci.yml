@@ -137,9 +137,10 @@ jobs:
       - run: bash prover/tools/check.sh /tmp/groth16
       # The runner ships an NDK; the .so must cross-compile, witness included.
       - name: cross-compile the prover for Android
-        run: bash prover/tools/build-android.sh
+        # ANDROID_NDK_LATEST_HOME is a shell variable of the runner image, not
+        # part of the workflow's env context, so it is read here and not above.
+        run: ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" bash prover/tools/build-android.sh
         env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
           KNOWNI_WITNESS_WASM_DIR: /tmp/groth16/eligibility_js
       - uses: actions/upload-artifact@v4
         with:

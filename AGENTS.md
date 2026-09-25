@@ -269,6 +269,8 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 | `KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE` | Opcional; default 20 por llave |
 | `KNOWNI_SPENT_PAYMENTS_FILE` | ⏳ pendiente — obligatoria si hay tesorería: los pagos ya canjeados. Ver D-37 |
 | `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | ⏳ pendiente — la llave de este app como contraparte, la misma que `KNOWNI_ISSUER_ACCESS_KEYS` reconoce |
+| `EXPO_PUBLIC_PRIVY_APP_ID` | ✅ disponible desde 2026-09-25. Sin ella `privyConfigured()` da `false` y la wallet de passkey no se ofrece. No basta para firmar: ver la siguiente |
+| `EXPO_PUBLIC_PRIVY_RP` | ⏳ pendiente — el dominio HTTPS que sirve los ficheros de asociación de passkey (`apple-app-site-association`, `assetlinks.json`). Vacío, `loginWithPasskey` no tiene contra qué validar. Puede ser el mismo dominio que publique el documento de registro |
 | `JEV_VERCEL_API_KEY` | Vercel AI Gateway, modelo `typesafe-ai/jev`. Solo herramienta de desarrollo: ningún dato de un sujeto sale hacia un modelo |
 
 ## Stack

@@ -23,8 +23,9 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, `CLAUDE.md`, est
 La tabla completa vive en `docs/plan.md` → *Auditoría de ejecución*. En resumen:
 
 - **Cumplidos:** A1–A8, A11, A13, A14, A15, A16 y todo el bloque de pago móvil (P1–P9) y de caché (C1–C8).
-- **Parciales, y por qué:** A9 (faltan llamadas consentidas sobre personas reales) y A10 (falta la
-  firma real de Privy —necesita un app id— y que la transacción la produzca el teléfono).
+- **Parciales, y por qué:** A9 (faltan llamadas consentidas sobre personas reales) y A10 (el app id
+  de Privy ya existe; faltan el dominio de passkey, un dev build, y que la transacción la produzca el
+  teléfono).
 - **Bloqueado:** A12, que exige un dispositivo físico en modo avión.
 
 ## Antes de esta sesión
@@ -66,11 +67,22 @@ Opciones: generarla y etiquetarla como clave de desarrollo, o no generarla hasta
 El criterio pide emitir una presentación sin red, en modo avión, en un dispositivo real. Necesita el
 teléfono del humano; no hay forma de hacerlo desde aquí.
 
-### 2b. Wallets reales y una transacción del teléfono (A10) — **bloqueado por una llave**
+### 2b. Wallets reales y una transacción del teléfono (A10) — **falta un dominio y un dev build**
 
 El pago en USDC ya se ejerció contra la testnet (`fb64700b…`), pero con una firma construida aquí.
-Privy necesita un app id para firmar de verdad, y la transacción todavía no la produce el recorrido
-móvil.
+`EXPO_PUBLIC_PRIVY_APP_ID` ya existe (2026-09-25), y el adaptador está completo: `wallet-privy.ts`
+firma el hash de la transacción como `raw_hash`, que es exactamente lo que Stellar firma. Lo que
+queda **no es el app id**:
+
+1. `EXPO_PUBLIC_PRIVY_RP` — un dominio HTTPS que sirva `apple-app-site-association` y
+   `assetlinks.json`. Vacío, `loginWithPasskey` no tiene contra qué validar. Puede ser el mismo
+   dominio de 2c, y entonces una sola página estática cierra los dos.
+2. Un dev build. Expo Go no carga `@privy-io/expo/passkey` ni `extended-chains`: son nativos.
+
+Y hay un rodeo, si el passkey estorba: un adaptador de keypair local detrás del mismo
+`PayerWalletPort`, con `signingMethod: "raw_hash"`, cierra la mitad de A10 que dice *el recorrido
+produce su propia transacción* y deja pendiente solo *con una wallet real*. Cambiar de adaptador
+después no toca el recorrido.
 
 ### 2c. Servir el documento de registro por HTTPS — **falta una URL**
 

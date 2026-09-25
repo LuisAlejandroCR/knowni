@@ -2,6 +2,7 @@
 // the transpiled circuit, the proof from arkworks with snarkjs's own domain —
 // and writes it in snarkjs's JSON shape, so snarkjs and the contract check it.
 
+mod ffi;
 mod reduction;
 
 use anyhow::{bail, ensure, Context, Result};
@@ -14,6 +15,7 @@ use num_bigint::{BigInt, BigUint};
 use serde_json::{json, Value};
 use std::{collections::HashMap, fs::File, io::BufReader, str::FromStr};
 
+pub use ffi::prove_json;
 pub use reduction::{snarkjs_root, SnarkjsReduction};
 
 rust_witness::witness!(eligibility);

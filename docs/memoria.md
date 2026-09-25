@@ -1744,6 +1744,23 @@ nativa contra la llave de la propia zkey: dos implementaciones distintas que coi
 *Lo que no cierra:* los bindings para iOS y Android no existen aún, y ningún tiempo de prueba se ha
 medido en un teléfono. Es el siguiente PR.
 
+### D-80 — El prover llega a la app como módulo Expo, y la app no le cree a ciegas · 2026-09-25
+
+*Qué se hizo:* una sola llamada cruza la frontera nativa —JSON de entrada y ruta de la zkey; JSON de
+salida— porque cada tipo que cruza es una conversión que puede salir mal en dos lenguajes. `ffi.rs`
+la expone como C para Swift y como JNI para Kotlin, sin pánicos que crucen: todo error vuelve como
+`{"error"}`. La zkey se carga una vez y se guarda por ruta. `app/modules/knowni-prover/` es un módulo
+Expo local que se enlaza solo; en Expo Go no existe, y el puerto responde `unsupported` en vez de
+fallar.
+
+*Por qué el puerto valida:* `app/src/domain/prover.ts` rechaza toda respuesta que no sea una prueba
+BLS12-381 completa con 13 señales decimales. El texto de error nativo puede nombrar rutas del
+dispositivo, así que no sale del puerto: queda `prover_error`.
+
+*Lo que no cierra:* nada de esto ha corrido en un teléfono. CI compila el `.so` para arm64 y x86_64 y
+el xcframework para iPhone y simulador. La zkey —21 MB, y tiene que ser la que el contrato fija—
+todavía no llega al dispositivo: descargarla con hash fijado o empaquetarla es una decisión propia.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1837,6 +1854,7 @@ medido en un teléfono. Es el siguiente PR.
 | 2026-09-25 | Bloque de agentes completo en `attestation/`: paquete endosado por el dispositivo, firma del agente, `presentedBy` como única marca, mismo libro de nulificadores y revocación de delegaciones — D-77. 489 pruebas |
 | 2026-09-25 | Primera prueba Groth16 real: sobre BLS12-381, con setup de desarrollo, verificada por snarkjs y por el contrato en `cargo test`. Encontró dos errores que no avisaban: los dominios del circuito eran los de BN254 en las dos curvas, y la compilación BLS de CI usaba las constantes de BN254 porque circom resuelve el `include` vecino antes que `-l`. La prueba en el teléfono sigue pendiente — D-78. 496 pruebas y 15 del contrato |
 | 2026-09-25 | Prover nativo en Rust (`prover/`): el testigo coincide con el de snarkjs en los 12 693 valores, y snarkjs acepta la prueba nativa. Dos fallos silenciosos cerrados: las raíces de unidad de BLS12-381 difieren entre snarkjs (5) y arkworks (7), y `circom-prover` descarta las entradas escalares. Sin bindings móviles todavía — D-79. 5 pruebas del prover |
+| 2026-09-25 | El prover como módulo Expo: una llamada JSON por C (iOS) y JNI (Android), y un puerto en la app que responde `unsupported` en Expo Go y rechaza toda prueba incompleta. CI compila para Android y iOS; nunca corrido en un teléfono, y la zkey aún no llega al dispositivo — D-80. 8 pruebas del prover y 6 del puerto |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

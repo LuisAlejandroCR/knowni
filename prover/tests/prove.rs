@@ -37,3 +37,12 @@ fn a_number_where_a_decimal_string_belongs_is_refused() {
     let (prover, _) = setup();
     assert!(prover.prove(r#"{"issuerRoot": 1}"#).is_err());
 }
+
+#[test]
+fn the_json_entry_point_answers_proof_and_public_signals() {
+    let zkey = std::env::var("KNOWNI_ZKEY").unwrap();
+    let input = std::fs::read_to_string(std::env::var("KNOWNI_INPUT").unwrap()).unwrap();
+    let answer: serde_json::Value = serde_json::from_str(&knowni_prover::prove_json(&input, &zkey)).unwrap();
+    assert_eq!(answer["proof"]["curve"], "bls12381");
+    assert_eq!(answer["publicSignals"].as_array().unwrap().len(), 13);
+}

@@ -1,0 +1,5 @@
+// module.modulemap: lets Swift import the prover's C interface as KnowniProverFFI.
+module KnowniProverFFI {
+  header "knowni_prover.h"
+  export *
+}

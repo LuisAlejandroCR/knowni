@@ -1,0 +1,10 @@
+{
+  "name": "knowni-prover",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The native Groth16 prover (prover/) as an Expo module for iOS and Android.",
+  "license": "Apache-2.0",
+  "author": "Knowni",
+  "homepage": "https://github.com/LuisAlejandroCR/knowni",
+  "main": "index.ts"
+}

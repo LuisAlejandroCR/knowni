@@ -131,6 +131,32 @@ jobs:
       - run: npm install
       - run: WORK=/tmp/groth16 bash circuits/tools/groth16.sh /tmp/circomlib/circuits
       - run: bash prover/tools/check.sh /tmp/groth16
+      # The runner ships an NDK; the .so must cross-compile, witness included.
+      - name: cross-compile the prover for Android
+        run: bash prover/tools/build-android.sh
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+          KNOWNI_WITNESS_WASM_DIR: /tmp/groth16/eligibility_js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: groth16-work
+          path: /tmp/groth16/eligibility_js/eligibility.wasm
+
+  # The iPhone and simulator static libraries, packed as the xcframework the
+  # Expo module vendors. Only macOS has xcodebuild.
+  prover-ios:
+    needs: prover
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: groth16-work
+          path: /tmp/groth16/eligibility_js
+      - run: brew install cmake
+      - run: bash prover/tools/build-ios.sh
+        env:
+          KNOWNI_WITNESS_WASM_DIR: /tmp/groth16/eligibility_js
 
   contract:
     runs-on: ubuntu-latest

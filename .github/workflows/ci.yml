@@ -115,6 +115,23 @@ jobs:
           npx --yes snarkjs@0.7.5 wtns export json /tmp/bls/poseidon.wtns /tmp/bls/witness.json
           node --experimental-strip-types tools/check-poseidon-witness.ts /tmp/bls/witness.json bls12381
 
+  # The native prover, end to end: a fresh development setup, a proof made in
+  # Rust, and snarkjs verifying it against the zkey's own key. Two different
+  # implementations agreeing is the only check that means anything here.
+  prover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cargo install --locked --git https://github.com/iden3/circom.git --tag v2.2.3 circom
+      - run: git clone --depth 1 https://github.com/iden3/circomlib.git /tmp/circomlib
+      - run: sudo apt-get install -y cmake clang
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+      - run: npm install
+      - run: WORK=/tmp/groth16 bash circuits/tools/groth16.sh /tmp/circomlib/circuits
+      - run: bash prover/tools/check.sh /tmp/groth16
+
   contract:
     runs-on: ubuntu-latest
     steps:

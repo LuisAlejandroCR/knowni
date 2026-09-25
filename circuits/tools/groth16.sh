@@ -23,7 +23,7 @@ cp "$HERE"/*.circom "$WORK/src/"
 cp "$HERE/poseidon_knowni_bls12381.circom" "$WORK/src/poseidon_knowni.circom"
 cp "$HERE/domains_bls12381.circom" "$WORK/src/domains.circom"
 
-circom"$WORK/src/eligibility.circom" -l "$CIRCOMLIB" -p bls12381 --r1cs --wasm --sym --output "$WORK"
+circom "$WORK/src/eligibility.circom" -l "$CIRCOMLIB" -p bls12381 --r1cs --wasm --sym --output "$WORK"
 
 node --experimental-strip-types "$HERE/tools/write-eligibility-input.ts" bls12381 > "$WORK/input.json"
 

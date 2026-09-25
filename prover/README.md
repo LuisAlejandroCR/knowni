@@ -1,0 +1,42 @@
+<!-- prover/README.md
+     Qué es el prover nativo, cómo se construye y qué está probado de él.
+     Se distingue de circuits/README.md, que cubre el circuito y el setup, no
+     cómo se genera la prueba fuera de snarkjs. -->
+
+# `prover/`
+
+Groth16 over BLS12-381 for `eligibility.circom`, in Rust, so the phone can
+prove without WebAssembly. Hermes, the engine the app runs on, has none, so
+snarkjs cannot run there.
+
+## Status
+
+| Piece | State |
+|---|---|
+| Witness | **Native.** `rust-witness` transpiles circom's own WASM witness generator to C, so it computes over whatever prime the circuit was compiled for. Identical to snarkjs's witness, all 12 693 values, checked once by hand. |
+| Proof | **Native, and snarkjs accepts it.** arkworks with a reduction over snarkjs's roots of unity (`src/reduction.rs`). 5–12 s in a Docker container on a laptop; never measured on a phone. |
+| iOS / Android bindings | **Not built.** The crate builds `staticlib` and `cdylib` for them; wrapping it for React Native is the next piece. |
+
+## Two things that fail silently
+
+1. **The roots of unity.** snarkjs derives BLS12-381's from the generator 5,
+   arkworks from 7. A domain of the same size lists different points, the
+   quotient `h(x)` lands on the wrong ones, and the proof is simply invalid.
+   circom-prover's own BLS12-381 path has this bug. `reduction.rs` builds the
+   domain from snarkjs's generator, and a test pins its largest root against
+   the value ffjavascript prints.
+2. **Scalar inputs.** circom-prover keeps only array-valued signals and drops
+   the rest, and the transpiled witness does not notice a missing input: it
+   becomes a zero. `lib.rs` turns every signal into a list and refuses anything
+   that is not a decimal string.
+
+## Running it
+
+```bash
+WORK=/tmp/groth16 bash circuits/tools/groth16.sh <circomlib/circuits>
+bash prover/tools/check.sh /tmp/groth16
+```
+
+`check.sh` runs the tests, proves the fixture input, and has snarkjs verify
+that proof against the zkey's key. It needs cargo, cmake, clang and node. On
+Windows with Smart App Control, run it in Docker (`rust:1-bookworm`).

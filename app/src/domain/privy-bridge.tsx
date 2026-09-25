@@ -2,7 +2,7 @@
 // Turns them into the plain interfaces the wallet and the session use, so both
 // stay testable under Node where no hook can run.
 
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { usePrivy, useEmbeddedWallet } from "@privy-io/expo";
 import { useLoginWithPasskey } from "@privy-io/expo/passkey";
 import { useCreateWallet, useSignRawHash } from "@privy-io/expo/extended-chains";
@@ -15,15 +15,21 @@ export function usePrivyBridge(): PrivyBridge {
   const { signRawHash } = useSignRawHash();
   useEmbeddedWallet();
 
+  // The user a login just returned. The hook's `user` only catches up on the
+  // next render, and the wallet asks for the address in the same call.
+  const justLoggedIn = useRef<typeof user>(undefined);
+
   const stellarAddress = useCallback(async () => {
-    const accounts = (user?.linked_accounts ?? []) as { type?: string; chain_type?: string; address?: string }[];
+    const current = justLoggedIn.current ?? user;
+    const accounts = (current?.linked_accounts ?? []) as { type?: string; chain_type?: string; address?: string }[];
     return accounts.find((account) => account.chain_type === "stellar")?.address;
   }, [user]);
 
   return {
     loginWithPasskey: async () => {
-      await loginWithPasskey({ relyingParty: process.env.EXPO_PUBLIC_PRIVY_RP ?? "" });
-      return true;
+      const loggedIn = await loginWithPasskey({ relyingParty: process.env.EXPO_PUBLIC_PRIVY_RP ?? "" });
+      justLoggedIn.current = loggedIn ?? undefined;
+      return loggedIn !== undefined;
     },
     stellarAddress,
     createStellarWallet: async () => {
@@ -39,6 +45,7 @@ export function usePrivyBridge(): PrivyBridge {
       return signature;
     },
     logout: async () => {
+      justLoggedIn.current = undefined;
       await logout();
     },
   };

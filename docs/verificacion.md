@@ -12,6 +12,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 
 | Qué | Cómo | Fecha |
 |---|---|---|
+| El pitch visual conserva assets propios, una sola historia semántica, video y QR explícitos, cero media externa y una experiencia completa con movimiento reducido | `web/test/unit/pitch-assets.spec.ts`; revisión visual del hero a 1581×889; `npm run verify`: lint, tipos y 474 pruebas en verde | 2026-09-25 |
 | El plan tiene un corte auditable de sus criterios globales y bloques activos; separa evidencia local, evidencia real pendiente y bloqueos de hardware | Revisión de `docs/plan.md` contra tests, CI, bitácora de límites reales y PRs abiertos; `npm run verify` y la suite de `app/` en verde antes del corte | 2026-09-24 |
 | 116 pruebas pasan | `npm test` con Node 24.15.0 en Windows; rutas de fixtures con `fileURLToPath` | 2026-09-20 |
 | Nada en `core/` conoce un tipo de contrato; siete perfiles distintos responden con las mismas credenciales | `core/test/session.test.ts` · `core/test/disclosure.invariant.test.ts` | 2026-09-20 |

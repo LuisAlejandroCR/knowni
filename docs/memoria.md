@@ -7,6 +7,15 @@
 
 El razonamiento va aquí, no en el commit. Un commit de este repositorio es una línea.
 
+## Bitácora reciente
+
+- **2026-09-25 — El pitch se vuelve una historia visual.** El origen es Colombia
+  porque allí vive el primer caso verificable; LATAM es la siguiente expansión y
+  global es la arquitectura, no una afirmación de despliegue actual. Dos escenas
+  originales se sirven desde el propio dominio. El movimiento es CSS, guía la
+  secuencia y desaparece por completo cuando el sistema pide reducirlo. Video y
+  QR conservan el centro narrativo con estados pendientes explícitos.
+
 ## Arquitectura, en una frase por capa
 
 ```

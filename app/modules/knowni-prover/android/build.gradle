@@ -1,0 +1,18 @@
+// build.gradle: the Android side of the prover module. libknowni_prover.so is
+// built by prover/tools/build-android.sh into src/main/jniLibs, which the
+// Android plugin packages per ABI without further configuration.
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'expo.modules.knowniprover'
+version = '0.1.0'
+
+android {
+  namespace "expo.modules.knowniprover"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}

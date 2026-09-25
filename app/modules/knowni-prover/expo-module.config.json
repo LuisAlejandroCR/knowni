@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["KnowniProverModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.knowniprover.KnowniProverModule"]
+  }
+}

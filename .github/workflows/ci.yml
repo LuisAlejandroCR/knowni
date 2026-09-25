@@ -101,6 +101,8 @@ jobs:
         run: |
           node --experimental-strip-types tools/write-eligibility-input.ts bls12381 > /tmp/bls/input.json
           npx --yes snarkjs@0.7.5 wtns calculate             /tmp/bls/eligibility_js/eligibility.wasm /tmp/bls/input.json /tmp/bls/eligibility.wtns
+      - name: check the app's proof fixture was generated, not typed
+        run: node --experimental-strip-types circuits/tools/write-app-fixture.ts | diff - app/src/proof-fixture.ts
       - name: check the Soroban proof fixture was generated from the committed proof
         run: |
           node --experimental-strip-types circuits/tools/write-soroban-proof.ts             | diff - contracts/knowni-verifier/src/real_proof.rs
@@ -129,8 +131,39 @@ jobs:
         with:
           node-version: '22.18.0'
       - run: npm install
-      - run: WORK=/tmp/groth16 bash circuits/tools/groth16.sh /tmp/circomlib/circuits
+      # The published key, not a fresh setup: it is what the phone downloads,
+      # and its verifying key must be the one the contract tests pin.
+      - run: WORK=/tmp/groth16 ZKEY=web/public/keys/eligibility-dev.zkey bash circuits/tools/groth16.sh /tmp/circomlib/circuits
+      - name: the published key is the committed verifying key
+        run: git diff --exit-code circuits/groth16/verification_key.json
       - run: bash prover/tools/check.sh /tmp/groth16
+      # The runner ships an NDK; the .so must cross-compile, witness included.
+      - name: cross-compile the prover for Android
+        # ANDROID_NDK_LATEST_HOME is a shell variable of the runner image, not
+        # part of the workflow's env context, so it is read here and not above.
+        run: ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" bash prover/tools/build-android.sh
+        env:
+          KNOWNI_WITNESS_WASM_DIR: /tmp/groth16/eligibility_js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: groth16-work
+          path: /tmp/groth16/eligibility_js/eligibility.wasm
+
+  # The iPhone and simulator static libraries, packed as the xcframework the
+  # Expo module vendors. Only macOS has xcodebuild.
+  prover-ios:
+    needs: prover
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: groth16-work
+          path: /tmp/groth16/eligibility_js
+      - run: brew install cmake
+      - run: bash prover/tools/build-ios.sh
+        env:
+          KNOWNI_WITNESS_WASM_DIR: /tmp/groth16/eligibility_js
 
   contract:
     runs-on: ubuntu-latest

@@ -1,4 +1,4 @@
-// _layout.tsx: the router shell. Eight screens, one stack, no network.
+// _layout.tsx: the router shell. Eight journey screens and the device-proof bench, one stack.
 // Header hidden because every screen of design/day-08 draws its own top bar.
 
 import { Stack } from "expo-router";

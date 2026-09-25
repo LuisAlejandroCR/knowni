@@ -1744,6 +1744,57 @@ nativa contra la llave de la propia zkey: dos implementaciones distintas que coi
 *Lo que no cierra:* los bindings para iOS y Android no existen aún, y ningún tiempo de prueba se ha
 medido en un teléfono. Es el siguiente PR.
 
+### D-80 — El prover llega a la app como módulo Expo, y la app no le cree a ciegas · 2026-09-25
+
+*Qué se hizo:* una sola llamada cruza la frontera nativa —JSON de entrada y ruta de la zkey; JSON de
+salida— porque cada tipo que cruza es una conversión que puede salir mal en dos lenguajes. `ffi.rs`
+la expone como C para Swift y como JNI para Kotlin, sin pánicos que crucen: todo error vuelve como
+`{"error"}`. La zkey se carga una vez y se guarda por ruta. `app/modules/knowni-prover/` es un módulo
+Expo local que se enlaza solo; en Expo Go no existe, y el puerto responde `unsupported` en vez de
+fallar.
+
+*Por qué el puerto valida:* `app/src/domain/prover.ts` rechaza toda respuesta que no sea una prueba
+BLS12-381 completa con 13 señales decimales. El texto de error nativo puede nombrar rutas del
+dispositivo, así que no sale del puerto: queda `prover_error`.
+
+*Lo que no cierra:* nada de esto ha corrido en un teléfono. CI compila el `.so` para arm64 y x86_64 y
+el xcframework para iPhone y simulador. La zkey —21 MB, y tiene que ser la que el contrato fija—
+todavía no llega al dispositivo: descargarla con hash fijado o empaquetarla es una decisión propia.
+
+### D-81 — La llave de prueba se descarga una vez y Rust comprueba su hash · 2026-09-25
+
+*Qué se decidió:* descargar la zkey (21 MB) la primera vez que hace falta, desde
+`EXPO_PUBLIC_ZKEY_URL`, en vez de empaquetarla en la app. Se recomendó así y se siguió sin
+respuesta explícita del humano: la app pesa 21 MB menos y cambiar la llave no exige otra versión.
+
+*Por qué el hash lo comprueba Rust y no la app:* JavaScript en Hermes haría SHA-256 de 21 MB en
+segundos. Rust lo hace antes de leer la llave, en la misma llamada que prueba: una llave que no es la
+fijada —`ZKEY_SHA256` en `proving-key.ts`— no llega a producir una prueba. La respuesta lleva el
+código `zkey_mismatch`, el único que la app puede corregir: borra el archivo y descarga otra vez,
+**una** vez; si la fuente sigue sirviendo otro archivo, el error es ese.
+
+*Dónde vive:* el humano aprobó publicarla. El repositorio es privado, así que un release de GitHub
+pedía sesión y el teléfono no podría bajarla; eligió el despliegue web. La llave está en
+`web/public/keys/eligibility-dev.zkey` y se sirve en <https://knowni.vercel.app/keys/eligibility-dev.zkey>;
+`EXPO_PUBLIC_ZKEY_URL` la sustituye si hace falta. Una prueba compara el archivo publicado con el hash
+fijado. Es una llave de **desarrollo**: pública, de un solo contribuyente, y quien la generó puede
+forjar pruebas. Sirve para demostrar el camino, no para producción.
+
+### D-82 — La prueba en el teléfono tiene su propio banco, no se cuela en el recorrido · 2026-09-25
+
+*El problema:* el recorrido de la app es la compraventa de un vehículo, con respuestas atestiguadas
+por el emisor. El circuito prueba otro perfil —identidad, ingreso, formalidad, sanciones— y no hay
+reclamos reales de una persona para alimentarlo. Meter la prueba en el recorrido habría sido vestir
+un ejemplo de producto funcionando.
+
+*Qué se hizo:* una pantalla aparte, `/prueba` (`knowni://prueba`), que descarga la llave, prueba
+sobre `app/src/proof-fixture.ts` —generado del mismo fixture que usan las pruebas del circuito, con
+revisión de deriva en CI— y dice cuánto tardó. Solo informa éxito si las cuatro salidas son las del
+ejemplo; el sello y la nota dicen que son datos inventados y llave de desarrollo.
+
+*Para qué sirve:* es el banco para el criterio "generar y verificar una prueba Groth16 en el
+teléfono". Lo que falta es correrlo en un teléfono físico, con una build de desarrollo.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1837,6 +1888,9 @@ medido en un teléfono. Es el siguiente PR.
 | 2026-09-25 | Bloque de agentes completo en `attestation/`: paquete endosado por el dispositivo, firma del agente, `presentedBy` como única marca, mismo libro de nulificadores y revocación de delegaciones — D-77. 489 pruebas |
 | 2026-09-25 | Primera prueba Groth16 real: sobre BLS12-381, con setup de desarrollo, verificada por snarkjs y por el contrato en `cargo test`. Encontró dos errores que no avisaban: los dominios del circuito eran los de BN254 en las dos curvas, y la compilación BLS de CI usaba las constantes de BN254 porque circom resuelve el `include` vecino antes que `-l`. La prueba en el teléfono sigue pendiente — D-78. 496 pruebas y 15 del contrato |
 | 2026-09-25 | Prover nativo en Rust (`prover/`): el testigo coincide con el de snarkjs en los 12 693 valores, y snarkjs acepta la prueba nativa. Dos fallos silenciosos cerrados: las raíces de unidad de BLS12-381 difieren entre snarkjs (5) y arkworks (7), y `circom-prover` descarta las entradas escalares. Sin bindings móviles todavía — D-79. 5 pruebas del prover |
+| 2026-09-25 | El prover como módulo Expo: una llamada JSON por C (iOS) y JNI (Android), y un puerto en la app que responde `unsupported` en Expo Go y rechaza toda prueba incompleta. CI compila para Android y iOS; nunca corrido en un teléfono, y la zkey aún no llega al dispositivo — D-80. 8 pruebas del prover y 6 del puerto |
+| 2026-09-25 | La zkey se descarga una vez a los documentos de la app, y Rust comprueba su SHA-256 antes de leerla; un `zkey_mismatch` borra y descarga una sola vez más. Publicada en el despliegue web — D-81. 9 pruebas del prover y 18 de la app sobre el prover |
+| 2026-09-25 | Banco `/prueba`: el teléfono descarga la llave, prueba sobre un ejemplo generado del fixture del circuito y dice cuánto tardó. Fuera del recorrido, porque el recorrido es otro perfil y no hay reclamos reales para el circuito — D-82. 77 pruebas de la app |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

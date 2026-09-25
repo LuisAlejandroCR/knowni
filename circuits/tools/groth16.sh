@@ -4,6 +4,7 @@
 # public signals into circuits/groth16/, which the tests and the contract read.
 #
 #   bash circuits/tools/groth16.sh <path-to-circomlib/circuits>
+#   ZKEY=web/public/keys/eligibility-dev.zkey bash circuits/tools/groth16.sh ...   # reuse a key
 #
 # The circuit is compiled from a staging copy. circom resolves an include in
 # the including file's own directory before any -l path, so compiling in place
@@ -27,13 +28,20 @@ circom "$WORK/src/eligibility.circom" -l "$CIRCOMLIB" -p bls12381 --r1cs --wasm 
 
 node --experimental-strip-types "$HERE/tools/write-eligibility-input.ts" bls12381 > "$WORK/input.json"
 
-# Development setup, one contributor per phase. Whoever holds these
-# contributions can forge proofs for this circuit: never a production key.
-snarkjs powersoftau new bls12-381 14 "$WORK/pot_0.ptau"
-snarkjs powersoftau contribute "$WORK/pot_0.ptau" "$WORK/pot_1.ptau" --name=dev -e="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
-snarkjs powersoftau prepare phase2 "$WORK/pot_1.ptau" "$WORK/pot_final.ptau"
-snarkjs groth16 setup "$WORK/eligibility.r1cs" "$WORK/pot_final.ptau" "$WORK/eligibility_0.zkey"
-snarkjs zkey contribute "$WORK/eligibility_0.zkey" "$WORK/eligibility.zkey" --name=dev -e="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+if [ -n "${ZKEY:-}" ]; then
+  # An existing key — the published one, in CI. `prepare phase2` alone takes
+  # minutes on a small Linux runner, and a fresh key would not be the one the
+  # phone downloads anyway.
+  cp "$ZKEY" "$WORK/eligibility.zkey"
+else
+  # Development setup, one contributor per phase. Whoever holds these
+  # contributions can forge proofs for this circuit: never a production key.
+  snarkjs powersoftau new bls12-381 14 "$WORK/pot_0.ptau"
+  snarkjs powersoftau contribute "$WORK/pot_0.ptau" "$WORK/pot_1.ptau" --name=dev -e="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+  snarkjs powersoftau prepare phase2 "$WORK/pot_1.ptau" "$WORK/pot_final.ptau"
+  snarkjs groth16 setup "$WORK/eligibility.r1cs" "$WORK/pot_final.ptau" "$WORK/eligibility_0.zkey"
+  snarkjs zkey contribute "$WORK/eligibility_0.zkey" "$WORK/eligibility.zkey" --name=dev -e="$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+fi
 snarkjs zkey export verificationkey "$WORK/eligibility.zkey" "$OUT/verification_key.json"
 
 start=$(date +%s%3N)

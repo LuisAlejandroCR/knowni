@@ -43,6 +43,7 @@ test("without its key a wallet connects to nothing instead of pretending", async
 test("a configured wallet connects, signs and disconnects through the same port", async () => {
   const privy = createPrivyWallet({
     loginWithPasskey: async () => true,
+    signupWithPasskey: async () => true,
     stellarAddress: async () => ACCOUNT,
     createStellarWallet: async () => undefined,
     signRawHash: async (_address: string, hash: string) => `${hash}ff`,
@@ -60,4 +61,30 @@ test("the device wallet signs nothing, and says so", async () => {
   const device = createDeviceWallet(ACCOUNT);
   assert.equal(await device.connect(), ACCOUNT);
   assert.equal(await device.signTransaction("AAAA"), undefined);
+});
+
+test("a first-time payer signs up with a passkey instead of logging in with one they lack", async () => {
+  const calls: string[] = [];
+  const bridge = {
+    loginWithPasskey: async () => {
+      calls.push("login");
+      return true;
+    },
+    signupWithPasskey: async () => {
+      calls.push("signup");
+      return true;
+    },
+    stellarAddress: async () => undefined,
+    createStellarWallet: async () => {
+      calls.push("create");
+      return ACCOUNT;
+    },
+    signRawHash: async () => undefined,
+    logout: async () => {},
+  };
+  assert.equal(await createPrivyWallet(bridge, () => "signup").connect(), ACCOUNT);
+  assert.deepEqual(calls, ["signup", "create"]);
+  calls.length = 0;
+  await createPrivyWallet(bridge).connect();
+  assert.deepEqual(calls, ["login", "create"]);
 });

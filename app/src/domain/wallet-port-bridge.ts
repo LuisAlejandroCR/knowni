@@ -4,6 +4,8 @@
 
 export interface PrivyBridge {
   loginWithPasskey(): Promise<boolean>;
+  // A first-time payer has no passkey to log in with; this registers one.
+  signupWithPasskey(): Promise<boolean>;
   // Privy's extended-chains wallet for `chainType: "stellar"`.
   stellarAddress(): Promise<string | undefined>;
   createStellarWallet(): Promise<string | undefined>;

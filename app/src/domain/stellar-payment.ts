@@ -192,7 +192,7 @@ const verifies = (signature: Uint8Array, hash: Uint8Array, publicKey: Uint8Array
 
 // A signed envelope is accepted only if it carries the very transaction that
 // was asked for and one of its signatures is the payer's over that hash. Horizon
-// would refuse a bad one too, but as `horizon_rejected` — the wallet's fault
+// would refuse a bad one too, but as `horizon_rejected` â€” the wallet's fault
 // would read as the network's.
 function signedByPayer(signed: Uint8Array, transaction: Uint8Array, publicKey: Uint8Array): boolean {
   const prefix = concat(u32(ENVELOPE_TYPE_TX), transaction);

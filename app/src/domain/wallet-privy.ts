@@ -11,7 +11,13 @@ export const PRIVY_APP_ID = process.env.EXPO_PUBLIC_PRIVY_APP_ID ?? "";
 import type { PrivyBridge } from "./wallet-port-bridge.ts";
 export type { PrivyBridge };
 
-export function createPrivyWallet(bridge: PrivyBridge | undefined): PayerWalletPort {
+export type PasskeyMode = "login" | "signup";
+
+// `mode` is read at connect time, so one wallet serves both buttons.
+export function createPrivyWallet(
+  bridge: PrivyBridge | undefined,
+  mode: () => PasskeyMode = () => "login",
+): PayerWalletPort {
   let account: string | undefined;
 
   return {
@@ -22,7 +28,8 @@ export function createPrivyWallet(bridge: PrivyBridge | undefined): PayerWalletP
 
     async connect() {
       if (bridge === undefined) return undefined;
-      if (!(await bridge.loginWithPasskey())) return undefined;
+      const opened = mode() === "signup" ? await bridge.signupWithPasskey() : await bridge.loginWithPasskey();
+      if (!opened) return undefined;
       // An account that exists is reused; only a first-time payer gets one
       // created, because a second wallet would split their balance.
       account = (await bridge.stellarAddress()) ?? (await bridge.createStellarWallet());

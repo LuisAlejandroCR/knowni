@@ -1611,6 +1611,26 @@ de la forma optimizada de circomlib—. No reproduce `S` ni `P`, y ahora reprodu
 que atacan son las no lineales, y las no lineales apenas se movieron. D-52 las sigue nombrando, pero
 como trabajo con una cifra objetivo delante, no como pendiente abierto.
 
+### D-75 — La llave del dispositivo firma como Privy, y A10 deja de esperar un dominio · 2026-09-25
+
+*Qué:* `app/src/domain/wallet-keypair.ts`, un adaptador de `PayerWalletPort` con `id: "device"` y
+`signingMethod: "raw_hash"`. Firma con ed25519 el hash de la base de firma que `payQuote` ya
+calcula, y deriva su cuenta `G…` de la llave pública con `accountIdOf`, que ahora exporta
+`stellar-payment.ts` junto al decodificador que ya tenía —el CRC16 y el base32 no se duplican—.
+
+*Por qué:* el traspaso del 2026-09-24 (2b) lo nombraba como rodeo. A10 tenía dos mitades
+atadas: *el recorrido produce su propia transacción* y *con una wallet real*. La segunda espera
+`EXPO_PUBLIC_PRIVY_RP`, un dev build y dos valores del humano; la primera no esperaba nada. Al
+firmar por el mismo camino `raw_hash` que Privy, cambiar de adaptador después no toca el pago.
+
+*Límites:* solo firma un hash de 32 bytes —cualquier otra cosa sería firmar un mensaje arbitrario— y
+nada antes de `connect`. La semilla vive en el cierre; ni el resultado ni el sobre la llevan, y la
+prueba lo comprueba. `createDeviceWallet`, que no firma, se queda: sigue siendo el estado honesto
+sin semilla. Dónde se guarda la semilla en el teléfono (almacén seguro) **no** se decide aquí.
+
+*Estado:* ⏳ la transacción en testnet producida por este adaptador no se ha ejecutado; P10 está
+cubierto por pruebas, A10 sigue **parcial**.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1699,6 +1719,7 @@ como trabajo con una cifra objetivo delante, no como pendiente abierto.
 | 2026-09-24 | El ancla del registro deja de ser una forma y pasa a ser una transacción: `66bf1b7d…` lleva el digest del documento firmado como `MEMO_HASH`, y el mismo adaptador que corre en las pruebas lo lee de Horizon real y resuelve el registro con `trustedVia: chain_anchor`. Un documento distinto contra la misma ancla responde `digest_mismatch` — la comprobación que vale es esa, no la que resuelve. Lo que sigue sin hacerse es servir el documento por HTTPS: en el ejercicio salió de memoria, y el registro lo dice así — D-73 |
 | 2026-09-24 | El estado de Poseidon deja de ser una señal por celda y por ronda y pasa a viajar como expresión lineal: mezclar es contabilidad del compilador y solo se materializa lo que se eleva a la quinta. 25 221 → 12 633 restricciones (−50%) y 25 281 → 12 693 cables, iguales sobre las dos curvas; el testigo y el compromiso de ingreso que CI reconstruye no se mueven, que es lo que dice que la permutación es la misma — D-74. 454 pruebas |
 | 2026-09-25 | El pitch web adopta el orden de CREVA —promesa, frontera, recorrido, recibos, límites y cierre— sin adoptar su producto. La demo narrada pasa de arriendo a compraventa vehicular para respetar D-13; cada evidencia dice qué prueba y qué no. Propuesta y copy en `web/README.md`, criterios W1–W7 en `docs/plan.md` |
+| 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

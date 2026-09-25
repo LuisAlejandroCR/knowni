@@ -2,6 +2,7 @@
 // It builds only PAYMENT + MEMO_HASH, delegates signing, and submits to Horizon;
 // no seed, provider response or full envelope is retained or logged.
 
+import { ed25519 } from "@noble/curves/ed25519";
 import { sha256 } from "@noble/hashes/sha2";
 import type { PayerWalletPort } from "./wallet-port.ts";
 import { HORIZON_URL } from "./wallet-port.ts";
@@ -181,10 +182,36 @@ function signedEnvelope(transaction: Uint8Array, publicKey: Uint8Array, signatur
   return concat(u32(ENVELOPE_TYPE_TX), transaction, u32(1), publicKey.subarray(28), u32(64), signature);
 }
 
-function signsSameTransaction(signed: Uint8Array, transaction: Uint8Array): boolean {
+const verifies = (signature: Uint8Array, hash: Uint8Array, publicKey: Uint8Array): boolean => {
+  try {
+    return signature.length === 64 && ed25519.verify(signature, hash, publicKey);
+  } catch {
+    return false;
+  }
+};
+
+// A signed envelope is accepted only if it carries the very transaction that
+// was asked for and one of its signatures is the payer's over that hash. Horizon
+// would refuse a bad one too, but as `horizon_rejected` — the wallet's fault
+// would read as the network's.
+function signedByPayer(signed: Uint8Array, transaction: Uint8Array, publicKey: Uint8Array): boolean {
   const prefix = concat(u32(ENVELOPE_TYPE_TX), transaction);
   if (signed.length <= prefix.length + 4) return false;
-  return prefix.every((byte, index) => signed[index] === byte) && new DataView(signed.buffer, signed.byteOffset + prefix.length, 4).getUint32(0, false) > 0;
+  if (!prefix.every((byte, index) => signed[index] === byte)) return false;
+  const view = new DataView(signed.buffer, signed.byteOffset, signed.length);
+  const count = view.getUint32(prefix.length, false);
+  const hash = transactionHash(transaction);
+  let offset = prefix.length + 4;
+  for (let index = 0; index < count; index += 1) {
+    if (offset + 8 > signed.length) return false;
+    const length = view.getUint32(offset + 4, false);
+    const signature = signed.subarray(offset + 8, offset + 8 + length);
+    if (signature.length !== length) return false;
+    const hint = signed.subarray(offset, offset + 4);
+    if (hint.every((byte, at) => byte === publicKey[28 + at]) && verifies(signature, hash, publicKey)) return true;
+    offset += 8 + length;
+  }
+  return false;
 }
 
 export async function payQuote(input: PayQuoteInput): Promise<PaymentResult> {
@@ -229,12 +256,14 @@ export async function payQuote(input: PayQuoteInput): Promise<PaymentResult> {
     if (input.wallet.signingMethod === "raw_hash") {
       const signatureHex = await input.wallet.signTransaction(toHex(transactionHash(transaction)));
       if (signatureHex === undefined) return { status: "failed", reason: "wallet_rejected" };
-      envelope = toBase64(signedEnvelope(transaction, source, fromHex(signatureHex)));
+      const signature = fromHex(signatureHex);
+      if (!verifies(signature, transactionHash(transaction), source)) return { status: "failed", reason: "wallet_rejected" };
+      envelope = toBase64(signedEnvelope(transaction, source, signature));
     } else {
       const signed = await input.wallet.signTransaction(toBase64(unsignedEnvelope(transaction)));
       if (signed === undefined) return { status: "failed", reason: "wallet_rejected" };
       const signedBytes = fromBase64(signed);
-      if (!signsSameTransaction(signedBytes, transaction)) return { status: "failed", reason: "wallet_rejected" };
+      if (!signedByPayer(signedBytes, transaction, source)) return { status: "failed", reason: "wallet_rejected" };
       envelope = signed;
     }
   } catch {

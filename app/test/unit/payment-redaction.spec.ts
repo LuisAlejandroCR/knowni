@@ -9,8 +9,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { payQuote, type PaymentResult, type PaymentTerms } from "../../src/domain/stellar-payment.ts";
 import type { PayerWalletPort } from "../../src/domain/wallet-port.ts";
+import { SIGNER_ACCOUNT, signHash } from "../support/signer.ts";
 
-const SOURCE = "GAZONAKJ7XIJVQI37HR2ZZKMQIISUIFAYXVCXJOCXVGQQNGM24BF2UZD";
 const DESTINATION = "GCKFBEIYV2U22IO2BJ4KVJOIP7XPWQGQFKKWXR6DOSJBV7STMAQSMTGG";
 const SIGNATURE = "9f".repeat(64);
 const HORIZON_BODY = JSON.stringify({
@@ -49,13 +49,15 @@ const wallet = (): PayerWalletPort => ({
   id: "privy",
   label: "Privy",
   signingMethod: "raw_hash",
-  accountId: async () => SOURCE,
-  connect: async () => SOURCE,
-  signTransaction: async () => SIGNATURE,
+  accountId: async () => SIGNER_ACCOUNT,
+  connect: async () => SIGNER_ACCOUNT,
+  signTransaction: async (hash) => (signed = signHash(hash)),
   disconnect: async () => {},
 });
 
 let submitted = "";
+// The real signature of the last payment; secret like the fixed one above.
+let signed = "";
 
 function horizon(submit: () => Promise<Response>): typeof fetch {
   return (async (url: string | URL | Request, init?: RequestInit) => {
@@ -85,7 +87,7 @@ async function everyOutcome(): Promise<readonly PaymentResult[]> {
   ];
 }
 
-const secrets = () => [SIGNATURE, submitted.slice(3), decodeURIComponent(submitted.slice(3)), DESTINATION, "envelope_xdr", "result_xdr", "tx_bad_seq"];
+const secrets = () => [SIGNATURE, signed, submitted.slice(3), decodeURIComponent(submitted.slice(3)), DESTINATION, "envelope_xdr", "result_xdr", "tx_bad_seq"];
 
 test("no payment result carries the signature, the envelope or Horizon's body", async () => {
   const results = await everyOutcome();

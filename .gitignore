@@ -22,6 +22,7 @@ docs/*
 !docs/verificacion.md
 !docs/CROMA.md
 !docs/handoff.md
+!docs/wallets.md
 
 # soroban test snapshots — generados en cada corrida de `cargo test`
 contracts/**/test_snapshots/

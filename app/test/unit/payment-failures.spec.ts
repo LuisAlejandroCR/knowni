@@ -7,6 +7,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { payQuote, type PaymentResult, type PaymentTerms } from "../../src/domain/stellar-payment.ts";
 import type { PayerWalletPort } from "../../src/domain/wallet-port.ts";
+import { SIGNER_ACCOUNT, signHash } from "../support/signer.ts";
 
 const ACCOUNT = "GAZONAKJ7XIJVQI37HR2ZZKMQIISUIFAYXVCXJOCXVGQQNGM24BF2UZD";
 const TERMS: PaymentTerms = {
@@ -21,9 +22,9 @@ const wallet = (): PayerWalletPort => ({
   id: "privy",
   label: "Privy",
   signingMethod: "raw_hash",
-  accountId: async () => ACCOUNT,
-  connect: async () => ACCOUNT,
-  signTransaction: async () => "11".repeat(64),
+  accountId: async () => SIGNER_ACCOUNT,
+  connect: async () => SIGNER_ACCOUNT,
+  signTransaction: async (hash) => signHash(hash),
   disconnect: async () => {},
 });
 

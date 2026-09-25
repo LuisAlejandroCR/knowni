@@ -6,6 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { requestPaidIssuance, type IssuanceInput } from "../../src/domain/issuer-client.ts";
 import type { PayerWalletPort } from "../../src/domain/wallet-port.ts";
+import { SIGNER_ACCOUNT, signHash } from "../support/signer.ts";
 
 const ACCOUNT = "GAZONAKJ7XIJVQI37HR2ZZKMQIISUIFAYXVCXJOCXVGQQNGM24BF2UZD";
 const REFERENCE = "ab".repeat(32);
@@ -22,14 +23,14 @@ const input: IssuanceInput = {
   },
 };
 
-function wallet(signature: string | null = "11".repeat(64)): PayerWalletPort {
+function wallet(signs = true): PayerWalletPort {
   return {
     id: "privy",
     label: "Privy",
     signingMethod: "raw_hash",
-    accountId: async () => ACCOUNT,
-    connect: async () => ACCOUNT,
-    signTransaction: async () => signature ?? undefined,
+    accountId: async () => SIGNER_ACCOUNT,
+    connect: async () => SIGNER_ACCOUNT,
+    signTransaction: async (hash) => (signs ? signHash(hash) : undefined),
     disconnect: async () => {},
   };
 }
@@ -79,7 +80,7 @@ test("the paid path quotes, signs, submits and only then calls issue with the tx
   assert.equal(issueBody?.paymentTx, "22".repeat(32));
   assert.deepEqual(calls.map((url) => new URL(url).pathname), [
     "/quote",
-    `/accounts/${ACCOUNT}`,
+    `/accounts/${SIGNER_ACCOUNT}`,
     "/transactions",
     "/issue",
   ]);
@@ -94,7 +95,7 @@ test("a rejected signature stops before Horizon submission and issuance", async 
       ? new Response(JSON.stringify(quote(true)), { status: 200 })
       : new Response(JSON.stringify({ sequence: "7" }), { status: 200 });
   }) as typeof fetch;
-  const result = await requestPaidIssuance(input, wallet(null), {
+  const result = await requestPaidIssuance(input, wallet(false), {
     baseUrl: "https://issuer.example",
     horizonUrl: "https://horizon.example",
     fetchImpl,

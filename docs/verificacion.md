@@ -142,7 +142,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 7. **Cobertura de PILA por tipo de trabajador**, antes de dejar que `formality` influya en nada.
    Es el requisito de D-11 y no está medido.
 8. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.
-9. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista. El banco `/prueba` la
+9. ~~**Tiempo de prueba en un teléfono real.**~~ **Medido el 2026-09-25:** 1,3 s en un moto g54 5G con la llave ya cargada, 9,7 s la primera vez con descarga. El banco `/prueba` la
    mide; se anota abajo, en *Corrida en teléfono físico*.
 9b. **El documento de registro, servido por HTTPS.** El digest ya se ancla de verdad —ver arriba—, pero el documento todavía se sirve desde memoria: falta publicarlo en una URL para que el camino web de A3 quede ejercido igual que el de cadena.
 10. **Fecha y rúbrica del hackathon.**
@@ -155,8 +155,8 @@ que alguien corra la app en un teléfono: ninguna fila se llena desde un emulado
 
 | Paso | Fecha | Teléfono y sistema | Commit | Resultado | Evidencia |
 |---|---|---|---|---|---|
-| 1 · Groth16 en `/prueba` (primera vez, con descarga) | | | | | |
-| 1 · Groth16 en `/prueba` (segunda vez) | | | | | |
+| 1 · Groth16 en `/prueba` (primera vez, con descarga) | 2026-09-25 | moto g54 5G, Android 15, arm64-v8a | APK EAS `preview` desde `feat/privy-wired` (#105) | ✅ 9,7 s, incluye descargar y cargar la llave de 21 MB; salidas 1 · 3 · 1 · 1 | Texto de la pantalla leído por `uiautomator` vía adb; `libknowni_prover.so` arm64 (1 564 584 bytes) dentro del APK |
+| 1 · Groth16 en `/prueba` (segunda vez) | 2026-09-25 | moto g54 5G, Android 15, arm64-v8a | APK EAS `preview` desde `feat/privy-wired` (#105) | ✅ 1,3 s, prueba y verificación con la llave ya cargada | Igual; `logcat` sin errores |
 | 2 · Recorrido `/` → `/acuse` con el emisor real | | | | | |
 | 3 · Presentación en modo avión (A12) | | | | | |
 | 4 · Repetición rechazada tras reiniciar la app | | | | | |

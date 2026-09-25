@@ -13,7 +13,8 @@ el tercero es el documento de registro que A3 necesita publicar.
 | `/.well-known/apple-app-site-association` | iOS valida el dominio contra el team id y el bundle de la app antes de dejar usar una passkey |
 | `/.well-known/assetlinks.json` | lo mismo en Android, contra el paquete y la huella del certificado de firma |
 | `/registry.json` | el documento de registro firmado, la raíz de confianza *web* de `RegistryPort` |
-| `/index.html` | el pitch para jurado, en una sola página con scroll y anclas, según W1–W7 de [`docs/plan.md`](../docs/plan.md). Sin JavaScript y sin peticiones a terceros — ver [`DESIGN.md`](DESIGN.md) |
+| `/index.html` | el pitch para jurado, contado con diagramas, en una sola página con scroll y anclas, según W1–W7 de [`docs/plan.md`](../docs/plan.md). Sin JavaScript y sin peticiones a terceros — ver [`DESIGN.md`](DESIGN.md) |
+| `/qr/*.svg` | los códigos QR, generados por [`tools/write-qr.ts`](tools/write-qr.ts) y servidos desde aquí |
 
 El mismo dominio cierra dos pendientes: es el `EXPO_PUBLIC_PRIVY_RP` de la app y
 la URL del documento de registro. Uno, no dos.

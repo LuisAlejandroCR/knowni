@@ -88,12 +88,35 @@ Una sola página, un `h1`, seis secciones con ancla. El orden lo fija
 
 | Sección | Qué hace |
 | --- | --- |
-| `#promesa` | La promesa y el resultado para la contraparte. No nombra cédula, fuente, ZK ni cadena — W1 |
+| `#promesa` | La promesa, y el diagrama de quién habla con quién. No nombra cédula, fuente, ZK ni cadena — W1 |
 | `#frontera` | Qué demuestra y qué **no**, antes de enseñar mecanismo |
-| `#recorrido` | Compraventa de vehículo ante notario, en cinco pasos — W2, W3 |
+| `#recorrido` | Compraventa de vehículo ante notario, en cinco pasos, más lo que va dentro del sobre y lo que nunca sale — W2, W3 |
+| `#demo` | El video del recorrido |
+| `#apps` | El QR del build de prueba |
 | `#evidencia` | Cada recibo con sus dos frases, **Prueba** y **No prueba** — W4 |
 | `#falta` | Lo que no está listo, antes del cierre — W5 |
 | `#cierre` | Una frase y tres salidas distintas — W6 |
+
+### Los diagramas son HTML, no imágenes
+
+El riel del recorrido, el flujo de la promesa y las filas tachadas se dibujan con
+CSS. La razón no es purismo: una imagen no reflúe en un teléfono de 320 px, no
+aguanta el zoom al 500% que `responsive.md` exige, y su texto no lo lee un
+lector de pantalla. Un `<img>` entra cuando lo que muestra no es texto.
+
+### El QR se genera aquí
+
+`web/tools/write-qr.ts` escribe un SVG de kilobyte y medio en `public/qr/`. Una
+imagen pedida a una API de códigos QR le contaría a esa API quién mira el pitch,
+y W7 dice que esta página no incrusta terceros. El destino se pasa por argumento
+y la herramienta rehúsa sin él: un QR que apunta a un sitio equivocado se
+imprime, se pega en una sala y nadie lo revisa.
+
+### Un hueco sin contenido se dibuja como hueco
+
+El video y el QR usan la familia ámbar y el borde punteado, con la palabra
+**pendiente** dentro. Nunca un enlace muerto, nunca una imagen de relleno que
+parezca contenido real.
 
 Se recorre con **scroll**, no con paginación: un jurado enlaza una sección, no
 avanza por pasos. Sin JavaScript y sin terceros — W7.

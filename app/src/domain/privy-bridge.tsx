@@ -4,13 +4,15 @@
 
 import { useCallback, useRef } from "react";
 import { usePrivy, useEmbeddedWallet } from "@privy-io/expo";
-import { useLoginWithPasskey } from "@privy-io/expo/passkey";
+import { useLoginWithPasskey, useSignupWithPasskey } from "@privy-io/expo/passkey";
 import { useCreateWallet, useSignRawHash } from "@privy-io/expo/extended-chains";
 import type { PrivyBridge } from "./wallet-port-bridge.ts";
 
 export function usePrivyBridge(): PrivyBridge {
   const { user, logout } = usePrivy();
   const { loginWithPasskey } = useLoginWithPasskey();
+  const { signupWithPasskey } = useSignupWithPasskey();
+  const relyingParty = process.env.EXPO_PUBLIC_PRIVY_RP ?? "";
   const { createWallet } = useCreateWallet();
   const { signRawHash } = useSignRawHash();
   useEmbeddedWallet();
@@ -27,9 +29,14 @@ export function usePrivyBridge(): PrivyBridge {
 
   return {
     loginWithPasskey: async () => {
-      const loggedIn = await loginWithPasskey({ relyingParty: process.env.EXPO_PUBLIC_PRIVY_RP ?? "" });
+      const loggedIn = await loginWithPasskey({ relyingParty });
       justLoggedIn.current = loggedIn ?? undefined;
       return loggedIn !== undefined;
+    },
+    signupWithPasskey: async () => {
+      const { user: signedUp } = await signupWithPasskey({ relyingParty });
+      justLoggedIn.current = signedUp;
+      return true;
     },
     stellarAddress,
     createStellarWallet: async () => {

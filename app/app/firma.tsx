@@ -11,7 +11,7 @@ import type { PrivyBridge } from "../src/domain/wallet-port-bridge.ts";
 import { explorerUrl, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
 import { balancesOf, type Balance, type PayerWalletPort } from "../src/domain/wallet-port.ts";
-import { createPrivyWallet, privyConfigured } from "../src/domain/wallet-privy.ts";
+import { createPrivyWallet, privyConfigured, type PasskeyMode } from "../src/domain/wallet-privy.ts";
 
 const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], string> = {
   quote_expired: "El pago de prueba venció antes de firmarse.",
@@ -41,19 +41,21 @@ function NotConfigured() {
 }
 
 function PrivySigner() {
-  // The hooks hand back new functions on every render � after login, one that
+  // The hooks hand back new functions on every render — after login, one that
   // sees the user. The wallet lives across renders, so it reads the latest.
   const bridge = usePrivyBridge();
   const latest = useRef<PrivyBridge>(bridge);
   latest.current = bridge;
+  const mode = useRef<PasskeyMode>("login");
   const [wallet] = useState<PayerWalletPort>(() =>
     createPrivyWallet({
       loginWithPasskey: () => latest.current.loginWithPasskey(),
+      signupWithPasskey: () => latest.current.signupWithPasskey(),
       stellarAddress: () => latest.current.stellarAddress(),
       createStellarWallet: () => latest.current.createStellarWallet(),
       signRawHash: (address, hash) => latest.current.signRawHash(address, hash),
       logout: () => latest.current.logout(),
-    }),
+    }, () => mode.current),
   );
   const [account, setAccount] = useState<string | undefined>();
   const [balances, setBalances] = useState<readonly Balance[]>([]);
@@ -61,7 +63,8 @@ function PrivySigner() {
   const [message, setMessage] = useState<string | undefined>();
   const [result, setResult] = useState<PaymentResult | undefined>();
 
-  const connect = async () => {
+  const connect = async (chosen: PasskeyMode) => {
+    mode.current = chosen;
     setBusy(true);
     setMessage(undefined);
     try {
@@ -69,8 +72,10 @@ function PrivySigner() {
       setAccount(connected);
       if (connected === undefined) setMessage("La passkey no abrió sesión o Privy no devolvió una wallet Stellar.");
       else setBalances(await balancesOf(connected));
-    } catch {
-      setMessage("La passkey no abrió sesión. Revisa el dominio y los identificadores en el panel de Privy.");
+    } catch (error) {
+      // Privy's own words, because "it failed" is what a device run cannot debug.
+      const detail = error instanceof Error ? error.message : String(error);
+      setMessage(`La passkey no abrió sesión: ${detail}`);
     } finally {
       setBusy(false);
     }
@@ -133,7 +138,10 @@ function PrivySigner() {
       </ScrollView>
       <Footer>
         {account === undefined ? (
-          <Button onPress={connect} disabled={busy}>{busy ? "Abriendo…" : "Entrar con passkey"}</Button>
+          <>
+            <Button onPress={() => void connect("signup")} disabled={busy}>{busy ? "Abriendo…" : "Crear passkey"}</Button>
+            <Button tone="secondary" onPress={() => void connect("login")} disabled={busy}>Ya tengo passkey</Button>
+          </>
         ) : (
           <Button onPress={pay} disabled={busy}>{busy ? "Firmando…" : "Pagarme 1 XLM"}</Button>
         )}

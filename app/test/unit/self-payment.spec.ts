@@ -25,6 +25,7 @@ function horizon() {
 const privy = (sign: (hash: string) => string) =>
   createPrivyWallet({
     loginWithPasskey: async () => true,
+    signupWithPasskey: async () => true,
     stellarAddress: async () => SIGNER_ACCOUNT,
     createStellarWallet: async () => undefined,
     signRawHash: async (_address, hash) => `0x${sign(hash.replace(/^0x/, ""))}`,

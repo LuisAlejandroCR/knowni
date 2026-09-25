@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "co.knowni.wallet",
+      "sha256_cert_fingerprints": [
+        "79:7D:EC:70:26:36:AA:B4:BF:7C:4B:F5:66:5A:7F:B6:86:1E:69:A9:8F:A1:EB:3C:2A:78:50:51:0F:22:5D:89"
+      ]
+    }
+  }
+]

@@ -141,9 +141,25 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 7. **Cobertura de PILA por tipo de trabajador**, antes de dejar que `formality` influya en nada.
    Es el requisito de D-11 y no está medido.
 8. **Parámetros de Poseidon para BLS12-381.** El único riesgo que puede cambiar la arquitectura.
-9. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista.
+9. **Tiempo de prueba en un teléfono real.** Ninguna cifra hasta que exista. El banco `/prueba` la
+   mide; se anota abajo, en *Corrida en teléfono físico*.
 9b. **El documento de registro, servido por HTTPS.** El digest ya se ancla de verdad —ver arriba—, pero el documento todavía se sirve desde memoria: falta publicarlo en una URL para que el camino web de A3 quede ejercido igual que el de cadena.
 10. **Fecha y rúbrica del hackathon.**
+
+## Corrida en teléfono físico
+
+El guion está en `app/README.md`, *Corrida en un teléfono físico*. Una fila por paso, pase o falle;
+la columna de evidencia lleva la captura, el hash de la transacción o el texto del fallo. Vacía hasta
+que alguien corra la app en un teléfono: ninguna fila se llena desde un emulador ni desde CI.
+
+| Paso | Fecha | Teléfono y sistema | Commit | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| 1 · Groth16 en `/prueba` (primera vez, con descarga) | | | | | |
+| 1 · Groth16 en `/prueba` (segunda vez) | | | | | |
+| 2 · Recorrido `/` → `/acuse` con el emisor real | | | | | |
+| 3 · Presentación en modo avión (A12) | | | | | |
+| 4 · Repetición rechazada tras reiniciar la app | | | | | |
+| 5 · Pago testnet firmado en el teléfono | | | | | |
 
 ## Deuda conocida
 

@@ -33,7 +33,8 @@ dominio entra por `paths` de TypeScript, no por el registro.
 | Login | passkey con Privy; sesión de 15 min atada al dispositivo |
 | Pago | coordina cotización → firma → Horizon → emisión; nunca consulta fuentes si el pago falla |
 
-**No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto.
+**No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto; el guion está
+abajo, en *Corrida en un teléfono físico*.
 Tampoco se ha hecho una firma real con Privy o WalletConnect: faltan sus llaves. El motor sí está
 probado contra ambos contratos con Horizon y wallets inyectados; no se presenta eso como corrida real.
 
@@ -49,6 +50,32 @@ probado contra ambos contratos con Horizon y wallets inyectados; no se presenta 
 | `/acuse` | 06 Acuse | Enviar no es firmar |
 | `/verificador` | 07 Verificador | Integridad y frescura, sin expediente |
 | `/degradado` | 08 Degradación | Falta una respuesta ≠ no cumple |
+| `/prueba` | Banco de prueba | Groth16 en el teléfono sobre datos de ejemplo, fuera del recorrido — D-82 |
+
+## Corrida en un teléfono físico
+
+Nada de esto se ha ejecutado aún. Es el guion para hacerlo una vez y dejar evidencia en
+`docs/verificacion.md`, bajo *Corrida en teléfono físico*. Expo Go **no sirve**: el prover y Privy
+son código nativo, así que hace falta una build de desarrollo.
+
+```bash
+cd app
+npx expo run:android      # teléfono por USB con depuración activada; en iOS: npx expo run:ios --device
+```
+
+1. **Prueba Groth16 (plan, pendiente 5).** Abrir `knowni://prueba` y pulsar *Generar prueba*. La primera
+   vez descarga 21 MB. Anotar el segundo de la pantalla y el modelo del teléfono. Repetir: la segunda
+   vez no descarga.
+2. **Recorrido completo (pendiente 1).** Emisor en el portátil y `EXPO_PUBLIC_ISSUER_URL=http://<ip>:8787`.
+   Ir de `/` a `/acuse` con una solicitud nueva. Captura de `/revision` y de `/acuse`.
+3. **Sin red (A12).** Con las credenciales ya emitidas, modo avión, repetir la presentación. Debe
+   emitir sin red; si algo pide red, anotarlo como fallo, no rodearlo.
+4. **Persistencia.** Cerrar la app a la fuerza y reabrirla: la misma respuesta presentada otra vez
+   tiene que rechazarse como repetida (el libro de nulificadores sobrevive).
+5. **Transacción propia (pendiente 3).** Pagar con la llave del dispositivo en testnet y guardar el
+   hash; el enlace del explorer es la evidencia.
+
+Cada paso deja una fila, pase o falle. Un paso que falla es evidencia útil; uno sin fila no ocurrió.
 
 ## Correrlo contra fuentes reales
 

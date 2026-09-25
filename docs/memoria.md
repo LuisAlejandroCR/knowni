@@ -1818,6 +1818,23 @@ target correcto es `wasm32v1-none`; CI lo usa ahora.
 *Lo que no cierra:* la llave es de desarrollo; la transacción salió del portátil, no del teléfono; y
 el recorrido de la app no llama a este contrato. Son los pendientes 1 y 3, no este.
 
+### D-84 — Privy llega a una pantalla: el banco `/firma` se paga 1 XLM a sí mismo · 2026-09-25
+
+*Qué se hizo:* `PrivyProvider` envuelve el stack solo si hay `EXPO_PUBLIC_PRIVY_APP_ID`, y el banco
+`/firma` entra con passkey, obtiene la wallet Stellar de Privy y se paga 1 XLM en testnet
+(`self-payment.ts`). Antes, `payQuote` pasó a verificar la firma ed25519 contra la cuenta que paga
+antes de enviarla (#104): una firma real que llega a Horizon es de esa cuenta sobre esa transacción.
+
+*Lo que encontró:* Privy nunca se había empaquetado — nada importaba el puente. Al hacerlo:
+`react-native-passkeys` y las extensiones nativas estaban solo anidadas bajo Privy, así que el
+autolinking no las veía; faltaban `expo-web-browser`, `expo-apple-authentication`,
+`expo-secure-store` y los polyfills (van en `index.ts`, antes del router); y `jose` resolvía su build
+de Node, así que Metro lo resuelve como navegador. Y el puente devolvía `true` aunque el login
+fallara, y leía el usuario del render anterior: la wallet habría creado una segunda cuenta Stellar.
+
+*Lo que no cierra:* nada de esto ha corrido en un teléfono. Falta el dominio de la passkey y el dev
+build — `docs/wallets.md`. Freighter sigue sin puente WalletConnect.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1915,6 +1932,7 @@ el recorrido de la app no llama a este contrato. Son los pendientes 1 y 3, no es
 | 2026-09-25 | La zkey se descarga una vez a los documentos de la app, y Rust comprueba su SHA-256 antes de leerla; un `zkey_mismatch` borra y descarga una sola vez más. Publicada en el despliegue web — D-81. 9 pruebas del prover y 18 de la app sobre el prover |
 | 2026-09-25 | Banco `/prueba`: el teléfono descarga la llave, prueba sobre un ejemplo generado del fixture del circuito y dice cuánto tardó. Fuera del recorrido, porque el recorrido es otro perfil y no hay reclamos reales para el circuito — D-82. 77 pruebas de la app |
 | 2026-09-25 | El verificador, desplegado en testnet, acepta la prueba Groth16 real: `anchor` en `0db7a479…` gasta el nulificador; una señal alterada da `#4` en la red. Y el `.wasm` de CI no era desplegable: `wasm32-unknown-unknown` emite *reference types*; pasa a `wasm32v1-none` — D-83 |
+| 2026-09-25 | Privy en una pantalla: banco `/firma`, passkey → wallet Stellar → 1 XLM a sí misma en testnet, con la firma verificada antes de Horizon. Empaquetar Privy por primera vez destapó peers nativos sin autolinking, polyfills y `jose` en build de Node — D-84. 86 pruebas de la app |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

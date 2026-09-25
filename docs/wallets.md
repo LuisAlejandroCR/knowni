@@ -14,10 +14,10 @@ real que pase por aquí es, por construcción, una firma correcta de esa cuenta 
 
 | Wallet | Adaptador | Puente | Pantalla |
 |---|---|---|---|
-| Privy | `wallet-privy.ts` — completo | `privy-bridge.tsx` — escrito | ⏳ **no está conectado a ninguna pantalla** |
+| Privy | `wallet-privy.ts` — completo | `privy-bridge.tsx` — completo | banco `/firma` (D-84); ⏳ no en el recorrido de pago |
 | Freighter | `wallet-freighter.ts` — completo | ⏳ **no existe**: no hay paquete WalletConnect instalado | ⏳ no |
 
-Con las llaves puestas y sin esas dos piezas, ninguna de las dos wallets firma nada en la app.
+Privy firma desde `/firma` en cuanto tenga su dominio y un dev build. Freighter no firma nada hasta que exista su puente.
 
 ## Privy
 
@@ -51,7 +51,8 @@ Lo que ya existe: `EXPO_PUBLIC_PRIVY_APP_ID`.
 
 ## Cómo se comprueba una firma real
 
-1. Pagar desde la app con la wallet. Si la firma no es de la cuenta o no es sobre esa transacción,
+1. Abrir `knowni://firma`, entrar con passkey y pulsar *Pagarme 1 XLM*. La cuenta necesita saldo:
+   Friendbot sobre la dirección que muestra la pantalla. Si la firma no es de la cuenta o no es sobre esa transacción,
    el pago termina en `wallet_rejected` **sin llegar a Horizon** — eso ya es un resultado a anotar.
 2. Si paga, abrir `https://stellar.expert/explorer/testnet/tx/<hash>`: la cuenta origen es la de la
    wallet y el memo es el `paymentRef` de la cotización.

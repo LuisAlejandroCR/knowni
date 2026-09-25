@@ -51,6 +51,7 @@ probado contra ambos contratos con Horizon y wallets inyectados; no se presenta 
 | `/verificador` | 07 Verificador | Integridad y frescura, sin expediente |
 | `/degradado` | 08 Degradación | Falta una respuesta ≠ no cumple |
 | `/prueba` | Banco de prueba | Groth16 en el teléfono sobre datos de ejemplo, fuera del recorrido — D-82 |
+| `/firma` | Banco de firma | Privy con passkey se paga 1 XLM en testnet; la firma se verifica antes de Horizon — D-84 |
 
 ## Corrida en un teléfono físico
 

@@ -1,8 +1,14 @@
 <!DOCTYPE html>
-<!-- index.html: la raíz del dominio. No es una página de producto: este
-     dominio existe para servir tres ficheros a máquinas, y una raíz que
-     responde 404 hace dudar de si el despliegue salió. Dice qué sirve y no
-     afirma que algo esté verificado. Ver web/README.md. -->
+<!-- index.html: la raíz del dominio. No es una página de producto: este dominio
+     existe para servir tres ficheros a máquinas, y una raíz que responde 404
+     hace dudar de si el despliegue salió.
+     Los colores, el espaciado, la escala de tipo y los radios son los de
+     app/src/theme.ts, uno a uno: la web y la app no deberían parecer dos
+     productos. El lenguaje visual —marca cuadrada, superficies sobre lienzo,
+     filas con etiqueta en versalita— viene de creva-sealpay/frontend.
+     Sin peticiones a terceros, a propósito: este dominio sirve una raíz de
+     confianza, y una fuente remota aquí es un tercero mirando quién la pide.
+     Ver web/README.md. -->
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -11,60 +17,147 @@
     <title>Knowni — registro</title>
     <style>
       :root {
-        color-scheme: light dark;
-        --fondo: #fbfbfa;
-        --texto: #1a1a18;
-        --tenue: #6b6b66;
-        --linea: #e3e3df;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --fondo: #161614;
-          --texto: #ededea;
-          --tenue: #97978f;
-          --linea: #2e2e2a;
-        }
+        /* app/src/theme.ts → color */
+        --canvas: #fafbf7;
+        --page: #e7e9e4;
+        --ink: #182c29;
+        --ink-soft: #56655b;
+        --ink-faint: #68756a;
+        --deep: #193e36;
+        --lime: #dbef9e;
+        --lime-soft: #e8f0d8;
+        --line: #dce2d8;
+        --card: #ffffff;
+        --amber: #fff4dd;
+        --amber-line: #e8d0a3;
+        --amber-ink: #745015;
+        /* theme.ts → radius */
+        --r-card: 18px;
+        --r-icon: 11px;
+        --r-pill: 20px;
+        color-scheme: light;
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        padding: 48px 16px;
-        background: var(--fondo);
-        color: var(--texto);
-        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        padding: 34px 16px 24px;
+        background: var(--page);
+        color: var(--ink);
+        font: 14px/20px ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
         display: flex;
         justify-content: center;
       }
-      main { width: 100%; max-width: 34rem; }
-      h1 { font-size: 1.25rem; margin: 0 0 0.25rem; letter-spacing: -0.01em; }
-      p { color: var(--tenue); margin: 0 0 2rem; }
-      ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--linea); }
-      li { border-bottom: 1px solid var(--linea); padding: 0.875rem 0; }
-      code, a { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.875rem; }
-      a { color: inherit; }
-      span { display: block; color: var(--tenue); font-size: 0.8125rem; margin-top: 0.25rem; }
-      footer { margin-top: 2rem; color: var(--tenue); font-size: 0.8125rem; }
+      /* min-width:0 y el quiebre de la ruta: el nombre del fichero de Apple no
+         tiene dónde partirse, y como ítem flex empujaba el ancho mínimo y
+         sacaba la página fuera de un teléfono estrecho. */
+      main { width: 100%; max-width: 30rem; min-width: 0; }
+
+      .mark {
+        width: 46px; height: 46px;
+        border-radius: var(--r-icon);
+        background: var(--deep);
+        color: var(--lime);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 21px; font-weight: 800; letter-spacing: -0.04em;
+        margin-bottom: 15px;
+      }
+      .eyebrow {
+        font-size: 11px; letter-spacing: 1.8px; font-weight: 700;
+        text-transform: uppercase; color: var(--ink-faint);
+        margin: 0 0 5px;
+      }
+      h1 {
+        font-size: 29px; line-height: 32px; letter-spacing: -1.2px; font-weight: 800;
+        margin: 0 0 10px;
+      }
+      .lede { color: var(--ink-soft); margin: 0 0 24px; }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--r-card);
+        overflow: hidden;
+      }
+      .row { padding: 15px; border-top: 1px solid var(--line); }
+      .row:first-child { border-top: 0; }
+      .path {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12.5px; font-weight: 600; color: var(--ink);
+        text-decoration: none;
+        overflow-wrap: anywhere;
+      }
+      a.path { border-bottom: 1px solid var(--lime); padding-bottom: 1px; }
+      a.path:hover { border-bottom-color: var(--deep); }
+      .row p { margin: 5px 0 0; font-size: 12px; line-height: 17px; color: var(--ink-soft); }
+
+      .tag {
+        display: block;
+        width: fit-content;
+        background: var(--lime-soft);
+        border-radius: var(--r-pill);
+        padding: 3px 9px;
+        font-size: 11px; letter-spacing: 1.3px; font-weight: 700;
+        text-transform: uppercase; color: var(--deep);
+        margin-bottom: 8px;
+      }
+      .tag.pending {
+        background: var(--amber);
+        border: 1px solid var(--amber-line);
+        color: var(--amber-ink);
+      }
+
+      .note {
+        margin-top: 24px;
+        border-left: 3px solid var(--lime);
+        padding: 3px 0 3px 12px;
+        font-size: 12px; line-height: 17px; color: var(--ink-soft);
+      }
+      footer {
+        margin-top: 15px;
+        font-size: 11px; letter-spacing: 1.3px; font-weight: 700;
+        text-transform: uppercase; color: var(--ink-faint);
+      }
     </style>
   </head>
   <body>
     <main>
-      <h1>Knowni — registro</h1>
-      <p>Este dominio sirve tres ficheros. No hay nada más que ver aquí.</p>
-      <ul>
-        <li>
-          <a href="/registry.json">/registry.json</a>
-          <span>El documento de registro firmado. Su digest está anclado en cadena: las dos raíces de confianza son sobre estos mismos bytes.</span>
-        </li>
-        <li>
-          <code>/.well-known/apple-app-site-association</code>
-          <span>iOS valida este dominio antes de dejar usar una passkey.</span>
-        </li>
-        <li>
-          <code>/.well-known/assetlinks.json</code>
-          <span>Lo mismo en Android, contra la huella del certificado de firma.</span>
-        </li>
-      </ul>
-      <footer>Los tres se generan desde el repositorio y se firman fuera de este servidor.</footer>
+      <div class="mark" aria-hidden="true">K</div>
+      <p class="eyebrow">Registro</p>
+      <h1>Tres ficheros, y nada más</h1>
+      <p class="lede">
+        Este dominio no tiene producto. Existe para que dos máquinas puedan
+        comprobar algo: un verificador, quién firma; un teléfono, que la passkey
+        es de esta app.
+      </p>
+
+      <div class="card">
+        <div class="row">
+          <span class="tag">Raíz de confianza</span>
+          <a class="path" href="/registry.json">/registry.json</a>
+          <p>
+            El documento de registro firmado. Su digest está anclado en cadena:
+            las dos raíces de confianza son sobre estos mismos bytes, nunca sobre
+            dos documentos.
+          </p>
+        </div>
+        <div class="row">
+          <span class="tag pending">Pendiente</span>
+          <span class="path">/.well-known/apple-app-site-association</span>
+          <p>iOS valida este dominio contra el team id y el bundle antes de dejar usar una passkey.</p>
+        </div>
+        <div class="row">
+          <span class="tag pending">Pendiente</span>
+          <span class="path">/.well-known/assetlinks.json</span>
+          <p>Lo mismo en Android, contra la huella del certificado con el que se firma el build.</p>
+        </div>
+      </div>
+
+      <p class="note">
+        Los tres se generan desde el repositorio. El documento se firma fuera de
+        este servidor: la semilla de la autoridad no vive donde vive el sitio.
+      </p>
+      <footer>knowni · co.knowni.wallet</footer>
     </main>
   </body>
 </html>

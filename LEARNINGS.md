@@ -69,6 +69,13 @@ nativo y prohíbe cualquier atajo de servidor.
   `type Purpose = "lease" | "purchase" | …` — la capa que no puede saber qué es un arriendo,
   sabiéndolo. El producto es *demuestra que calificas para firmar*; el contrato es un perfil.
 
+- `2026-09-25` — circom resuelve un `include` en la carpeta del archivo que lo incluye **antes** que
+  cualquier `-l`. Cambiar de curva poniendo otra carpeta en `-l` no cambia nada si hay una copia al
+  lado; lo seguro es compilar desde una copia de preparación. Y un dominio reducido al campo es otro
+  número en cada curva — D-78.
+- `2026-09-25` — En este Windows, Smart App Control bloquea los build scripts de Rust de crates
+  nuevos (`os error 4551`). Los tests del contrato corren en Docker (`rust:1-bookworm`).
+
 ## 2. ¿Qué costó más de lo esperado, y por qué?
 
 - `2026-09-20` — Un workspace entero (`retrieval/`) construido sobre la lectura equivocada de

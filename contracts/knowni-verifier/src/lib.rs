@@ -16,16 +16,19 @@
 //! bug: a valid proof about a different issuer root, or a session that is
 //! not this one, would otherwise sail through.
 //!
-//! STATUS: compiles, and the policy above is tested in `test.rs`. Never
-//! deployed, and no real Groth16 proof has been verified against it: every
-//! test is refused before the pairing, which is the order this contract
-//! promises. No measured fee or proof-verification time is claimed anywhere
-//! in this repository.
+//! STATUS: compiles, the policy above is tested in `test.rs`, and a real
+//! Groth16 proof over BLS12-381 verifies in `test_real_proof.rs` against a
+//! development key. Never deployed. No measured fee or proof-verification
+//! time is claimed anywhere in this repository.
 
 #![no_std]
 
 #[cfg(test)]
 mod test;
+#[cfg(test)]
+mod real_proof;
+#[cfg(test)]
+mod test_real_proof;
 
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype,

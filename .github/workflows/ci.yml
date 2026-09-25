@@ -41,7 +41,9 @@ jobs:
       # generator reads the domain list from core through it.
       - run: npm install
       - name: check the domain constants were generated, not typed
-        run: node --experimental-strip-types circuits/tools/write-domains.ts | diff - circuits/domains.circom
+        run: |
+          node --experimental-strip-types circuits/tools/write-domains.ts | diff - circuits/domains.circom
+          node --experimental-strip-types circuits/tools/write-domains.ts bls12381 | diff - circuits/domains_bls12381.circom
       - name: check the poseidon constants were generated, not typed
         run: |
           node --experimental-strip-types circuits/tools/write-poseidon.ts \
@@ -80,18 +82,32 @@ jobs:
           node --experimental-strip-types tools/check-claim-witness.ts /tmp/income_witness.json
       # The curve Stellar verifies. The BLS constants file is a drop-in for the
       # BN254 one — same template names — so the swap is a directory on -l.
-      - name: compile the circuit on BLS12-381 too
+      # circom resolves an include in the including file's own directory
+      # before any -l path, so compiling eligibility.circom in place keeps the
+      # BN254 constants whatever -l says. A staging copy is the only swap.
+      - name: compile the circuit on BLS12-381 too, from a staging copy
         working-directory: circuits
         run: |
-          mkdir -p /tmp/bls && cp poseidon_knowni_bls12381.circom /tmp/bls/poseidon_knowni.circom
-          circom eligibility.circom -l /tmp/bls -l . -l /tmp/circomlib/circuits \
-            -p bls12381 --r1cs --sym --output /tmp/bls
+          mkdir -p /tmp/bls/src && cp *.circom /tmp/bls/src/
+          cp poseidon_knowni_bls12381.circom /tmp/bls/src/poseidon_knowni.circom
+          cp domains_bls12381.circom /tmp/bls/src/domains.circom
+          circom /tmp/bls/src/eligibility.circom -l /tmp/circomlib/circuits             -p bls12381 --r1cs --sym --wasm --output /tmp/bls
           head -13 /tmp/bls/eligibility.sym | cut -d, -f4 | sed 's/^main\.//' > /tmp/bls/signals.txt
           grep -v '^#' eligibility.signals.txt | diff - /tmp/bls/signals.txt
+      # The witness only exists if every Merkle root and commitment core
+      # computed on BLS12-381 is the one the circuit computes.
+      - name: build a full eligibility witness over BLS12-381 from core's fixture
+        working-directory: circuits
+        run: |
+          node --experimental-strip-types tools/write-eligibility-input.ts bls12381 > /tmp/bls/input.json
+          npx --yes snarkjs@0.7.5 wtns calculate             /tmp/bls/eligibility_js/eligibility.wasm /tmp/bls/input.json /tmp/bls/eligibility.wtns
+      - name: check the Soroban proof fixture was generated from the committed proof
+        run: |
+          node --experimental-strip-types circuits/tools/write-soroban-proof.ts             | diff - contracts/knowni-verifier/src/real_proof.rs
       - name: check the circuit and core agree on the digest over BLS12-381
         working-directory: circuits
         run: |
-          circom test/poseidon_main.circom -l /tmp/bls -l . -p bls12381 --wasm --output /tmp/bls
+          circom test/poseidon_main.circom -l /tmp/bls/src -p bls12381 --wasm --output /tmp/bls
           echo '{"inputs":["1","2"]}' > /tmp/bls/poseidon_input.json
           npx --yes snarkjs@0.7.5 wtns calculate \
             /tmp/bls/poseidon_main_js/poseidon_main.wasm /tmp/bls/poseidon_input.json \

@@ -10,12 +10,15 @@ record that the nullifier is spent.
 
 ## Status
 
-**Compiles, and its policy is tested. Not deployed.** `cargo test` runs nine
-tests over the three rules below, and the `wasm32-unknown-unknown` release
-artifact is built in CI. No fee, proof-verification time or deployment address
-is claimed anywhere in this repository, and no real Groth16 proof has been
-verified against this contract: every test is refused *before* the pairing,
-which is the order the contract promises.
+**Compiles, its policy is tested, and it verifies a real proof. Not deployed.**
+`cargo test` runs fifteen tests. Eleven cover the three rules below and are
+refused *before* the pairing, which is the order the contract promises. Four,
+in `test_real_proof.rs`, run a real Groth16 proof over BLS12-381 from
+`circuits/tools/groth16.sh` through `anchor`: it verifies, spends its
+nullifier, is refused as a replay, and fails the pairing when a point or an
+unread signal is changed. The key is a development key. No fee,
+proof-verification time or deployment address is claimed anywhere in this
+repository.
 
 `Cargo.lock` is committed. `soroban-env-host` asks for `ed25519-dalek
 >= 2.0.0` with no upper bound, and 3.0.0 does not compile against it — an

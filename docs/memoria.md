@@ -1689,6 +1689,37 @@ Aprobado por el humano el 2026-09-25 junto con D-76.
 *Pendiente:* ⏳ quién publica el estado de revocación de una delegación. Hoy es un puerto
 (`DelegationRevocationOracle`) sin adaptador real; sin él, la política `refuse` rechaza todo, que es
 el lado seguro.
+### D-78 — Una prueba Groth16 real sobre BLS12-381, verificada en Node y por el contrato · 2026-09-25
+
+*Qué se hizo:* `circuits/tools/groth16.sh` corre todo el camino —compilar, setup de desarrollo,
+testigo, prueba, verificación— sobre BLS12-381, y deja la llave de verificación, la prueba y las
+señales en `circuits/groth16/`. El testigo sale de `tools/eligibility-fixture.ts`, que compromete los
+reclamos con `commitClaim` de `core/` y los pliega en un árbol de profundidad 20 como lo pliega
+`merkle.circom`. Prueba en 2,5 s en un portátil; verificación en Node en menos de 1 s.
+
+*Dos errores que el camino encontró, y que nada avisaba:*
+
+1. **Los dominios eran de BN254 en las dos curvas.** Un dominio es un SHA-256 reducido al campo, así
+   que cambia con el primo. `domains.circom` se generaba solo con el primo de BN254, y `core/` sobre
+   BLS12-381 calcula otros. Ahora hay `domains_bls12381.circom`, generado y vigilado por CI igual que
+   el otro.
+2. **La compilación BLS de CI usaba las constantes de BN254.** circom resuelve un `include` en la
+   carpeta del archivo que lo incluye **antes** que cualquier `-l`; compilar `eligibility.circom` en
+   su sitio con `-l /tmp/bls` dejaba el Poseidon de BN254. Comprobado con dos archivos de una línea.
+   El testigo de Poseidon aislado pasaba porque vive en `test/`, donde no hay copia al lado. CI
+   compila ahora desde una copia de preparación y además construye el testigo completo de
+   elegibilidad: si una raíz o un compromiso no coincide, no hay testigo.
+
+*Qué prueba:* `circuits/test/unit/groth16.spec.ts` verifica la prueba, comprueba que sus señales son
+las del fixture de `core/` y que cambiar cualquiera de las 13 la rompe. En el contrato,
+`test_real_proof.rs` pasa la prueba por `anchor` contra el host BLS12-381 de Soroban: verifica, gasta
+el nulificador, rechaza la repetición y falla en el emparejamiento si se toca un punto o una señal
+que la política no lee. `real_proof.rs` se genera desde los JSON y CI rechaza uno que se desvió.
+
+*Lo que no cierra:* la llave es de **desarrollo** —un contribuyente por fase; quien la tenga puede
+forjar pruebas—. El contrato no está desplegado. Y la prueba no se ha generado **en el teléfono**:
+Hermes no trae WebAssembly, así que snarkjs no corre ahí; hace falta un prover nativo. Es el
+siguiente PR, no este.
 
 ## Bitácora
 
@@ -1781,6 +1812,7 @@ el lado seguro.
 | 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |
 | 2026-09-25 | Bloque de agentes: las tres preguntas contestadas (el agente presenta, nunca sostiene) y primer corte, la delegación firmada de `attestation/` (G2) — D-76. 479 pruebas |
 | 2026-09-25 | Bloque de agentes completo en `attestation/`: paquete endosado por el dispositivo, firma del agente, `presentedBy` como única marca, mismo libro de nulificadores y revocación de delegaciones — D-77. 489 pruebas |
+| 2026-09-25 | Primera prueba Groth16 real: sobre BLS12-381, con setup de desarrollo, verificada por snarkjs y por el contrato en `cargo test`. Encontró dos errores que no avisaban: los dominios del circuito eran los de BN254 en las dos curvas, y la compilación BLS de CI usaba las constantes de BN254 porque circom resuelve el `include` vecino antes que `-l`. La prueba en el teléfono sigue pendiente — D-78. 496 pruebas y 15 del contrato |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real
@@ -1793,8 +1825,8 @@ menos una vez.
 | Croma REST | ✅ **ejercido el 2026-09-20**: `/catalog` (200), 16 rutas sondeadas con cuerpo vacío (400/404) y `/co/rues/entities-by-name/v1` (200) sobre una empresa pública. Ninguna llamada sobre una persona |
 | Stellar Horizon / RPC | ✅ **ejercido el 2026-09-20**: cuenta creada con friendbot y transacción `0dc0fdf4…` aceptada en el ledger 4783364 |
 | Pago en USDC de punta a punta | ✅ **ejercido el 2026-09-22**: el XDR construido a mano por `stellar-payment.ts` —activo de crédito, `MEMO_HASH`, firma por hash crudo— aceptado por Horizon en `fb64700b…`, y `verifyPayment` lo acepta de vuelta. Con un activo `USDC` emitido para la prueba, porque el USDC de Circle no se puede acuñar. Falta la firma real de Privy, que necesita un app id |
-| Contrato Soroban | ⚠️ **compila desde el 2026-09-23** y sus nueve pruebas corren en CI, con el `wasm` de release construido. Nunca desplegado, y nunca ha verificado una prueba Groth16 real |
-| Circom / snarkjs | ⚠️ **circom ejercido el 2026-09-23**: `eligibility.circom` compila (10 932 restricciones no lineales) y su tabla de símbolos corrigió el contrato. snarkjs nunca corrido: no hay prueba generada ni verificada, y falta Poseidon para BLS12-381 |
+| Contrato Soroban | ⚠️ **compila desde el 2026-09-23**; desde el 2026-09-25 verifica una prueba Groth16 real en `cargo test` (15 pruebas), contra el host BLS12-381 del SDK. Nunca desplegado |
+| Circom / snarkjs | ✅ **ejercido el 2026-09-25**: prueba Groth16 sobre BLS12-381 generada con snarkjs 0.7.5 y verificada en Node y en el contrato — D-78. Llave de desarrollo; nunca generada en el teléfono |
 | Registro anclado en cadena | ✅ **ejercido el 2026-09-24**: digest del documento firmado en `MEMO_HASH` de `66bf1b7d…`, leído de vuelta por `createStellarRegistryReader` y aceptado por `createChainRegistry`. El documento se sirvió desde memoria; publicarlo por HTTPS sigue pendiente |
 | Teléfono físico | ⏳ nunca ejecutado |
 

@@ -24,8 +24,7 @@ capturas.
 5. **La severidad usa forma, texto y color** — nunca color solo. Por eso cada
    respuesta lleva un símbolo (`✓`, `—`) además del fondo.
 6. **El fichero estático ya tiene que ser correcto.** Nada que solo un script
-   pueda deshacer. Por eso los pasos son `:target` y la página no lleva
-   JavaScript.
+   pueda deshacer. La página no lleva JavaScript y el movimiento es CSS.
 7. **Ninguna petición externa.** Este dominio sirve una raíz de confianza; una
    fuente remota aquí es un tercero mirando quién pide el documento.
 
@@ -83,7 +82,7 @@ esto existe para evitar.
 
 ## Secciones
 
-Una sola página, un `h1`, seis secciones con ancla. El orden lo fija
+Una sola página, un `h1`, ocho secciones con ancla. El orden lo fija
 `docs/plan.md` → W1–W7, y no es el orden del producto: es el de un jurado.
 
 | Sección | Qué hace |
@@ -103,6 +102,20 @@ El riel del recorrido, el flujo de la promesa y las filas tachadas se dibujan co
 CSS. La razón no es purismo: una imagen no reflúe en un teléfono de 320 px, no
 aguanta el zoom al 500% que `responsive.md` exige, y su texto no lo lee un
 lector de pantalla. Un `<img>` entra cuando lo que muestra no es texto.
+
+Las dos escenas editoriales sí son imágenes: `knowni-private-vault.png` abre la
+promesa y `knowni-vehicle-story.png` sitúa el caso de Colombia. Son assets
+originales, locales, decorativos o con alternativa breve; nunca contienen copy
+necesario para entender el recorrido.
+
+### El movimiento cuenta, no adorna
+
+El hero respira, las respuestas flotan, el riel corre y cada bloque entra con el
+scroll. La secuencia dirige la mirada de promesa a caso, prueba, demo y escala.
+No hay autoplay audiovisual ni interacción escondida. Con
+`prefers-reduced-motion: reduce` se desactivan animaciones, transiciones y
+scroll suave; el contenido completo permanece visible y el riel se vuelve una
+lista estática.
 
 ### El QR se genera aquí
 

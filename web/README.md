@@ -13,13 +13,19 @@ el tercero es el documento de registro que A3 necesita publicar.
 | `/.well-known/apple-app-site-association` | iOS valida el dominio contra el team id y el bundle de la app antes de dejar usar una passkey |
 | `/.well-known/assetlinks.json` | lo mismo en Android, contra el paquete y la huella del certificado de firma |
 | `/registry.json` | el documento de registro firmado, la raíz de confianza *web* de `RegistryPort` |
-| `/index.html` | el pitch para jurado, contado con diagramas, en una sola página con scroll y anclas, según W1–W7 de [`docs/plan.md`](../docs/plan.md). Sin JavaScript y sin peticiones a terceros — ver [`DESIGN.md`](DESIGN.md) |
+| `/index.html` | el pitch visual para jurado: storytelling, imágenes locales y movimiento CSS, según W1–W9 de [`docs/plan.md`](../docs/plan.md). Sin JavaScript ni peticiones a terceros — ver [`DESIGN.md`](DESIGN.md) |
+| `/assets/*.png` | dos escenas originales de Knowni para la promesa y el caso colombiano; no contienen texto indispensable |
 | `/qr/*.svg` | los códigos QR, generados por [`tools/write-qr.ts`](tools/write-qr.ts) y servidos desde aquí |
 
 El mismo dominio cierra dos pendientes: es el `EXPO_PUBLIC_PRIVY_RP` de la app y
 la URL del documento de registro. Uno, no dos.
 
 ## Estructura propuesta para el pitch
+
+La propuesta ya está implementada en `public/index.html`: abre con una promesa
+visual, aterriza en compraventa de vehículo en Colombia, transforma documentos
+en cuatro respuestas, lleva video y QR al clímax y cierra con la ruta
+**Colombia ahora → LATAM después → global por diseño**.
 
 La referencia útil de CREVA no es su producto ni su copy: es el orden. Promesa primero, recorrido
 después, recibos verificables y límites antes del cierre. Knowni debe adoptar esa disciplina con su

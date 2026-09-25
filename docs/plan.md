@@ -407,6 +407,8 @@ dominio `/registry.json` y los dos ficheros de asociación móvil.
 | W5 | Lo que no está listo aparece antes del cierre: teléfono físico, fuentes personales consentidas, prueba Groth16 real, contrato desplegado y wallets reales | contraste con `docs/verificacion.md` |
 | W6 | El cierre ofrece tres acciones distintas: ver demo, abrir evidencia y revisar código; ninguna se presenta como si fuera otra | revisión de destinos y etiquetas |
 | W7 | La página no incrusta terceros ni mueve las rutas de confianza del dominio | inspección de HTML y prueba de rutas de `web/` |
+| W8 | La historia usa movimiento para dirigir la mirada —no como decoración— y ofrece una versión estática completa a quien reduce animaciones | revisión visual y `prefers-reduced-motion` |
+| W9 | Hero y recorrido tienen imágenes propias de Knowni; video y QR conservan una sección protagonista aunque su destino siga pendiente | test de assets locales, secciones y estados honestos |
 
 ### Día 8 — diseño móvil para aprobación
 

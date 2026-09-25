@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<!-- index.html: la raíz del dominio. No es una página de producto: este dominio
-     existe para servir tres ficheros a máquinas, y una raíz que responde 404
-     hace dudar de si el despliegue salió.
-     Los colores, el espaciado, la escala de tipo y los radios son los de
-     app/src/theme.ts, uno a uno: la web y la app no deberían parecer dos
-     productos. El lenguaje visual —marca cuadrada, superficies sobre lienzo,
-     filas con etiqueta en versalita— viene de creva-sealpay/frontend.
-     Sin peticiones a terceros, a propósito: este dominio sirve una raíz de
-     confianza, y una fuente remota aquí es un tercero mirando quién la pide.
-     Ver web/README.md. -->
+<!-- index.html: el recorrido de Knowni en cuatro pantallas, para enseñarlo.
+     Estructura tomada de creva-zk (cuatro pasos, un CTA por pantalla); tokens
+     de app/src/theme.ts; reglas de procedures/00_Files/responsive.md.
+     Sin JavaScript y sin peticiones externas: los pasos son :target, así que
+     el fichero estático ya es correcto — nunca hay un estado que solo un
+     script pueda deshacer. Ver web/DESIGN.md. -->
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex" />
-    <title>Knowni — registro</title>
+    <meta name="theme-color" content="#193e36" />
+    <meta name="description" content="Knowni — responder sin entregar el dato. El recorrido, en cuatro pantallas." />
+    <title>Knowni — el recorrido</title>
     <style>
       :root {
         /* app/src/theme.ts → color */
@@ -33,131 +31,245 @@
         --amber-ink: #745015;
         /* theme.ts → radius */
         --r-card: 18px;
-        --r-icon: 11px;
+        --r-button: 14px;
         --r-pill: 20px;
+        --r-icon: 11px;
+        /* theme.ts → space */
+        --s-xs: 5px; --s-sm: 10px; --s-md: 15px; --s-lg: 24px; --s-xl: 34px;
+        --tap: 44px;
         color-scheme: light;
       }
+      /* responsive.md, trampa 4: [hidden] pierde contra cualquier clase que
+         declare display. Una regla global lo cierra para todo elemento. */
+      [hidden] { display: none !important; }
       * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
       body {
         margin: 0;
-        padding: 34px 16px 24px;
+        padding: var(--s-lg) var(--s-md) var(--s-xl);
         background: var(--page);
         color: var(--ink);
-        font: 14px/20px ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font: 15px/22px ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         -webkit-font-smoothing: antialiased;
         display: flex;
         justify-content: center;
       }
-      /* min-width:0 y el quiebre de la ruta: el nombre del fichero de Apple no
-         tiene dónde partirse, y como ítem flex empujaba el ancho mínimo y
-         sacaba la página fuera de un teléfono estrecho. */
-      main { width: 100%; max-width: 30rem; min-width: 0; }
+      main { width: 100%; max-width: 27rem; min-width: 0; }
 
+      /* ---- cabecera ---- */
+      .brand { display: flex; align-items: center; gap: var(--s-sm); margin-bottom: var(--s-lg); }
       .mark {
-        width: 46px; height: 46px;
+        width: 34px; height: 34px; flex: none;
         border-radius: var(--r-icon);
-        background: var(--deep);
-        color: var(--lime);
+        background: var(--deep); color: var(--lime);
         display: flex; align-items: center; justify-content: center;
-        font-size: 21px; font-weight: 800; letter-spacing: -0.04em;
-        margin-bottom: 15px;
+        font-size: 16px; font-weight: 800; letter-spacing: -0.04em;
       }
-      .eyebrow {
-        font-size: 11px; letter-spacing: 1.8px; font-weight: 700;
-        text-transform: uppercase; color: var(--ink-faint);
-        margin: 0 0 5px;
+      .brand b { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+
+      /* ---- indicador de paso ---- */
+      .steps { display: flex; gap: 6px; margin-bottom: var(--s-md); }
+      .steps i { height: 4px; flex: 1; border-radius: 2px; background: var(--line); }
+      .steps i.on { background: var(--deep); }
+      .count {
+        /* ink-soft, no ink-faint: 5.04 sobre page, mientras ink-faint da 3.96 */
+        color: var(--ink-soft);
+        font-size: 11px; letter-spacing: 1.3px; font-weight: 700;
+        text-transform: uppercase; margin: 0 0 var(--s-sm);
       }
-      h1 {
-        font-size: 29px; line-height: 32px; letter-spacing: -1.2px; font-weight: 800;
-        margin: 0 0 10px;
-      }
-      .lede { color: var(--ink-soft); margin: 0 0 24px; }
+
+      /* ---- pantallas ---- */
+      /* Sin ancla se ve la primera; con ancla manda :target. Escrito como
+         una sola regla positiva a propósito: la forma con un `display: none`
+         para #paso-1 pesa más que `#paso-1:target` y lo borraba de su propia
+         pantalla. Medido, no razonado. */
+      .screen { display: none; }
+      .screen:target { display: block; }
+      body:not(:has(.screen:target)) #paso-1 { display: block; }
+
+      h1 { font-size: 27px; line-height: 31px; letter-spacing: -1.1px; font-weight: 800; margin: 0 0 var(--s-sm); }
+      .lede { color: var(--ink-soft); margin: 0 0 var(--s-lg); }
 
       .card {
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: var(--r-card);
-        overflow: hidden;
+        padding: var(--s-md);
+        margin-bottom: var(--s-md);
       }
-      .row { padding: 15px; border-top: 1px solid var(--line); }
-      .row:first-child { border-top: 0; }
-      .path {
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 12.5px; font-weight: 600; color: var(--ink);
-        text-decoration: none;
-        overflow-wrap: anywhere;
-      }
-      a.path { border-bottom: 1px solid var(--lime); padding-bottom: 1px; }
-      a.path:hover { border-bottom-color: var(--deep); }
-      .row p { margin: 5px 0 0; font-size: 12px; line-height: 17px; color: var(--ink-soft); }
+      .card h2 { font-size: 11px; letter-spacing: 1.3px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 var(--s-sm); }
 
-      .tag {
-        display: block;
-        width: fit-content;
-        background: var(--lime-soft);
-        border-radius: var(--r-pill);
-        padding: 3px 9px;
-        font-size: 11px; letter-spacing: 1.3px; font-weight: 700;
-        text-transform: uppercase; color: var(--deep);
-        margin-bottom: 8px;
+      dl { margin: 0; }
+      dl div { display: flex; gap: var(--s-sm); align-items: baseline; padding: var(--s-sm) 0; border-top: 1px solid var(--line); }
+      dl div:first-child { border-top: 0; padding-top: 0; }
+      dt { flex: 1; min-width: 0; font-size: 14px; }
+      dd { margin: 0; flex: none; }
+
+      /* La severidad usa forma, texto y color — nunca color solo.
+         responsive.md, no negociable 6. */
+      .ans {
+        display: inline-flex; align-items: center; gap: 5px;
+        border-radius: var(--r-pill); padding: 3px 10px;
+        font-size: 12px; font-weight: 700; letter-spacing: 0.2px;
       }
-      .tag.pending {
-        background: var(--amber);
-        border: 1px solid var(--amber-line);
-        color: var(--amber-ink);
-      }
+      .ans.yes { background: var(--lime-soft); color: var(--deep); }
+      .ans.no  { background: var(--amber); border: 1px solid var(--amber-line); color: var(--amber-ink); }
+      .ans::before { font-size: 13px; line-height: 1; }
+      .ans.yes::before { content: "✓"; }
+      .ans.no::before { content: "—"; }
 
       .note {
-        margin-top: 24px;
         border-left: 3px solid var(--lime);
-        padding: 3px 0 3px 12px;
-        font-size: 12px; line-height: 17px; color: var(--ink-soft);
+        padding: 2px 0 2px var(--s-sm);
+        margin: 0 0 var(--s-md);
+        font-size: 13px; line-height: 19px;
+        color: var(--ink-soft);
       }
-      footer {
-        margin-top: 15px;
-        font-size: 11px; letter-spacing: 1.3px; font-weight: 700;
-        text-transform: uppercase; color: var(--ink-faint);
+      .note.warn { border-left-color: var(--amber-line); color: var(--amber-ink); }
+
+      /* ---- acción ---- */
+      .cta, .back {
+        display: flex; align-items: center; justify-content: center;
+        min-height: var(--tap); padding: 0 var(--s-md);
+        border-radius: var(--r-button);
+        font-size: 15px; font-weight: 700;
+        text-decoration: none;
+      }
+      .cta { background: var(--deep); color: var(--canvas); }
+      .back { color: var(--ink-soft); margin-top: var(--s-xs); }
+      .cta:focus-visible, .back:focus-visible { outline: 3px solid var(--deep); outline-offset: 2px; }
+
+      footer { margin-top: var(--s-xl); color: var(--ink-soft); font-size: 12px; line-height: 17px; }
+      footer p { margin: 0 0 var(--s-xs); }
+      /* 44 px de verdad, no un ::after que la medición no ve. */
+      footer a {
+        display: inline-flex; align-items: center;
+        min-height: var(--tap); padding-right: var(--s-sm);
+        color: var(--ink); font-weight: 700;
+      }
+      footer a:focus-visible { outline: 3px solid var(--deep); outline-offset: 2px; }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
       }
     </style>
   </head>
   <body>
     <main>
-      <div class="mark" aria-hidden="true">K</div>
-      <p class="eyebrow">Registro</p>
-      <h1>Tres ficheros, y nada más</h1>
-      <p class="lede">
-        Este dominio no tiene producto. Existe para que dos máquinas puedan
-        comprobar algo: un verificador, quién firma; un teléfono, que la passkey
-        es de esta app.
-      </p>
+      <div class="brand"><span class="mark" aria-hidden="true">K</span><b>Knowni</b></div>
 
-      <div class="card">
-        <div class="row">
-          <span class="tag">Raíz de confianza</span>
-          <a class="path" href="/registry.json">/registry.json</a>
-          <p>
-            El documento de registro firmado. Su digest está anclado en cadena:
-            las dos raíces de confianza son sobre estos mismos bytes, nunca sobre
-            dos documentos.
-          </p>
+      <section class="screen" id="paso-1">
+        <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+        <p class="count">Paso 1 de 4 · Quién eres</p>
+        <h1>Tu cédula no sale de tu teléfono</h1>
+        <p class="lede">
+          La Registraduría confirma que el documento es tuyo. Lo que se guarda
+          es que respondió, no lo que respondió.
+        </p>
+        <div class="card">
+          <h2>Lo que se consulta</h2>
+          <dl>
+            <div><dt>El documento existe y está vigente</dt><dd><span class="ans yes">sí</span></dd></div>
+            <div><dt>Coincide con quien lo presenta</dt><dd><span class="ans yes">sí</span></dd></div>
+          </dl>
         </div>
-        <div class="row">
-          <span class="tag pending">Pendiente</span>
-          <span class="path">/.well-known/apple-app-site-association</span>
-          <p>iOS valida este dominio contra el team id y el bundle antes de dejar usar una passkey.</p>
-        </div>
-        <div class="row">
-          <span class="tag pending">Pendiente</span>
-          <span class="path">/.well-known/assetlinks.json</span>
-          <p>Lo mismo en Android, contra la huella del certificado con el que se firma el build.</p>
-        </div>
-      </div>
+        <p class="note">
+          La fuente responde al emisor, con tu consentimiento, y una sola vez.
+          Quien te pide la prueba nunca consulta nada.
+        </p>
+        <a class="cta" href="#paso-2">Continuar</a>
+      </section>
 
-      <p class="note">
-        Los tres se generan desde el repositorio. El documento se firma fuera de
-        este servidor: la semilla de la autoridad no vive donde vive el sitio.
-      </p>
-      <footer>knowni · co.knowni.wallet</footer>
+      <section class="screen" id="paso-2">
+        <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+        <p class="count">Paso 2 de 4 · Tu respaldo</p>
+        <h1>Cuánto ganas se vuelve un umbral</h1>
+        <p class="lede">
+          Tu ingreso entra como número y sale como respuesta. El umbral lo pone
+          quien pregunta; la cifra no viaja.
+        </p>
+        <div class="card">
+          <h2>Lo que entra</h2>
+          <dl>
+            <div><dt>Ingreso mensual, de la planilla</dt><dd><span class="ans yes">observado</span></dd></div>
+            <div><dt>Meses cotizados seguidos</dt><dd><span class="ans yes">14</span></dd></div>
+            <div><dt>Listas de sanciones</dt><dd><span class="ans yes">limpio</span></dd></div>
+          </dl>
+        </div>
+        <p class="note">
+          Cada dato dice <b>cómo se supo</b>. Un ingreso observado en la fuente y
+          uno que aportas tú no se leen igual, y esa diferencia va dentro del
+          compromiso — no al lado.
+        </p>
+        <a class="cta" href="#paso-3">Continuar</a>
+        <a class="back" href="#paso-1">Volver</a>
+      </section>
+
+      <section class="screen" id="paso-3">
+        <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+        <p class="count">Paso 3 de 4 · Qué compartiste</p>
+        <h1>Respuestas, no documentos</h1>
+        <p class="lede">
+          Esto es todo lo que cruza. Es de ancho fijo: el conjunto de campos no
+          revela qué perfil se usó.
+        </p>
+        <div class="card">
+          <h2>El sobre firmado</h2>
+          <dl>
+            <div><dt>Ingreso ≥ 3 arriendos</dt><dd><span class="ans yes">sí</span></dd></div>
+            <div><dt>Sin sanciones vigentes</dt><dd><span class="ans yes">sí</span></dd></div>
+            <div><dt>Identidad verificada</dt><dd><span class="ans yes">sí</span></dd></div>
+            <div><dt>Capacidad de pago</dt><dd><span class="ans no">no pedido</span></dd></div>
+          </dl>
+        </div>
+        <div class="card">
+          <h2>Lo que no está aquí</h2>
+          <dl>
+            <div><dt>Tu número de documento</dt><dd><span class="ans no">nunca</span></dd></div>
+            <div><dt>Tu salario</dt><dd><span class="ans no">nunca</span></dd></div>
+            <div><dt>Tu empleador</dt><dd><span class="ans no">nunca</span></dd></div>
+          </dl>
+        </div>
+        <p class="note warn">
+          Un predicado que no se pidió vale <b>no pedido</b>, no <b>falso</b>.
+          La contraparte no puede distinguir una respuesta negativa de una
+          pregunta que no hizo.
+        </p>
+        <a class="cta" href="#paso-4">Continuar</a>
+        <a class="back" href="#paso-2">Volver</a>
+      </section>
+
+      <section class="screen" id="paso-4">
+        <div class="steps" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        <p class="count">Paso 4 de 4 · Tu resultado</p>
+        <h1>El arrendador ya tiene su respuesta</h1>
+        <p class="lede">
+          Compuso los requisitos que le importan y los cuatro se cumplen. No
+          recibió un solo dato tuyo para saberlo.
+        </p>
+        <div class="card">
+          <h2>Perfil de arriendo</h2>
+          <dl>
+            <div><dt>Los tres requisitos exigidos</dt><dd><span class="ans yes">cumple</span></dd></div>
+            <div><dt>Firma del emisor</dt><dd><span class="ans yes">válida</span></dd></div>
+            <div><dt>Raíz del registro</dt><dd><span class="ans yes">anclada</span></dd></div>
+          </dl>
+        </div>
+        <p class="note">
+          El mismo sobre se verifica contra el registro servido por web y
+          contra el digest anclado en cadena. Dos raíces de confianza, un solo
+          documento.
+        </p>
+        <a class="cta" href="#paso-1">Empezar de nuevo</a>
+      </section>
+
+      <footer>
+        <p>
+          Esta página enseña el recorrido; no consulta ninguna fuente. Lo que
+          este dominio sirve de verdad es el documento de registro firmado.
+        </p>
+        <a href="/registry.json">/registry.json</a>
+      </footer>
     </main>
   </body>
 </html>

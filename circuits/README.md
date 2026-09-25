@@ -14,8 +14,9 @@ The predicate as a Circom circuit, and an honest account of what has been run.
 | `eligibility.circom`, `merkle.circom` | **Written, and compiled** — 2026-09-23, circom 2.2.3. |
 | Compiled R1CS | **Built.** 12 379 non-linear and 254 linear constraints, 8 public inputs, 5 public outputs, 12 693 wires — the same on both curves. The last move was carrying the Poseidon state as an expression instead of a signal per cell per round: 25 221 → 12 633 constraints, −50%, and the permutation is unchanged (D-74). Not committed: it is generated. |
 | Public signal order | **`eligibility.signals.txt`, written by the compiler's symbol table** and asserted by the contract's tests. CI regenerates it and refuses a fixture that drifted. |
-| WASM prover, trusted setup, proving key | **Not run.** |
-| On-chain verification against Soroban | **Not run.** No real proof has ever been produced or verified. |
+| WASM prover, trusted setup, proving key | **Run, 2026-09-25**, with `tools/groth16.sh`: a **development** setup (one contributor per phase), a proof in 2.5 s on a laptop, verified by snarkjs. Key, proof and signals in `groth16/`, checked by `test/unit/groth16.spec.ts`. |
+| On-chain verification against Soroban | **Verified in `cargo test`** against the SDK's BLS12-381 host functions (`contracts/knowni-verifier/src/test_real_proof.rs`). Never deployed. |
+| Proving on the phone | **Not run.** Hermes has no WebAssembly, so snarkjs cannot run there; it needs a native prover. |
 | The same predicates, evaluated and tested | **Done** — in `core/`. |
 
 Compiling found one thing, and it is the kind this file warned about: the
@@ -56,6 +57,20 @@ exists — but the gadget libraries do not follow automatically:
 
 This is why the architecture keeps the proof system behind a port and ships
 an attested path first. See `docs/ROADMAP.md`.
+
+## Proving, end to end
+
+```bash
+bash circuits/tools/groth16.sh <path-to-circomlib/circuits>
+node --experimental-strip-types circuits/tools/write-soroban-proof.ts > contracts/knowni-verifier/src/real_proof.rs
+```
+
+Two traps this found, both silent. Domains are digests reduced into the field,
+so they differ per curve: `domains_bls12381.circom` is generated alongside
+`domains.circom`. And circom resolves an `include` in the including file's own
+directory **before** any `-l`, so compiling `eligibility.circom` in place with a
+BLS directory on `-l` keeps the BN254 constants. The script and CI compile from
+a staging copy with both files swapped (D-78).
 
 ## Building, once the toolchain is in place
 

@@ -534,8 +534,9 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 3. Probar la app en iOS y Android físicos, incluido modo avión y persistencia real de AsyncStorage.
 4. Ejercitar con consentimiento Registraduría, capacidad, sanciones, RUNT y SIMIT; registrar solo
    evidencia sanitizada y medir cobertura antes de usar una fuente en decisiones.
-5. Generar y verificar una prueba Groth16 con setup de confianza, desplegar el contrato Soroban y
-   ejecutar el recorrido contra ese despliegue. F2–F5 siguen siendo roadmap, no trabajo cumplido.
+5. Generar la prueba Groth16 en el teléfono con un prover nativo, sustituir la llave de desarrollo
+   por una ceremonia, desplegar el contrato Soroban y ejecutar el recorrido contra ese despliegue.
+   Ya hecho: prueba real sobre BLS12-381 verificada en Node y por el contrato en `cargo test` — D-78. F2–F5 siguen siendo roadmap, no trabajo cumplido.
 
 ## Referencias primarias
 

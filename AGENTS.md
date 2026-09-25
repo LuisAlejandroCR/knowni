@@ -145,7 +145,8 @@ Reglas del trabajo en paralelo:
 2. **Un agente no edita un archivo fuera de su columna "dueño de".** Si el cambio lo exige, el
    trabajo estaba mal partido — se replantea en `docs/plan.md`.
 3. **Cada agente corre la suite completa antes de entregar**, no solo la de su workspace.
-4. **El commit es de una línea con o sin veinte agentes.** No hay trailer que diga quién lo hizo.
+4. **El commit es de una línea con o sin veinte agentes.** Los trailers de sesión son los mismos
+   con uno o con veinte: identifican la sesión, no reparten autoría.
 
 ## Documentación
 
@@ -156,9 +157,17 @@ Reglas del trabajo en paralelo:
 * **Encabezado en cada `.md`, 3–4 líneas, en español**, en comentario HTML antes del primer
   encabezado: nombre del archivo, qué contiene, y contra qué otro archivo se distingue.
 * **Mensajes de commit de una sola línea** — `tipo: descripción`, Conventional Commits, en inglés.
-  Sin cuerpo, sin emoji y **sin trailers: nunca `Co-Authored-By:`**, aunque el arnés lo pida por
-  defecto. Vale igual para un agente solo y para varios subagentes en paralelo.
-  El razonamiento va en `docs/memoria.md`, no en el commit.
+  Sin cuerpo y sin emoji. El razonamiento va en `docs/memoria.md`, no en el commit.
+* **Dos trailers, siempre** — cierran el mensaje, separados del asunto por una línea en blanco:
+
+  ```text
+  Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+  Claude-Session: https://claude.ai/code/session_<id>
+  ```
+
+  El nombre del modelo y el id son los de la sesión que lo escribió. No son autoría repartida: son
+  la única forma de volver de un commit a la conversación donde se decidió, y por eso van con uno o
+  con veinte subagentes. Un commit humano no los lleva.
 * Después de **cualquier** cambio, barrer **todos** los `.md` y actualizar cada uno que el cambio
   toque —`README.md` incluido— en el mismo lote. Nunca inventar una ruta.
 
@@ -235,8 +244,8 @@ Cosas que tienen que ser ciertas:
 8. **Aritmética financiera con enteros en unidades menores**, nunca `number` en decimales.
 9. **Cabeceras:** código 2–3 líneas (`// <filename>: …`); `.md` 3–4 líneas en español antes del
    primer encabezado.
-10. **Commits de una línea, sin cuerpo y sin trailers** — nunca `Co-Authored-By:`, con uno o con
-    veinte agentes.
+10. **Commits de una línea y sin cuerpo**, cerrados por los dos trailers de sesión
+    (`Co-Authored-By:` y `Claude-Session:`), con uno o con veinte agentes.
 
 ## Exclusiones no negociables
 
@@ -296,7 +305,7 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 | Lo que lee el usuario en pantalla | Español (Colombia) |
 | `README.md` (público) | Español e inglés, escrito para el usuario, sin jerga |
 | `docs/`, `CLAUDE.md`, `AGENTS.md` | Español |
-| Commits | Inglés, Conventional Commits, **una línea, sin trailers** |
+| Commits | Inglés, Conventional Commits, **una línea, sin cuerpo, con los dos trailers de sesión** |
 
 ## Version control
 

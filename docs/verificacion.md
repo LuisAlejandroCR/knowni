@@ -155,7 +155,7 @@ fuente secundaria** · **supuesto propio**. Sin verificar → `⏳ pendiente`.
 | `sources/src/country/colombia/pila.ts` habla de un operador que todavía no existe como integración | `sources/` | B4 |
 | ~~El código sigue llamando `standing` a lo que la documentación ya llama `sanctions`~~ **Saldada el 2026-09-24 (B2):** `SanctionsClaim`, `proveSanctions`, `SanctionsParams`, el campo del sobre, la señal del circuito y el del contrato. El tag del reclamo es un número, así que ningún compromiso cambió; `assetStanding` no se tocó | `core/`, `sources/`, `circuits/`, `contracts/` | ✅ |
 | ~~`IncomeBasis` no tiene el eje de procedencia~~ **Saldada el 2026-09-24 (B4b):** `IncomeClaim` lleva `provenance`, entra en el compromiso —ancho 10, `PoseidonKnowni12`— y `SolvencyParams` exige nombrar qué rutas acepta. El circuito y `core/` se comprueban contra un testigo que CI reconstruye en cada corrida | `core/src/claims.ts` | ✅ |
-| Los dos commits iniciales llevan cuerpo y trailer `Co-Authored-By:`, contra la regla de una línea | historia de git | no se reescribe historia; la regla aplica desde el tercero |
+| Los dos commits iniciales llevan cuerpo, contra la regla de una línea | historia de git | no se reescribe historia; la regla aplica desde el tercero. El trailer que también se les señalaba dejó de ser una desviación: desde 2026-09-25 los dos trailers de sesión son obligatorios |
 
 ## Auditoría de afirmaciones — 2026-09-20
 

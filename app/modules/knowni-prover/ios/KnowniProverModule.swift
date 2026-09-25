@@ -9,8 +9,8 @@ public class KnowniProverModule: Module {
   public func definition() -> ModuleDefinition {
     Name("KnowniProver")
 
-    AsyncFunction("prove") { (inputJson: String, zkeyPath: String) -> String in
-      guard let raw = knowni_prove(inputJson, zkeyPath) else {
+    AsyncFunction("prove") { (inputJson: String, zkeyPath: String, zkeySha256: String) -> String in
+      guard let raw = knowni_prove(inputJson, zkeyPath, zkeySha256) else {
         return "{\"error\":\"the prover returned nothing\"}"
       }
       defer { knowni_free_string(raw) }

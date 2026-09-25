@@ -644,6 +644,7 @@ dependencies = [
  "num-bigint",
  "rust-witness",
  "serde_json",
+ "sha2",
 ]
 
 [[package]]

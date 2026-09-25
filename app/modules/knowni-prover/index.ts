@@ -5,8 +5,9 @@
 import { requireOptionalNativeModule } from "expo-modules-core";
 
 export interface KnowniProverNative {
-  /// Input JSON and zkey path in; `{"proof","publicSignals"}` or `{"error"}` out.
-  prove(inputJson: string, zkeyPath: string): Promise<string>;
+  /// Input JSON, zkey path and its pinned SHA-256 in; `{"proof","publicSignals"}`
+  /// or `{"error","code"}` out.
+  prove(inputJson: string, zkeyPath: string, zkeySha256: string): Promise<string>;
 }
 
 export default requireOptionalNativeModule<KnowniProverNative>("KnowniProver") ?? undefined;

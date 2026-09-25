@@ -10,8 +10,8 @@ class KnowniProverModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("KnowniProver")
 
-    AsyncFunction("prove") { inputJson: String, zkeyPath: String ->
-      nativeProve(inputJson, zkeyPath)
+    AsyncFunction("prove") { inputJson: String, zkeyPath: String, zkeySha256: String ->
+      nativeProve(inputJson, zkeyPath, zkeySha256)
     }
   }
 
@@ -21,6 +21,6 @@ class KnowniProverModule : Module() {
     }
 
     @JvmStatic
-    external fun nativeProve(inputJson: String, zkeyPath: String): String
+    external fun nativeProve(inputJson: String, zkeyPath: String, zkeySha256: String): String
   }
 }

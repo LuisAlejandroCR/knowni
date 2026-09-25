@@ -12,12 +12,14 @@ const groth16 = (name: string): unknown =>
   JSON.parse(readFileSync(fileURLToPath(new URL(`../../../circuits/groth16/${name}`, import.meta.url)), "utf8"));
 const REAL = { proof: groth16("proof.json"), publicSignals: groth16("public.json") };
 
+const KEY = { path: "/k.zkey", sha256: "ab" };
+
 const answering = (answer: unknown): NativeProver => ({
   prove: async () => (typeof answer === "string" ? answer : JSON.stringify(answer)),
 });
 
 test("a real proof from the native module is accepted as it is", async () => {
-  const outcome = await createNativeProver(answering(REAL)).prove({ a: "1" }, "/k.zkey");
+  const outcome = await createNativeProver(answering(REAL)).prove({ a: "1" }, KEY);
   assert.equal(outcome.kind, "proved");
   if (outcome.kind === "proved") assert.deepEqual(outcome.publicSignals, REAL.publicSignals);
 });
@@ -25,28 +27,33 @@ test("a real proof from the native module is accepted as it is", async () => {
 test("the input goes to the native side as JSON, and the key path unchanged", async () => {
   const seen: string[] = [];
   const native: NativeProver = {
-    prove: async (input, zkey) => {
-      seen.push(input, zkey);
+    prove: async (input, zkey, digest) => {
+      seen.push(input, zkey, digest);
       return JSON.stringify(REAL);
     },
   };
-  await createNativeProver(native).prove({ issuerRoot: "7", idSiblings: ["1", "2"] }, "/data/eligibility.zkey");
-  assert.deepEqual(seen, ['{"issuerRoot":"7","idSiblings":["1","2"]}', "/data/eligibility.zkey"]);
+  await createNativeProver(native).prove({ issuerRoot: "7", idSiblings: ["1", "2"] }, { path: "/data/eligibility.zkey", sha256: "ab" });
+  assert.deepEqual(seen, ['{"issuerRoot":"7","idSiblings":["1","2"]}', "/data/eligibility.zkey", "ab"]);
 });
 
 test("without a native module the answer is unsupported, not a failure", async () => {
-  assert.deepEqual(await createNativeProver(undefined).prove({}, "/k.zkey"), { kind: "unsupported" });
+  assert.deepEqual(await createNativeProver(undefined).prove({}, KEY), { kind: "unsupported" });
+});
+
+test("a key that fails its digest is its own reason, so the caller can refetch", async () => {
+  const outcome = await createNativeProver(answering({ error: "the proving key is not the pinned one", code: "zkey_mismatch" })).prove({}, KEY);
+  assert.deepEqual(outcome, { kind: "failed", reason: "zkey_mismatch" });
 });
 
 test("a native error is a failure that does not carry the native text", async () => {
-  const outcome = await createNativeProver(answering({ error: "opening /data/user/0/co.knowni/eligibility.zkey" })).prove({}, "/k");
+  const outcome = await createNativeProver(answering({ error: "opening /data/user/0/co.knowni/eligibility.zkey" })).prove({}, KEY);
   assert.deepEqual(outcome, { kind: "failed", reason: "prover_error" });
 });
 
 test("a module that throws or answers garbage fails with its own reason", async () => {
   const throwing: NativeProver = { prove: async () => { throw new Error("boom"); } };
-  assert.deepEqual(await createNativeProver(throwing).prove({}, "/k"), { kind: "failed", reason: "native_error" });
-  assert.deepEqual(await createNativeProver(answering("not json")).prove({}, "/k"), { kind: "failed", reason: "unreadable_answer" });
+  assert.deepEqual(await createNativeProver(throwing).prove({}, KEY), { kind: "failed", reason: "native_error" });
+  assert.deepEqual(await createNativeProver(answering("not json")).prove({}, KEY), { kind: "failed", reason: "unreadable_answer" });
 });
 
 test("every partial or reshaped proof is refused", async () => {
@@ -61,7 +68,7 @@ test("every partial or reshaped proof is refused", async () => {
     { publicSignals: REAL.publicSignals },
   ];
   for (const variant of variants) {
-    const outcome = await createNativeProver(answering(variant)).prove({}, "/k");
+    const outcome = await createNativeProver(answering(variant)).prove({}, KEY);
     assert.deepEqual(outcome, { kind: "failed", reason: "malformed_proof" }, JSON.stringify(variant).slice(0, 80));
   }
 });

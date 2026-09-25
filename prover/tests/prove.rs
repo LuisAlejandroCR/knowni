@@ -42,7 +42,23 @@ fn a_number_where_a_decimal_string_belongs_is_refused() {
 fn the_json_entry_point_answers_proof_and_public_signals() {
     let zkey = std::env::var("KNOWNI_ZKEY").unwrap();
     let input = std::fs::read_to_string(std::env::var("KNOWNI_INPUT").unwrap()).unwrap();
-    let answer: serde_json::Value = serde_json::from_str(&knowni_prover::prove_json(&input, &zkey)).unwrap();
+    let answer: serde_json::Value =
+        serde_json::from_str(&knowni_prover::prove_json(&input, &zkey, &sha256_hex(&zkey))).unwrap();
     assert_eq!(answer["proof"]["curve"], "bls12381");
     assert_eq!(answer["publicSignals"].as_array().unwrap().len(), 13);
+}
+
+fn sha256_hex(path: &str) -> String {
+    let out = std::process::Command::new("sha256sum").arg(path).output().unwrap();
+    String::from_utf8(out.stdout).unwrap().split_whitespace().next().unwrap().to_string()
+}
+
+#[test]
+fn a_key_that_is_not_the_pinned_one_is_refused_before_it_is_read() {
+    let zkey = std::env::var("KNOWNI_ZKEY").unwrap();
+    let input = std::fs::read_to_string(std::env::var("KNOWNI_INPUT").unwrap()).unwrap();
+    let wrong = "0".repeat(64);
+    let answer: serde_json::Value = serde_json::from_str(&knowni_prover::prove_json(&input, &zkey, &wrong)).unwrap();
+    assert_eq!(answer["code"], "zkey_mismatch");
+    assert!(answer.get("proof").is_none());
 }

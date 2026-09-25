@@ -16,12 +16,18 @@ export type ProveOutcome =
   | { readonly kind: "unsupported" }
   | { readonly kind: "failed"; readonly reason: string };
 
+/// Where the proving key is on this device, and the digest it must have.
+export interface ProvingKeyFile {
+  readonly path: string;
+  readonly sha256: string;
+}
+
 export interface ProverPort {
-  prove(input: Readonly<Record<string, string | readonly string[]>>, zkeyPath: string): Promise<ProveOutcome>;
+  prove(input: Readonly<Record<string, string | readonly string[]>>, key: ProvingKeyFile): Promise<ProveOutcome>;
 }
 
 export interface NativeProver {
-  prove(inputJson: string, zkeyPath: string): Promise<string>;
+  prove(inputJson: string, zkeyPath: string, zkeySha256: string): Promise<string>;
 }
 
 /// The number of public signals eligibility.circom exposes: its five outputs
@@ -51,12 +57,12 @@ function parseProof(value: unknown): Groth16Proof | undefined {
 
 export function createNativeProver(native: NativeProver | undefined): ProverPort {
   return {
-    async prove(input, zkeyPath) {
+    async prove(input, key) {
       if (native === undefined) return { kind: "unsupported" };
 
       let raw: string;
       try {
-        raw = await native.prove(JSON.stringify(input), zkeyPath);
+        raw = await native.prove(JSON.stringify(input), key.path, key.sha256);
       } catch {
         return { kind: "failed", reason: "native_error" };
       }
@@ -69,9 +75,12 @@ export function createNativeProver(native: NativeProver | undefined): ProverPort
       }
       if (typeof answer !== "object" || answer === null) return { kind: "failed", reason: "unreadable_answer" };
 
-      const { error, proof, publicSignals } = answer as Record<string, unknown>;
+      const { error, code, proof, publicSignals } = answer as Record<string, unknown>;
       // The native error text can name a file path; it stays on the device.
-      if (typeof error === "string") return { kind: "failed", reason: "prover_error" };
+      // Only the code travels, and only the one a caller can act on.
+      if (typeof error === "string") {
+        return { kind: "failed", reason: code === "zkey_mismatch" ? "zkey_mismatch" : "prover_error" };
+      }
 
       const parsed = parseProof(proof);
       if (parsed === undefined || !isDecimalList(publicSignals, ELIGIBILITY_SIGNALS)) {

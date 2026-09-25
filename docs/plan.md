@@ -390,6 +390,23 @@ contraparte válida y consume cuota HTTP, pero no vuelve a gastar Horizon, Croma
 | 9 | ensayo en modo avión, logs sanitizados y prueba desde cero |
 | 10 | videos demo/pitch, auditoría de afirmaciones y entrega final |
 
+### Bloque activo — pitch web para jurado
+
+La raíz web no reemplaza la app ni el video. Su trabajo es que un jurado entienda en menos de un
+minuto qué promete Knowni, vea el recorrido defendible de la compraventa vehicular y pueda abrir
+la evidencia real sin confundir una transacción con una prueba de verdad. Conserva en el mismo
+dominio `/registry.json` y los dos ficheros de asociación móvil.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| W1 | La primera pantalla dice la misión y el resultado para la contraparte, sin empezar por cédula, Croma, ZK o Stellar | revisión de copy a 10 segundos |
+| W2 | El único perfil narrado de punta a punta es `vehicle-sale`; arriendo aparece como expansión, no como demo real | comparación con D-13 y fuentes ejercidas |
+| W3 | El recorrido muestra solicitud → consentimiento/emisión → presentación local → verificación → recibo auditable | cinco pasos visibles y en el mismo orden del producto |
+| W4 | Cada recibo enlazable declara por separado qué prueba y qué no prueba | revisión de Stellar Explorer, registro HTTPS, suite y fuentes |
+| W5 | Lo que no está listo aparece antes del cierre: teléfono físico, fuentes personales consentidas, prueba Groth16 real, contrato desplegado y wallets reales | contraste con `docs/verificacion.md` |
+| W6 | El cierre ofrece tres acciones distintas: ver demo, abrir evidencia y revisar código; ninguna se presenta como si fuera otra | revisión de destinos y etiquetas |
+| W7 | La página no incrusta terceros ni mueve las rutas de confianza del dominio | inspección de HTML y prueba de rutas de `web/` |
+
 ### Día 8 — diseño móvil para aprobación
 
 Entrega de diseño, no app terminada: `design/day-08/README.md` y capturas del prototipo.

@@ -174,3 +174,9 @@ nativo y prohíbe cualquier atajo de servidor.
   capas; de lo contrario, una transacción aislada en testnet puede leerse como un recorrido móvil
   completo. Comprobado el 2026-09-24 al contrastar A1–A14 y P1–P9 contra suites, CI y bitácora.
 
+- **Una demo por pasos enseña el producto; un pitch para jurado demuestra por qué importa y dónde
+  termina la evidencia.** El orden que funciona es promesa → frontera → recorrido → recibos →
+  límites → cierre. Si el primer titular nombra el documento de entrada, el producto parece una
+  verificación de identidad aunque su tesis sea más amplia. Comprobado el 2026-09-25 al comparar
+  dos páginas del mismo autor con objetivos distintos.
+

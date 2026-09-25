@@ -195,3 +195,14 @@ export type {
   DelegationFailure,
 } from "./delegation.ts";
 export { checkDelegation, delegationBytes, signDelegation } from "./delegation.ts";
+
+export type {
+  AgentAcceptance,
+  AgentAcceptanceFailure,
+  AgentAcceptanceInput,
+  AgentAcceptanceResult,
+  AgentBundle,
+  AgentPresentation,
+  DelegationRevocationOracle,
+} from "./agent.ts";
+export { acceptAgentAnswer, prepareForAgent, presentAsAgent } from "./agent.ts";

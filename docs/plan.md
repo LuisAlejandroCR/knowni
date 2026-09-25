@@ -441,7 +441,7 @@ casualidad.
 | Permisos con límites del cliente | La sesión ata contraparte, finalidad, reto y fecha — A5 |
 | Trazabilidad y auditabilidad | Raíz firmada por el emisor, anclaje opcional, nulificador de un solo uso |
 | No repetición | El conjunto gastado sobrevive al reinicio, en el emisor y en el dispositivo — D-34, D-36, D-37 |
-| Una superficie pensada para que del otro lado haya una máquina | **Falta.** `issuer/` habla HTTP con llave de contraparte, pero nada está diseñado como superficie de agente |
+| Una superficie pensada para que del otro lado haya una máquina | Delegación firmada y aceptación de un agente en `attestation/` (D-76, D-77); falta exponerla por HTTP |
 
 ### Lo que este bloque **no** hace
 
@@ -465,7 +465,7 @@ con su decisión y su fecha— antes de que exista una línea que la suponga.
 ### Criterios de aceptación
 
 **Estado 2026-09-25:** las tres preguntas están contestadas en `docs/memoria.md` D-76, a favor de
-construirlo sin que el secreto salga del dispositivo. G2 está cumplido; G1 y G3–G6 siguen ⏳.
+construirlo sin que el secreto salga del dispositivo, y aprobadas por el humano. G1–G6 están cumplidos (D-77); falta un adaptador real para la revocación de delegaciones.
 
 Vigentes solo si las tres preguntas se responden a favor de construirlo. Un criterio que dependa de
 una respuesta que no se ha dado no se implementa.
@@ -530,7 +530,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | **Cumplido** | P7 | `app/test/unit/payment-redaction.spec.ts` serializa los seis desenlaces y comprueba que ninguno lleva firma, sobre, llave de la contraparte ni cuerpo crudo de Horizon, con la consola interceptada en todos los caminos |
 | **Cumplido** | P8 | `app/test/unit/portable.spec.ts` recorre `app/src` y `app/app`, y el bundle de Metro en CI lo comprueba contra el empaquetador, no solo contra el compilador |
 | **Cumplido** | G2 | `attestation/src/delegation.ts`: firma del sujeto, ventana, agente, finalidad y contraparte, con `delegation.spec.ts`, fuzz e invariante de campos — D-76 |
-| **Futuro** | G1, G3–G6 | Preguntas contestadas en D-76; falta implementar |
+| **Cumplido** | G1, G3–G6 | `attestation/src/agent.ts` y `agent.spec.ts`: paquete sin secretos, `presentedBy` como única marca, replay sujeto/agente, revocación de delegaciones en tres estados; `agent-boundary.invariant.spec.ts` para G6 — D-77 |
 | **Cumplido** | C1–C8 | Tests unitarios, concurrentes y de persistencia prueban HMAC opaco, separación por sujeto y pago, single-flight, no-cache de fallos, expiración y límite de capacidad |
 
 ### Lo que falta, en orden de cierre

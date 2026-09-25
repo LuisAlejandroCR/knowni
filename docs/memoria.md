@@ -1657,6 +1657,30 @@ agente» en la divulgación), G4 (replay sujeto/agente), G5 (revocación `live`/
 de delegaciones) y G6 (prueba de importaciones). Estas respuestas son del agente; **el humano puede
 revertirlas** antes de que G3 toque el sobre.
 
+### D-77 — Un agente presenta lo que el dispositivo construyó: G1 y G3–G6 · 2026-09-25
+
+*Qué:* `attestation/src/agent.ts`. El dispositivo arma un `AgentBundle` —divulgación, resultados
+firmados, delegación y un **endoso**: la firma de la llave de delegación sobre la delegación, la
+sesión y el nulificador—. El agente lo firma con su llave y lo entrega. `acceptAgentAnswer` comprueba
+delegación, endoso, firma del agente y revocación de la delegación, y después pasa por
+`acceptAnswer` entero, sobre el mismo libro de nulificadores.
+
+*Por qué el endoso:* sin él, un agente con una delegación válida podría pegarla a cualquier
+divulgación que consiguiera. Con él, la delegación vale para una respuesta concreta.
+
+*Lo que la contraparte aprende (G3):* `presentedBy: "authorized_agent"` y nada más: ni la llave del
+agente ni el id de la delegación salen en el resultado. La ruta del sujeto no cambia de forma.
+
+*Criterios:* G1 (`prepareForAgent` rehúsa si algo del paquete lleva `claim`, `salt`, `subjectRef` o
+`blinding`), G4 (sujeto primero o agente primero, el segundo es `replayed`), G5
+(`live`/`revoked`/`unknown` con la misma `RevocationPolicy`; `revoked` gana siempre) y G6 (una
+invariante de importaciones: los módulos de agente no alcanzan `sources/`, `issuer/` ni `fetch`).
+Aprobado por el humano el 2026-09-25 junto con D-76.
+
+*Pendiente:* ⏳ quién publica el estado de revocación de una delegación. Hoy es un puerto
+(`DelegationRevocationOracle`) sin adaptador real; sin él, la política `refuse` rechaza todo, que es
+el lado seguro.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1747,6 +1771,7 @@ revertirlas** antes de que G3 toque el sobre.
 | 2026-09-25 | El pitch web adopta el orden de CREVA —promesa, frontera, recorrido, recibos, límites y cierre— sin adoptar su producto. La demo narrada pasa de arriendo a compraventa vehicular para respetar D-13; cada evidencia dice qué prueba y qué no. Propuesta y copy en `web/README.md`, criterios W1–W7 en `docs/plan.md` |
 | 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |
 | 2026-09-25 | Bloque de agentes: las tres preguntas contestadas (el agente presenta, nunca sostiene) y primer corte, la delegación firmada de `attestation/` (G2) — D-76. 479 pruebas |
+| 2026-09-25 | Bloque de agentes completo en `attestation/`: paquete endosado por el dispositivo, firma del agente, `presentedBy` como única marca, mismo libro de nulificadores y revocación de delegaciones — D-77. 489 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

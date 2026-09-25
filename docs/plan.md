@@ -464,6 +464,9 @@ con su decisión y su fecha— antes de que exista una línea que la suponga.
 
 ### Criterios de aceptación
 
+**Estado 2026-09-25:** las tres preguntas están contestadas en `docs/memoria.md` D-76, a favor de
+construirlo sin que el secreto salga del dispositivo. G2 está cumplido; G1 y G3–G6 siguen ⏳.
+
 Vigentes solo si las tres preguntas se responden a favor de construirlo. Un criterio que dependa de
 una respuesta que no se ha dado no se implementa.
 
@@ -526,6 +529,8 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | **Cumplido** | P6 | `app/test/unit/payment-failures.spec.ts`: rechazo de Horizon, envío aceptado sin hash, caída de red antes y durante el envío, Horizon caído en la lectura de cuenta y wallet sin firma; la última prueba comprueba que las cinco razones no colapsan en una — D-64 |
 | **Cumplido** | P7 | `app/test/unit/payment-redaction.spec.ts` serializa los seis desenlaces y comprueba que ninguno lleva firma, sobre, llave de la contraparte ni cuerpo crudo de Horizon, con la consola interceptada en todos los caminos |
 | **Cumplido** | P8 | `app/test/unit/portable.spec.ts` recorre `app/src` y `app/app`, y el bundle de Metro en CI lo comprueba contra el empaquetador, no solo contra el compilador |
+| **Cumplido** | G2 | `attestation/src/delegation.ts`: firma del sujeto, ventana, agente, finalidad y contraparte, con `delegation.spec.ts`, fuzz e invariante de campos — D-76 |
+| **Futuro** | G1, G3–G6 | Preguntas contestadas en D-76; falta implementar |
 | **Cumplido** | C1–C8 | Tests unitarios, concurrentes y de persistencia prueban HMAC opaco, separación por sujeto y pago, single-flight, no-cache de fallos, expiración y límite de capacidad |
 
 ### Lo que falta, en orden de cierre

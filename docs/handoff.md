@@ -13,7 +13,7 @@ Para retomar en un chat nuevo. Leer en este orden: `AGENTS.md`, `CLAUDE.md`, est
 
 | | Estado |
 |---|---|
-| Pruebas | **471 del repositorio** + **59 de la app**, verdes en CI |
+| Pruebas | **479 del repositorio** + **59 de la app**, verdes en CI |
 | CI | cinco jobs: suite en Node 22 y 24, app (typecheck, pruebas y bundle de Metro para iOS y Android), contrato Soroban, circuitos |
 | Ramas | solo `main` (`20ae2a4`); 83 PRs integrados; sin PRs abiertos |
 | Lenguaje | todo el repositorio pasa por `tsc --strict` con `noUncheckedIndexedAccess`, y por ESLint con reglas de tipos |
@@ -130,16 +130,15 @@ de lo que pide, las tres preguntas de producto que hay que responder antes de es
 criterios G1–G6 viven ahora en [`plan.md`](plan.md) → *Bloque futuro — el portador puede ser un
 agente*, que es donde el ciclo del proyecto los pone.
 
-**Las tres preguntas siguen sin responder**, y ninguna se contesta escribiendo código: si un agente
-puede sostener una credencial o solo presentarla, qué distingue a un agente de un replay, y si el
-consentimiento por fuente sigue siendo del sujeto o hay uno delegado con límites. Van a
-`docs/memoria.md` como decisión, con fecha, antes de que exista una línea que las suponga.
+**Las tres preguntas están contestadas (2026-09-25, D-76):** el agente presenta y nunca sostiene,
+el nulificador sigue siendo el control de replay, y el consentimiento por fuente no se delega. Primer
+corte hecho: la delegación firmada (G2). Faltan G1 y G3–G6.
 
 ## Cómo arrancar el chat nuevo
 
 ```bash
 npm install           # enlaza los workspaces
-npm run verify        # lint + typecheck + 471 pruebas
+npm run verify        # lint + typecheck + 479 pruebas
 cd app && npm install && npm test   # 59 pruebas, proyecto aparte
 ```
 

@@ -1631,6 +1631,32 @@ sin semilla. Dónde se guarda la semilla en el teléfono (almacén seguro) **no*
 *Estado:* ⏳ la transacción en testnet producida por este adaptador no se ha ejecutado; P10 está
 cubierto por pruebas, A10 sigue **parcial**.
 
+### D-76 — El agente presenta, nunca sostiene: las tres preguntas del bloque de agentes · 2026-09-25
+
+*Qué:* las tres preguntas que `plan.md` → *Bloque futuro — el portador puede ser un agente* exige
+contestar antes de escribir código, contestadas del lado que no cruza la puerta de decisión 6.
+
+1. **¿Sostener o solo presentar?** Solo presentar. El `SubjectSecret`, los `claim` y los `salt` no
+   salen del dispositivo; el agente recibe una presentación ya construida. Lo que el sujeto firma
+   para un agente es una **delegación** con una llave de delegación propia del dispositivo, distinta
+   del secreto del sujeto: perderla no permite derivar un nulificador ni abrir un compromiso.
+2. **¿Qué distingue a un agente de un replay?** Nada que el nulificador no haga ya: se gasta una
+   vez por sesión, presente quien presente (G4). La delegación añade *quién puede presentar* —una
+   llave de agente, una finalidad, una contraparte y una ventana—, no un segundo gasto.
+3. **¿Consentimiento por fuente delegado?** No. La emisión sigue siendo del sujeto con su
+   consentimiento (D-31); una delegación nunca autoriza consultar una fuente. Si falta evidencia, se
+   emite de nuevo con el sujeto (G6).
+
+*Resultado de la puerta:* ninguna respuesta exige que el secreto salga del dispositivo, así que el
+bloque **se construye**. Primer corte: `attestation/src/delegation.ts` (G2) —firma, ventana,
+agente, finalidad y contraparte, cada rechazo con su razón y la firma comprobada antes que el
+contexto—, con pruebas unit, fuzz e invariante de campos.
+
+*Pendiente:* ⏳ G1 (la presentación construida que cruza al agente), G3 (marca de «presentó un
+agente» en la divulgación), G4 (replay sujeto/agente), G5 (revocación `live`/`revoked`/`unknown`
+de delegaciones) y G6 (prueba de importaciones). Estas respuestas son del agente; **el humano puede
+revertirlas** antes de que G3 toque el sobre.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1720,6 +1746,7 @@ cubierto por pruebas, A10 sigue **parcial**.
 | 2026-09-24 | El estado de Poseidon deja de ser una señal por celda y por ronda y pasa a viajar como expresión lineal: mezclar es contabilidad del compilador y solo se materializa lo que se eleva a la quinta. 25 221 → 12 633 restricciones (−50%) y 25 281 → 12 693 cables, iguales sobre las dos curvas; el testigo y el compromiso de ingreso que CI reconstruye no se mueven, que es lo que dice que la permutación es la misma — D-74. 454 pruebas |
 | 2026-09-25 | El pitch web adopta el orden de CREVA —promesa, frontera, recorrido, recibos, límites y cierre— sin adoptar su producto. La demo narrada pasa de arriendo a compraventa vehicular para respetar D-13; cada evidencia dice qué prueba y qué no. Propuesta y copy en `web/README.md`, criterios W1–W7 en `docs/plan.md` |
 | 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |
+| 2026-09-25 | Bloque de agentes: las tres preguntas contestadas (el agente presenta, nunca sostiene) y primer corte, la delegación firmada de `attestation/` (G2) — D-76. 479 pruebas |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

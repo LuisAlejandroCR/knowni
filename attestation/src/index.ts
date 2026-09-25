@@ -186,3 +186,12 @@ export { createChainRegistry } from "./adapters/chain-registry.ts";
 
 export type { StellarRegistryReaderOptions } from "./adapters/stellar-registry-reader.ts";
 export { createStellarRegistryReader } from "./adapters/stellar-registry-reader.ts";
+
+export type {
+  Delegation,
+  DelegationBody,
+  DelegationCheck,
+  DelegationContext,
+  DelegationFailure,
+} from "./delegation.ts";
+export { checkDelegation, delegationBytes, signDelegation } from "./delegation.ts";

@@ -143,7 +143,7 @@ Node 22.18+. El **dominio** no tiene dependencias externas ni paso de compilaci�
 
 ```bash
 npm install    # enlaza los workspaces entre sí; las únicas dependencias son de desarrollo
-npm run verify # lint + typecheck + 471 pruebas (unit · fuzz · invariant · contract)
+npm run verify # lint + typecheck + 479 pruebas (unit · fuzz · invariant · contract)
 ```
 
 Empieza por [`journey/test/unit/journey.spec.ts`](journey/test/unit/journey.spec.ts):
@@ -168,7 +168,7 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 
 | Afirmación | Estado |
 |---|---|
-| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 471 pruebas del repositorio y 59 de la app (CI en Node 22 y 24) |
+| Predicados, compromisos, Merkle, sesión, divulgación | **Corre.** 479 pruebas del repositorio y 59 de la app (CI en Node 22 y 24) |
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |

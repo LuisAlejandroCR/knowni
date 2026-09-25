@@ -16,7 +16,7 @@ snarkjs cannot run there.
 | Witness | **Native.** `rust-witness` transpiles circom's own WASM witness generator to C, so it computes over whatever prime the circuit was compiled for. Identical to snarkjs's witness, all 12 693 values, checked once by hand. |
 | Proof | **Native, and snarkjs accepts it.** arkworks with a reduction over snarkjs's roots of unity (`src/reduction.rs`). 5–12 s in a Docker container on a laptop; never measured on a phone. |
 | iOS / Android bindings | **Written, compiled in CI, never run on a phone.** `src/ffi.rs` exposes one call —input JSON and zkey path in, JSON out— as `knowni_prove` for Swift and as JNI for Kotlin. `app/modules/knowni-prover/` is the Expo module; `tools/build-android.sh` and `tools/build-ios.sh` build the `.so` and the xcframework. |
-| Proving key on the phone | **Downloaded once** from `EXPO_PUBLIC_ZKEY_URL` into the app's documents (`app/src/domain/proving-key.ts`); `ffi.rs` checks its SHA-256 before reading it. The key is not published at any URL yet. |
+| Proving key on the phone | **Downloaded once** from `EXPO_PUBLIC_ZKEY_URL` into the app's documents (`app/src/domain/proving-key.ts`); `ffi.rs` checks its SHA-256 before reading it. Served by the web deploy at `https://knowni.vercel.app/keys/eligibility-dev.zkey` — a public development key. |
 
 ## Two things that fail silently
 

@@ -65,3 +65,12 @@ test("a source that keeps serving the wrong key is a mismatch, not a loop", asyn
 test("the digest is a SHA-256 in lowercase hex", () => {
   assert.match(ZKEY_SHA256, /^[0-9a-f]{64}$/);
 });
+
+// The file the web deploy serves is the file the prover will accept. A new
+// setup that updates one and not the other fails here, not on a phone.
+test("the published key has exactly the pinned digest", async () => {
+  const { createHash } = await import("node:crypto");
+  const { readFileSync } = await import("node:fs");
+  const published = new URL("../../../web/public/keys/eligibility-dev.zkey", import.meta.url);
+  assert.equal(createHash("sha256").update(readFileSync(published)).digest("hex"), ZKEY_SHA256);
+});

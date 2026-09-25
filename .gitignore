@@ -29,3 +29,6 @@ contracts/**/test_snapshots/
 # Native prover builds: produced by prover/tools/build-*.sh, never committed.
 app/modules/knowni-prover/android/src/main/jniLibs/
 app/modules/knowni-prover/ios/KnowniProver.xcframework/
+# The development proving key the app downloads (D-81). Its SHA-256 is pinned in
+# app/src/domain/proving-key.ts; app/test/unit/proving-key.spec.ts checks it.
+!web/public/keys/eligibility-dev.zkey

@@ -9,7 +9,10 @@ import type { ProveOutcome, ProverPort, ProvingKeyFile } from "./prover.ts";
 /// A new setup means a new digest here, in the same change.
 export const ZKEY_SHA256 = "bfdef55e5b5992e814cfd9c6157725d9274b7fe98e0dd7471718f334ecd0f6a8";
 
-export const ZKEY_URL: string | undefined = process.env.EXPO_PUBLIC_ZKEY_URL || undefined;
+/// Served by the web deploy from web/public/keys/. The variable overrides it,
+/// for a build that must fetch from somewhere else.
+export const ZKEY_URL: string | undefined =
+  process.env.EXPO_PUBLIC_ZKEY_URL || "https://knowni.vercel.app/keys/eligibility-dev.zkey";
 
 /// What the key store needs from the file system, so it runs in tests.
 export interface KeyFiles {
@@ -25,7 +28,7 @@ export type KeyState =
   | { readonly kind: "no_source" }
   | { readonly kind: "download_failed" };
 
-export async function ensureProvingKey(files: KeyFiles, url: string | undefined = ZKEY_URL): Promise<KeyState> {
+export async function ensureProvingKey(files: KeyFiles, url: string | undefined): Promise<KeyState> {
   const key = { path: files.path, sha256: ZKEY_SHA256 };
   if (files.exists()) return { kind: "ready", key };
   if (url === undefined) return { kind: "no_source" };
@@ -46,7 +49,7 @@ export async function proveWithDeviceKey(
   prover: ProverPort,
   files: KeyFiles,
   input: Readonly<Record<string, string | readonly string[]>>,
-  url: string | undefined = ZKEY_URL,
+  url: string | undefined,
 ): Promise<ProveOutcome | KeyState> {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const state = await ensureProvingKey(files, url);

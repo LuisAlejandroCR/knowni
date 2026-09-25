@@ -1773,8 +1773,12 @@ fijada —`ZKEY_SHA256` en `proving-key.ts`— no llega a producir una prueba. L
 código `zkey_mismatch`, el único que la app puede corregir: borra el archivo y descarga otra vez,
 **una** vez; si la fuente sigue sirviendo otro archivo, el error es ese.
 
-*Lo que falta:* publicar la zkey en una URL. Es publicar un archivo y lo hace el humano o se aprueba
-antes. Hasta entonces, sin la variable, la app responde `no_source` y no intenta.
+*Dónde vive:* el humano aprobó publicarla. El repositorio es privado, así que un release de GitHub
+pedía sesión y el teléfono no podría bajarla; eligió el despliegue web. La llave está en
+`web/public/keys/eligibility-dev.zkey` y se sirve en <https://knowni.vercel.app/keys/eligibility-dev.zkey>;
+`EXPO_PUBLIC_ZKEY_URL` la sustituye si hace falta. Una prueba compara el archivo publicado con el hash
+fijado. Es una llave de **desarrollo**: pública, de un solo contribuyente, y quien la generó puede
+forjar pruebas. Sirve para demostrar el camino, no para producción.
 
 ## Bitácora
 
@@ -1870,7 +1874,7 @@ antes. Hasta entonces, sin la variable, la app responde `no_source` y no intenta
 | 2026-09-25 | Primera prueba Groth16 real: sobre BLS12-381, con setup de desarrollo, verificada por snarkjs y por el contrato en `cargo test`. Encontró dos errores que no avisaban: los dominios del circuito eran los de BN254 en las dos curvas, y la compilación BLS de CI usaba las constantes de BN254 porque circom resuelve el `include` vecino antes que `-l`. La prueba en el teléfono sigue pendiente — D-78. 496 pruebas y 15 del contrato |
 | 2026-09-25 | Prover nativo en Rust (`prover/`): el testigo coincide con el de snarkjs en los 12 693 valores, y snarkjs acepta la prueba nativa. Dos fallos silenciosos cerrados: las raíces de unidad de BLS12-381 difieren entre snarkjs (5) y arkworks (7), y `circom-prover` descarta las entradas escalares. Sin bindings móviles todavía — D-79. 5 pruebas del prover |
 | 2026-09-25 | El prover como módulo Expo: una llamada JSON por C (iOS) y JNI (Android), y un puerto en la app que responde `unsupported` en Expo Go y rechaza toda prueba incompleta. CI compila para Android y iOS; nunca corrido en un teléfono, y la zkey aún no llega al dispositivo — D-80. 8 pruebas del prover y 6 del puerto |
-| 2026-09-25 | La zkey se descarga una vez a los documentos de la app, y Rust comprueba su SHA-256 antes de leerla; un `zkey_mismatch` borra y descarga una sola vez más. Falta publicar la zkey en una URL — D-81. 9 pruebas del prover y 18 de la app sobre el prover |
+| 2026-09-25 | La zkey se descarga una vez a los documentos de la app, y Rust comprueba su SHA-256 antes de leerla; un `zkey_mismatch` borra y descarga una sola vez más. Publicada en el despliegue web — D-81. 9 pruebas del prover y 18 de la app sobre el prover |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

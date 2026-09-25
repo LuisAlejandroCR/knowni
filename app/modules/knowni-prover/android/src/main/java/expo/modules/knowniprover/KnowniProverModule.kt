@@ -11,13 +11,19 @@ class KnowniProverModule : Module() {
     Name("KnowniProver")
 
     AsyncFunction("prove") { inputJson: String, zkeyPath: String, zkeySha256: String ->
-      nativeProve(inputJson, zkeyPath, zkeySha256)
+      if (loaded) nativeProve(inputJson, zkeyPath, zkeySha256)
+      else """{"error":"libknowni_prover.so is not in this build","code":"unsupported"}"""
     }
   }
 
   companion object {
-    init {
+    // A build without the .so (prover/tools/build-android.sh not run) must
+    // still start: the module answers "unsupported" instead of crashing.
+    private val loaded: Boolean = try {
       System.loadLibrary("knowni_prover")
+      true
+    } catch (_: UnsatisfiedLinkError) {
+      false
     }
 
     @JvmStatic

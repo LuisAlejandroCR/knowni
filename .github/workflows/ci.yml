@@ -107,7 +107,7 @@ jobs:
       - name: check the circuit and core agree on the digest over BLS12-381
         working-directory: circuits
         run: |
-          circom test/poseidon_main.circom -l /tmp/bls -l . -p bls12381 --wasm --output /tmp/bls
+          circom test/poseidon_main.circom -l /tmp/bls/src -p bls12381 --wasm --output /tmp/bls
           echo '{"inputs":["1","2"]}' > /tmp/bls/poseidon_input.json
           npx --yes snarkjs@0.7.5 wtns calculate \
             /tmp/bls/poseidon_main_js/poseidon_main.wasm /tmp/bls/poseidon_input.json \

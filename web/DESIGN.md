@@ -81,21 +81,26 @@ La paleta se lee de `theme.ts` **como texto**: vive en `app/`, que el `tsconfig`
 de la raíz excluye, y copiar sus valores aquí sería la segunda fuente que todo
 esto existe para evitar.
 
-## Pantallas
+## Secciones
 
-Cuatro pasos, un CTA por pantalla, un `h1` visible por pantalla. La estructura
-viene de Creva ZK: el recorrido se cuenta en el orden en que le pasa a la
-persona, y cada pantalla responde **una** pregunta.
+Una sola página, un `h1`, seis secciones con ancla. El orden lo fija
+`docs/plan.md` → W1–W7, y no es el orden del producto: es el de un jurado.
 
-| Paso | Pregunta que responde |
+| Sección | Qué hace |
 | --- | --- |
-| 1 · Quién eres | ¿Qué se consulta, y quién lo consulta? |
-| 2 · Tu respaldo | ¿Qué entra, y cómo se supo? |
-| 3 · Qué compartiste | ¿Qué cruza, y qué no? |
-| 4 · Tu resultado | ¿Quién quedó convencido, y con qué? |
+| `#promesa` | La promesa y el resultado para la contraparte. No nombra cédula, fuente, ZK ni cadena — W1 |
+| `#frontera` | Qué demuestra y qué **no**, antes de enseñar mecanismo |
+| `#recorrido` | Compraventa de vehículo ante notario, en cinco pasos — W2, W3 |
+| `#evidencia` | Cada recibo con sus dos frases, **Prueba** y **No prueba** — W4 |
+| `#falta` | Lo que no está listo, antes del cierre — W5 |
+| `#cierre` | Una frase y tres salidas distintas — W6 |
 
-Los pasos son `:target`. Sin JavaScript: el fichero servido ya es la pantalla 1
-completa, y avanzar es una ancla. No hay estado atenuado esperando a un script.
+Se recorre con **scroll**, no con paginación: un jurado enlaza una sección, no
+avanza por pasos. Sin JavaScript y sin terceros — W7.
+
+Una acción sin destino se dibuja como **pendiente**, con la familia ámbar, y
+nunca como un enlace. Un botón que no lleva a ningún sitio es peor que un botón
+que dice que todavía no lo hay.
 
 ## Medido, no supuesto
 

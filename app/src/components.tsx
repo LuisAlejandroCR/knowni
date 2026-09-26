@@ -2,8 +2,8 @@
 // Screen frame, cards, rows, notes and buttons — written once so eight screens
 // stay one product rather than eight interpretations of it.
 
-import type { ReactNode } from "react";
-import { ActivityIndicator, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, type ReactNode } from "react";
+import { AccessibilityInfo, ActivityIndicator, Animated, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 import { router, usePathname } from "expo-router";
@@ -96,8 +96,34 @@ export function Body({ children }: { readonly children: ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
 }
 
+// Content settles in instead of popping: a short fade and rise when it mounts.
+// Skipped when the person asked the system to reduce motion.
+function useEntrance() {
+  const progress = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    let cancelled = false;
+    void AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
+      if (cancelled) return;
+      if (reduce) progress.setValue(1);
+      else Animated.timing(progress, { toValue: 1, duration: 280, useNativeDriver: true }).start();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [progress]);
+  return {
+    opacity: progress,
+    transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [10, 0] }) }],
+  };
+}
+
 export function Card({ children, tone = "plain" }: { children: ReactNode; tone?: "plain" | "deep" | "amber" }) {
-  return <View style={[styles.card, tone === "deep" && styles.cardDeep, tone === "amber" && styles.cardAmber]}>{children}</View>;
+  const entrance = useEntrance();
+  return (
+    <Animated.View style={[styles.card, tone === "deep" && styles.cardDeep, tone === "amber" && styles.cardAmber, entrance]}>
+      {children}
+    </Animated.View>
+  );
 }
 
 // A row is the unit of an answer: an icon that names its state, a title, and
@@ -176,8 +202,9 @@ export function Callout({
   onPressText?: () => void;
 }) {
   const look = CALLOUT[tone];
+  const entrance = useEntrance();
   return (
-    <View accessibilityRole={tone === "warning" ? "alert" : undefined} style={[styles.callout, look.box]}>
+    <Animated.View accessibilityRole={tone === "warning" ? "alert" : undefined} style={[styles.callout, look.box, entrance]}>
       <View style={[styles.calloutBadge, look.badge]}>
         <Text style={[styles.iconText, { color: tone === "success" ? color.deep : color.amberInk }]}>{look.glyph}</Text>
       </View>
@@ -193,7 +220,7 @@ export function Callout({
           </Text>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 

@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { Alert, ScrollView } from "react-native";
 import { Button, Card, Label, Row, Screen, TabBar, TopBar, Title } from "../src/components.tsx";
 import { reset, useFlow } from "../src/domain/flow.ts";
+import { clearOnboardingSeen } from "../src/onboarding.ts";
 import { ISSUER_URL } from "../src/domain/issuer-client.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
@@ -67,7 +68,7 @@ export default function Espacio() {
           onPress={() =>
             Alert.alert(
               "¿Borrar y empezar de nuevo?",
-              "Se borran de este teléfono las respuestas, tu documento y tu placa, y llega una solicitud nueva. El historial se conserva. Lo que ya compartiste no se puede retirar.",
+              "Se borran de este teléfono las respuestas, tu documento y tu placa, y vuelves a la bienvenida con una solicitud nueva. El historial se conserva. Lo que ya compartiste no se puede retirar.",
               [
                 { text: "Cancelar", style: "cancel" },
                 {
@@ -75,7 +76,9 @@ export default function Espacio() {
                   style: "destructive",
                   onPress: () => {
                     reset();
-                    router.replace("/");
+                    void clearOnboardingSeen()
+                      .catch(() => undefined)
+                      .finally(() => router.replace("/bienvenida"));
                   },
                 },
               ],

@@ -10,6 +10,11 @@ export async function markOnboardingSeen(): Promise<void> {
   await AsyncStorage.setItem(KEY, "1");
 }
 
+// Starting over means starting from the welcome, as a new phone would.
+export async function clearOnboardingSeen(): Promise<void> {
+  await AsyncStorage.removeItem(KEY);
+}
+
 // undefined while reading, so a screen can wait instead of flashing.
 export function useOnboardingSeen(): boolean | undefined {
   const [seen, setSeen] = useState<boolean | undefined>();

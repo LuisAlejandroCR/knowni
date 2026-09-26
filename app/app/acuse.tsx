@@ -38,7 +38,7 @@ export default function Acuse() {
         <Body>La respuesta va firmada por el emisor. Solo sirve para esta solicitud.</Body>
         <Card>
           <Label>Destino</Label>
-          <Text style={typography.heading}>{counterpartyLabel(flow.request.purpose)}</Text>
+          <Text style={{ ...typography.heading, color: color.ink }}>{counterpartyLabel(flow.request.purpose)}</Text>
           <Row title={purposeLabel(flow.request.purpose)} scope="Finalidad" />
           <Row title={`Compartida · ${time}`} scope="Hora en que la compartiste" trailing="✓" />
         </Card>
@@ -50,7 +50,10 @@ export default function Acuse() {
       </ScrollView>
       <Footer>
         <Link href="/" asChild>
-          <Button>Volver a mis credenciales</Button>
+          <Button>Volver al inicio</Button>
+        </Link>
+        <Link href="/espacio" asChild>
+          <Button tone="secondary">Ver en mi historial</Button>
         </Link>
         <Link href="/verificador" asChild>
           <Button tone="secondary">{`Ver lado del ${counterpartyLabel(flow.request.purpose).toLowerCase()} →`}</Button>

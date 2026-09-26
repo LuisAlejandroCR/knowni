@@ -27,6 +27,10 @@ export default function Home() {
   const shared = flow.sharedAt !== undefined;
   const declined = !shared && flow.declinedAt !== undefined;
 
+  // Until we know whether the welcome was seen, show the empty canvas rather
+  // than flashing home and then jumping away from it.
+  if (seenWelcome !== true) return <Screen>{null}</Screen>;
+
   return (
     <Screen>
       <TopBar left={<Brand />} />

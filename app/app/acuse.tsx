@@ -5,16 +5,23 @@
 import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 import { Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
-import { REQUEST } from "../src/fixtures.ts";
 import { color, type as typography } from "../src/theme.ts";
-import { receiptStamp } from "../src/domain/provenance.ts";
 import { useFlow } from "../src/domain/flow.ts";
-import { purposeLabel } from "../src/domain/purpose.ts";
+import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
+import { shouldCelebrate } from "../src/domain/celebration.ts";
+import { Confetti } from "../src/confetti.tsx";
+import { successTap } from "../src/haptics.ts";
+import { useEffect } from "react";
+import { formatDateTime } from "../src/domain/datetime.ts";
 
 export default function Acuse() {
   const flow = useFlow();
-  const sharedAt = flow.sharedAt === undefined ? undefined : new Date(flow.sharedAt * 1000);
-  const time = sharedAt === undefined ? "—" : `${String(sharedAt.getHours()).padStart(2, "0")}:${String(sharedAt.getMinutes()).padStart(2, "0")}`;
+  const celebrate = shouldCelebrate(flow.answers);
+  // Once, on arrival: the journey ended with at least one answer backed by evidence.
+  useEffect(() => {
+    if (celebrate) void successTap();
+  }, [celebrate]);
+  const time = formatDateTime(flow.sharedAt);
   return (
     <Screen>
       <TopBar left={<Brand />} />
@@ -28,7 +35,7 @@ export default function Acuse() {
         <Body>La respuesta va firmada por el emisor. Solo sirve para esta solicitud.</Body>
         <Card>
           <Label>Destino</Label>
-          <Text style={typography.heading}>{REQUEST.counterparty}</Text>
+          <Text style={typography.heading}>{counterpartyLabel(flow.request.purpose)}</Text>
           <Row title={purposeLabel(flow.request.purpose)} scope="Finalidad" />
           <Row title={`Compartida · ${time}`} scope="Hora en que la compartiste" trailing={<Text>✓</Text>} />
         </Card>
@@ -43,10 +50,10 @@ export default function Acuse() {
           <Button>Volver a mis credenciales</Button>
         </Link>
         <Link href="/verificador" asChild>
-          <Button tone="secondary">Ver lado del comprador →</Button>
+          <Button tone="secondary">{`Ver lado del ${counterpartyLabel(flow.request.purpose).toLowerCase()} →`}</Button>
         </Link>
       </Footer>
-      <DemoStamp>{receiptStamp()}</DemoStamp>
+      {celebrate ? <Confetti /> : null}
     </Screen>
   );
 }

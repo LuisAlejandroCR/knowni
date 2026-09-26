@@ -14,6 +14,11 @@ export function purposeFor(consented: readonly string[]): string {
   return consented.includes("vehiculo") ? VEHICLE_SALE : IDENTITY_CHECK;
 }
 
+// Who asks, named by what they ask for: a buyer only exists in a sale.
+export function counterpartyLabel(purpose: string): string {
+  return purpose === VEHICLE_SALE ? "Comprador" : "Solicitante";
+}
+
 export function purposeLabel(purpose: string): string {
   return LABEL[purpose] ?? purpose;
 }

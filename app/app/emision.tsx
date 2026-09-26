@@ -8,6 +8,7 @@ import { ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
+import { sourceLabel } from "../src/domain/sources.ts";
 
 export default function Emision() {
   const flow = useFlow();
@@ -33,7 +34,7 @@ export default function Emision() {
             <Row
               key={source}
               icon={<Text>{flow.busy ? "◌" : "✓"}</Text>}
-              title={source}
+              title={sourceLabel(source)}
               scope={flow.busy ? "Consultando" : "Consulta terminada"}
             />
           ))}

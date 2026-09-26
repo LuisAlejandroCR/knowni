@@ -8,7 +8,7 @@ import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps,
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
 import { share, useFlow } from "../src/domain/flow.ts";
-import { purposeLabel } from "../src/domain/purpose.ts";
+import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
@@ -41,7 +41,7 @@ export default function Revision() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Steps current={4} />
         <Title>Esto es lo que{"\n"}recibirán.</Title>
-        <Body>{`${REQUEST.counterparty}\nSolo para: ${purposeLabel(purpose).toLowerCase()}.`}</Body>
+        <Body>{`${counterpartyLabel(purpose)}\nSolo para: ${purposeLabel(purpose).toLowerCase()}.`}</Body>
         <Card>
           {answers.map((answer) => (
             <Row

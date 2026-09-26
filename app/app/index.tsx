@@ -4,10 +4,9 @@
 
 import { router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
-import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { color, type } from "../src/theme.ts";
-import { sessionStamp } from "../src/domain/provenance.ts";
 import { purposeLabel } from "../src/domain/purpose.ts";
 
 export default function Home() {
@@ -16,7 +15,7 @@ export default function Home() {
 
   return (
     <Screen>
-      <TopBar left={<Brand />} right={<Badge onPress={() => router.push("/espacio")}>Mi espacio</Badge>} />
+      <TopBar left={<Brand />} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Label>Tú decides qué compartes</Label>
         <Title>Demuestra más.{"\n"}Revela menos.</Title>
@@ -36,19 +35,12 @@ export default function Home() {
           trailing={<Text>›</Text>}
           onPress={() => router.push("/solicitud")}
         />
-        <Row
-          icon={<Text>◎</Text>}
-          title="Tu wallet"
-          scope="Cavos · Stellar testnet"
-          trailing={<Text>›</Text>}
-          onPress={() => router.push("/firma")}
-        />
         <Note>La contraparte pide respuestas.{"\n"}No una copia de tu cédula.</Note>
       </ScrollView>
       <Footer>
         <Button onPress={() => router.push("/solicitud")}>Revisar solicitud →</Button>
       </Footer>
-      <DemoStamp>{sessionStamp()}</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

@@ -5,7 +5,7 @@
 import { useRef, useState } from "react";
 import { Linking, ScrollView, Text, TextInput } from "react-native";
 import { getRandomBytes } from "expo-crypto";
-import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, Title, TopBar } from "../src/components.tsx";
+import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
@@ -40,6 +40,7 @@ function NotConfigured() {
         <Body>Esta build no trae EXPO_PUBLIC_CAVOS_APP_ID. Los pasos están en docs/wallets.md.</Body>
       </ScrollView>
       <DemoStamp>STELLAR TESTNET</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }
@@ -173,6 +174,7 @@ function CavosSigner() {
         )}
       </Footer>
       <DemoStamp>STELLAR TESTNET</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

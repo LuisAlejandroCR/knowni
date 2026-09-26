@@ -6,7 +6,7 @@ import { Link, router } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
-import { purposeLabel } from "../src/domain/purpose.ts";
+import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { type as typography } from "../src/theme.ts";
 
@@ -41,9 +41,7 @@ export default function Solicitud() {
         <Steps current={1} />
         <Title>¿Qué necesitan{"\n"}saber de ti?</Title>
         <Card>
-          <Text style={{ ...typography.heading }}>{REQUEST.counterparty}</Text>
-          <Text style={{ ...typography.small, marginTop: 4 }}>{`Firma verificada · reto ${session.request.nonce.slice(0, 8)}…`}</Text>
-          <Text style={{ ...typography.small, marginTop: 4 }}>Colombia</Text>
+          <Text style={{ ...typography.heading }}>{counterpartyLabel(session.request.purpose)}</Text>
           <Row title={purposeLabel(session.request.purpose)} scope="Finalidad" />
           <Body>{`Vence en ${REQUEST.expiresInMinutes} min`}</Body>
         </Card>

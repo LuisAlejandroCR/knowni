@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
+import { router, usePathname } from "expo-router";
 
 export function Screen({ children }: { readonly children: ReactNode }) {
   return <SafeAreaView style={styles.screen}>{children}</SafeAreaView>;
@@ -149,6 +150,37 @@ export function Steps({ current }: { readonly current: 1 | 2 | 3 | 4 }) {
   );
 }
 
+// The way between the three places a person comes back to: their answers, their
+// wallet and what they hold. The journey screens stay a stack above it.
+const TABS = [
+  { href: "/", label: "Inicio", icon: "⌂" },
+  { href: "/firma", label: "Wallet", icon: "◎" },
+  { href: "/espacio", label: "Mi espacio", icon: "☰" },
+] as const;
+
+export function TabBar() {
+  const path = usePathname();
+  return (
+    <View style={styles.tabBar}>
+      {TABS.map((tab) => {
+        const on = path === tab.href;
+        return (
+          <Pressable
+            key={tab.href}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            onPress={() => { if (!on) router.replace(tab.href); }}
+            style={styles.tab}
+          >
+            <Text style={[styles.tabIcon, on && styles.tabOn]}>{tab.icon}</Text>
+            <Text style={[styles.tabLabel, on && styles.tabOn]}>{tab.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 // The iOS number pad has no return key; this bar gives every field a way out.
 const KEYBOARD_DONE = "knowni-keyboard-done";
 
@@ -199,8 +231,10 @@ export function Footer({ children }: { readonly children: ReactNode }) {
 
 // Every screen of this block carries it: what is on the phone is the target
 // design with demonstration data, and saying so is not optional.
-export function DemoStamp({ children = "" }: { children?: string }) {
-  return <Text style={styles.demo}>{children}</Text>;
+// Kept as a slot so screens need not change, but it renders nothing: the
+// technical footers were noise to the person reading the screen.
+export function DemoStamp(_props: { children?: string }) {
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -285,6 +319,17 @@ const styles = StyleSheet.create({
   stepBarNext: { backgroundColor: "#dfe7d8" },
   stepText: { fontSize: 10, color: color.inkFaint },
   stepTextOn: { color: color.deep, fontWeight: "700" },
+  tabBar: {
+    flexDirection: "row",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: color.line,
+    backgroundColor: color.canvas,
+    paddingTop: 8,
+  },
+  tab: { flex: 1, alignItems: "center", paddingVertical: 4 },
+  tabIcon: { fontSize: 20, color: color.inkFaint },
+  tabLabel: { fontSize: 11, color: color.inkFaint, marginTop: 2 },
+  tabOn: { color: color.deep, fontWeight: "700" },
   keyboardBar: {
     alignItems: "flex-end",
     paddingHorizontal: 16,

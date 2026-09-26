@@ -37,9 +37,10 @@ workflows:
       - name: Fetch or create the ad hoc certificate and profile
         # Uses the knowni-asc key: creates what Apple lacks, including a profile
         # that lists every registered iPhone, then points the project at it.
+        # A capability added on the App ID makes old profiles stale; they go.
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files co.knowni.wallet             --type IOS_APP_ADHOC             --create
+          app-store-connect fetch-signing-files co.knowni.wallet             --type IOS_APP_ADHOC             --delete-stale-profiles             --create
           keychain add-certificates
           xcode-project use-profiles --project app/ios/Knowni.xcodeproj
       - name: Build the ipa

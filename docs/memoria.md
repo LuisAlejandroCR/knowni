@@ -27,6 +27,22 @@ consulta ya era real.
 *Lo que no cierra:* la contraparte sigue viviendo en el mismo teléfono —el verificador es real, la
 entrega y el acuse no—. El emisor depende del portátil encendido. Modo avión (A12) sin probar.
 
+### D-87 — Cavos corre en React Native con un WebCrypto Ed25519 en JS · 2026-09-25
+
+*Qué se hizo:* `app/src/domain/ed25519-subtle.ts` cubre las cuatro llamadas que hace
+`WebCryptoControlKey` de `@cavos/kit` —`generateKey`, `exportKey raw`, `importKey pkcs8` y `sign`,
+solo Ed25519— con `@noble/curves`, y `_layout.tsx` lo instala únicamente si falta `crypto.subtle`.
+Las firmas se comprueban contra el WebCrypto real de Node en `ed25519-subtle.spec.ts`.
+
+*Por qué:* en el iPhone Cavos rechazó abrir la wallet con "WebCrypto is unavailable": su camino
+Stellar crea la llave de control con WebCrypto aunque el kit tenga `NativeControlSigner`, y React
+Native no trae `crypto.subtle`. Un polyfill nativo (`react-native-quick-crypto`) gasta el último
+build del mes; este no gasta ninguno.
+
+*Lo que no cierra:* la semilla de control vive en memoria de JS, no en una llave no extraíble, y sin
+IndexedDB no persiste: cada arranque de la app vuelve a autorizar el dispositivo. Aceptable en
+testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de Cavos.
+
 ## Bitácora reciente
 
 - **2026-09-25 — El pitch se vuelve una historia visual.** El origen es Colombia

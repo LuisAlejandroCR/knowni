@@ -3,9 +3,10 @@
 // run, outside the journey; the transaction hash on screen is the evidence.
 
 import { useRef, useState } from "react";
-import { Linking, ScrollView, Text, TextInput } from "react-native";
+import { Keyboard, Linking, Platform, ScrollView, Text, TextInput } from "react-native";
+import { cleanOtp, otpComplete } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
-import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
+import { Body, Button, Card, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
@@ -76,9 +77,9 @@ function CavosSigner() {
       setStep("code");
     });
 
-  const verify = () =>
+  const verify = (entered: string = code) =>
     run(async () => {
-      const identity = await auth.verifyOtp(email.trim(), code.trim());
+      const identity = await auth.verifyOtp(email.trim(), entered);
       const port = createCavosWallet(await connectCavos(identity, auth));
       const connected = await port.connect();
       setWallet(port);
@@ -119,7 +120,23 @@ function CavosSigner() {
         {step !== "wallet" && (
           <TextInput
             value={step === "email" ? email : code}
-            onChangeText={step === "email" ? setEmail : setCode}
+            onChangeText={
+              step === "email"
+                ? setEmail
+                : (text) => {
+                    const next = cleanOtp(text);
+                    setCode(next);
+                    // A complete code signs in by itself: pasting it is the intent.
+                    if (otpComplete(next) && !busy) {
+                      Keyboard.dismiss();
+                      void verify(next);
+                    }
+                  }
+            }
+            textContentType={step === "email" ? "emailAddress" : "oneTimeCode"}
+            returnKeyType="done"
+            onSubmitEditing={Keyboard.dismiss}
+            inputAccessoryViewID={Platform.OS === "ios" ? KEYBOARD_DONE : undefined}
             placeholder={step === "email" ? "tu@correo.com" : "Código de 6 dígitos"}
             keyboardType={step === "email" ? "email-address" : "number-pad"}
             autoCapitalize="none"
@@ -127,6 +144,7 @@ function CavosSigner() {
             style={{ borderWidth: 1, borderColor: "#c9cfc2", borderRadius: 12, padding: 14, marginTop: 16, fontSize: 16 }}
           />
         )}
+        <KeyboardDone />
         {account !== undefined && (
           <>
             <Row title="Cuenta" scope={account} />
@@ -162,7 +180,7 @@ function CavosSigner() {
           </Button>
         )}
         {step === "code" && (
-          <Button onPress={() => void verify()} disabled={busy || code.trim() === ""}>
+          <Button onPress={() => void verify()} disabled={busy || !otpComplete(code)}>
             {busy ? "Abriendo…" : "Entrar"}
           </Button>
         )}

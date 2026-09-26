@@ -9,6 +9,7 @@ import { getRandomBytes } from "expo-crypto";
 import { Body, Button, Callout, Card, Label, Steps, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color } from "../src/theme.ts";
 import { canCopy, copyText } from "../src/clipboard.ts";
+import { successTap } from "../src/haptics.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
@@ -126,9 +127,9 @@ function CavosSigner() {
       if (account === undefined || wallet === undefined) return;
       setResult(undefined);
       const nowUnix = Math.floor(Date.now() / 1000);
-      setResult(
-        await payQuote({ terms: selfPaymentTerms(account, getRandomBytes(32)), expiresAt: nowUnix + 120, wallet }),
-      );
+      const paid = await payQuote({ terms: selfPaymentTerms(account, getRandomBytes(32)), expiresAt: nowUnix + 120, wallet });
+      setResult(paid);
+      if (paid.status === "paid") void successTap();
       setBalances(await balancesOf(account));
     });
 
@@ -241,7 +242,7 @@ function CavosSigner() {
             title="Pagado y aceptado por la red."
             onPressText={() => void Linking.openURL(explorerUrl(result.txHash))}
           >
-            {result.txHash}
+            {`${shortAddress(result.txHash)} · Ver en el explorador ↗`}
           </Callout>
         )}
         {result?.status === "failed" && (

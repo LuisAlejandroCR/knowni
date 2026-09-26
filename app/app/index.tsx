@@ -7,6 +7,7 @@ import { ScrollView, Text, View } from "react-native";
 import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { color, type } from "../src/theme.ts";
+import { sessionStamp } from "../src/domain/provenance.ts";
 
 export default function Home() {
   const flow = useFlow();
@@ -39,7 +40,7 @@ export default function Home() {
       <Footer>
         <Button onPress={() => router.push("/solicitud")}>Revisar solicitud →</Button>
       </Footer>
-      <DemoStamp>EMISOR Y CONTRAPARTE DE DEMOSTRACIÓN · FUENTES REALES</DemoStamp>
+      <DemoStamp>{sessionStamp()}</DemoStamp>
     </Screen>
   );
 }

@@ -5,7 +5,7 @@
 import type { AttestedAnswer, AttestedResults, SignedRequest, IssuerRegistry } from "@knowni/attestation";
 import { attestResults, createMemoryRegistry, signRequest } from "@knowni/attestation";
 import type { SessionRequest } from "@knowni/core";
-import { toHex, utf8 } from "@knowni/core";
+import { fromHex, toHex, utf8 } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
 
 export const DEMO_ISSUER = "co-operador-demo";
@@ -35,9 +35,17 @@ function demoKeys(): DemoKeys {
 }
 
 export function demoRegistry(): IssuerRegistry {
+  const pinned = process.env.EXPO_PUBLIC_ISSUER_PUBLIC_KEY;
+  return issuerRegistry(pinned === "" ? undefined : pinned);
+}
+
+// The real issuer's key, pinned at build or Metro start, takes the demo key's
+// place: its answers come from Croma and are signed by a key the device did not
+// invent. Without a pin, the demo issuer is the only one trusted.
+export function issuerRegistry(pinnedIssuerKeyHex: string | undefined): IssuerRegistry {
   const { issuerPublicKey, counterpartyPublicKey } = demoKeys();
   return createMemoryRegistry({
-    [DEMO_ISSUER]: issuerPublicKey,
+    [DEMO_ISSUER]: pinnedIssuerKeyHex === undefined ? issuerPublicKey : fromHex(pinnedIssuerKeyHex),
     [DEMO_COUNTERPARTY]: counterpartyPublicKey,
   });
 }

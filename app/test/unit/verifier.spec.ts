@@ -5,8 +5,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { demoRequest, demoResults } from "../../src/domain/demo-issuer.ts";
-import { hydrateLedger, verifyOnDevice } from "../../src/domain/verifier.ts";
+import { DEMO_ISSUER, demoRequest, demoResults, issuerRegistry } from "../../src/domain/demo-issuer.ts";
+import { toHex } from "@knowni/core";
+import { hydrateLedger, requiredFor, verifyOnDevice } from "../../src/domain/verifier.ts";
 import { createMemoryNullifierStore, type AttestedAnswer } from "@knowni/attestation";
 
 // The screen does this at start-up; without it the verifier refuses, because a
@@ -83,4 +84,35 @@ test("tampered answers are refused, and say so without a code", () => {
   const view = verifyOnDevice(signed, tampered, id, "live", "strict", NOW);
   assert.equal(view.accepted, false);
   assert.match(view.explanation, /firmadas/);
+});
+
+test("only what the person consented to is required: Registraduría alone is enough", () => {
+  const signed = demoRequest(NOW);
+  const results = demoResults(signed.request, answers.slice(0, 1), NOW);
+  const view = verifyOnDevice(signed, results, "p-solo", "live", "strict", NOW, requiredFor(["registraduria"]));
+  assert.equal(view.accepted, true);
+});
+
+test("a consented source with no answer is still refused", () => {
+  const signed = demoRequest(NOW);
+  const results = demoResults(signed.request, answers.slice(0, 1), NOW);
+  const view = verifyOnDevice(signed, results, "p-falta", "live", "strict", NOW, requiredFor(["registraduria", "sicaac"]));
+  assert.equal(view.accepted, false);
+});
+
+test("sources map to the predicates the issuer answers, and unknown ids to none", () => {
+  assert.deepEqual(requiredFor(["registraduria", "sicaac", "listas", "vehiculo"]), [
+    "personhood",
+    "capacity",
+    "sanctions",
+    "assetStanding",
+  ]);
+  assert.deepEqual(requiredFor(["constructor"]), []);
+});
+
+test("a pinned issuer key replaces the demo one, so a real issuer can be trusted", () => {
+  const pinned = "ab".repeat(32);
+  const registry = issuerRegistry(pinned);
+  assert.equal(toHex(registry.publicKeyOf(DEMO_ISSUER)!), pinned);
+  assert.notEqual(toHex(issuerRegistry(undefined).publicKeyOf(DEMO_ISSUER)!), pinned);
 });

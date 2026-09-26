@@ -73,7 +73,7 @@ export default function Revision() {
       </ScrollView>
       <Footer>
         <Link href="/acuse" asChild>
-          <Button>Compartir respuesta de demo →</Button>
+          <Button>Compartir con la contraparte de prueba →</Button>
         </Link>
       </Footer>
       <DemoStamp>RESPUESTAS FIRMADAS Y VERIFICADAS · ENVÍO REAL BLOQUEADO</DemoStamp>

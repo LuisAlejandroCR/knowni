@@ -7,11 +7,12 @@ import { ScrollView, Text, View } from "react-native";
 import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { color, type as typography } from "../src/theme.ts";
+import { receiptStamp } from "../src/domain/provenance.ts";
 
 export default function Acuse() {
   return (
     <Screen>
-      <TopBar left={<Brand />} right={<Badge>Demo</Badge>} />
+      <TopBar left={<Brand />} right={<Badge>Contraparte de prueba</Badge>} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <View style={{ height: 85, alignItems: "center", justifyContent: "center" }}>
           <View style={{ width: 80, height: 80, borderRadius: 26, backgroundColor: color.limeSoft, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-9deg" }] }}>
@@ -40,7 +41,7 @@ export default function Acuse() {
           <Button tone="secondary">Ver lado del comprador →</Button>
         </Link>
       </Footer>
-      <DemoStamp>ACUSE SIMULADO · DATOS DE DEMOSTRACIÓN</DemoStamp>
+      <DemoStamp>{receiptStamp()}</DemoStamp>
     </Screen>
   );
 }

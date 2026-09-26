@@ -8,8 +8,9 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
-import { verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
+import { requiredFor, verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
 import { color, type as typography } from "../src/theme.ts";
+import { acceptanceStamp } from "../src/domain/provenance.ts";
 
 const REVOCATIONS: readonly RevocationSetting[] = ["live", "stale", "unknown", "revoked"];
 const LABEL: Record<RevocationSetting, string> = {
@@ -39,6 +40,7 @@ export default function Verificador() {
         revocation,
         policy,
         Math.floor(Date.now() / 1000),
+        requiredFor(session.consented),
       ),
     [session, revocation, policy],
   );
@@ -128,7 +130,7 @@ export default function Verificador() {
           <Button>Ver respuestas y alcance</Button>
         </Link>
       </Footer>
-      <DemoStamp>ACEPTACIÓN REAL · EMISOR Y CONTRAPARTE DE DEMOSTRACIÓN</DemoStamp>
+      <DemoStamp>{acceptanceStamp()}</DemoStamp>
     </Screen>
   );
 }

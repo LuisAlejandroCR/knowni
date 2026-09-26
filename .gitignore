@@ -36,3 +36,7 @@ app/modules/knowni-prover/ios/KnowniProver.xcframework/
 
 # Stellar CLI arguments and wasm for the testnet run: regenerated, never committed.
 .stellar-out/
+
+# `eas` run from the root instead of app/ leaves these behind; the real ones live in app/.
+/app.json
+/.easignore

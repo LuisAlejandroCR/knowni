@@ -10,7 +10,7 @@ import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { decline, useFlow } from "../src/domain/flow.ts";
 import { expiryText } from "../src/domain/expiry.ts";
 import { useNowUnix } from "../src/use-now.ts";
-import { type as typography } from "../src/theme.ts";
+import { color, type as typography } from "../src/theme.ts";
 
 export default function Solicitud() {
   const session = useFlow();
@@ -46,7 +46,7 @@ export default function Solicitud() {
         <Steps current={1} />
         <Title>¿Qué necesitan{"\n"}saber de ti?</Title>
         <Card>
-          <Text style={{ ...typography.heading }}>{counterpartyLabel(session.request.purpose)}</Text>
+          <Text style={{ ...typography.heading, color: color.ink }}>{counterpartyLabel(session.request.purpose)}</Text>
           <Row title={purposeLabel(session.request.purpose)} scope="Finalidad" />
           <View style={{ flexDirection: "row", marginTop: 8 }}>
             <Badge>{`⏱ ${expiryText(session.request.expiresAt, now)}`}</Badge>

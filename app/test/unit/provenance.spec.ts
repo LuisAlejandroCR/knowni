@@ -12,12 +12,13 @@ test("a pinned key makes the issuer real, an empty one does not", () => {
   assert.equal(issuerIsReal(undefined), false);
 });
 
-test("with a real issuer no stamp calls it a demo, and the counterparty stays a test", () => {
+test("with a real issuer no stamp says demo, test, example or simulated", () => {
   for (const stamp of [sessionStamp(true), acceptanceStamp(true), receiptStamp(true)]) {
     assert.doesNotMatch(stamp, /EMISOR Y CONTRAPARTE DE DEMOSTRACIÓN|DATOS DE DEMOSTRACIÓN/);
   }
-  assert.match(sessionStamp(true), /CONTRAPARTE DE PRUEBA/);
-  assert.match(receiptStamp(true), /ACUSE SIMULADO/);
+  for (const stamp of [sessionStamp(true), acceptanceStamp(true), receiptStamp(true)]) {
+    assert.doesNotMatch(stamp, /DEMO|PRUEBA|EJEMPLO|SIMULAD/);
+  }
 });
 
 test("without a pinned key nothing claims the issuer is real", () => {

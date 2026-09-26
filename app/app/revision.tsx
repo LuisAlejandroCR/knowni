@@ -8,10 +8,12 @@ import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps,
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
 import { share, useFlow } from "../src/domain/flow.ts";
+import { purposeLabel } from "../src/domain/purpose.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
-  const { answers } = useFlow();
+  const { answers, request } = useFlow();
+  const purpose = request.purpose;
 
   // No verified answers means nothing to show. A screen that renders what it
   // could not check is a screen that can be lied to.
@@ -39,7 +41,7 @@ export default function Revision() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Steps current={4} />
         <Title>Esto es lo que{"\n"}recibirán.</Title>
-        <Body>{`${REQUEST.counterparty}\nSolo para esta ${REQUEST.purposeLabel.toLowerCase()}.`}</Body>
+        <Body>{`${REQUEST.counterparty}\nSolo para: ${purposeLabel(purpose).toLowerCase()}.`}</Body>
         <Card>
           {answers.map((answer) => (
             <Row
@@ -78,7 +80,7 @@ export default function Revision() {
             router.push("/acuse");
           }}
         >
-          Compartir con la contraparte de prueba →
+          Compartir →
         </Button>
       </Footer>
       <DemoStamp>RESPUESTAS FIRMADAS Y VERIFICADAS · ENVÍO REAL BLOQUEADO</DemoStamp>

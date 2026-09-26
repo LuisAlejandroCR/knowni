@@ -8,16 +8,16 @@ export function issuerIsReal(pinnedIssuerKeyHex: string | undefined = process.en
 
 export function sessionStamp(realIssuer: boolean = issuerIsReal()): string {
   return realIssuer
-    ? "FUENTES Y EMISOR REALES · CONTRAPARTE DE PRUEBA"
+    ? "FUENTES Y EMISOR REALES"
     : "EMISOR Y CONTRAPARTE DE DEMOSTRACIÓN · FUENTES REALES";
 }
 
 export function acceptanceStamp(realIssuer: boolean = issuerIsReal()): string {
   return realIssuer
-    ? "ACEPTACIÓN REAL · EMISOR REAL · CONTRAPARTE DE PRUEBA"
+    ? "VERIFICADO EN ESTE DISPOSITIVO · EMISOR REAL"
     : "ACEPTACIÓN REAL · EMISOR Y CONTRAPARTE DE DEMOSTRACIÓN";
 }
 
 export function receiptStamp(realIssuer: boolean = issuerIsReal()): string {
-  return realIssuer ? "RESPUESTA REAL · ACUSE SIMULADO" : "ACUSE SIMULADO · DATOS DE DEMOSTRACIÓN";
+  return realIssuer ? "RESPUESTA FIRMADA POR EL EMISOR" : "ACUSE SIMULADO · DATOS DE DEMOSTRACIÓN";
 }

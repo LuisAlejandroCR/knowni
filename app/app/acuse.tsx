@@ -4,15 +4,20 @@
 
 import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
-import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { color, type as typography } from "../src/theme.ts";
 import { receiptStamp } from "../src/domain/provenance.ts";
+import { useFlow } from "../src/domain/flow.ts";
+import { purposeLabel } from "../src/domain/purpose.ts";
 
 export default function Acuse() {
+  const flow = useFlow();
+  const sharedAt = flow.sharedAt === undefined ? undefined : new Date(flow.sharedAt * 1000);
+  const time = sharedAt === undefined ? "—" : `${String(sharedAt.getHours()).padStart(2, "0")}:${String(sharedAt.getMinutes()).padStart(2, "0")}`;
   return (
     <Screen>
-      <TopBar left={<Brand />} right={<Badge>Contraparte de prueba</Badge>} />
+      <TopBar left={<Brand />} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <View style={{ height: 85, alignItems: "center", justifyContent: "center" }}>
           <View style={{ width: 80, height: 80, borderRadius: 26, backgroundColor: color.limeSoft, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-9deg" }] }}>
@@ -20,12 +25,12 @@ export default function Acuse() {
           </View>
         </View>
         <Title>Respuesta enviada.{"\n"}Tú conservas{"\n"}el control.</Title>
-        <Body>En el recorrido real, esta confirmación requiere un acuse de recepción.</Body>
+        <Body>La respuesta va firmada por el emisor. Solo sirve para esta solicitud.</Body>
         <Card>
           <Label>Destino</Label>
           <Text style={typography.heading}>{REQUEST.counterparty}</Text>
-          <Row title={REQUEST.purposeLabel} scope="Finalidad" />
-          <Row title="Recibida · 9:41" scope="Estado del ejemplo" trailing={<Text>✓</Text>} />
+          <Row title={purposeLabel(flow.request.purpose)} scope="Finalidad" />
+          <Row title={`Compartida · ${time}`} scope="Hora en que la compartiste" trailing={<Text>✓</Text>} />
         </Card>
         <Note>Enviar una respuesta no significa que hayas firmado un contrato.</Note>
         <Body>

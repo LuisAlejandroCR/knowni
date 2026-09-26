@@ -8,6 +8,7 @@ import type { SessionRequest } from "@knowni/core";
 import { demoRequest } from "./demo-issuer.ts";
 import { fetchIssuer, requestIssuance, verifyIssued, type IssuerIdentity, type SourceState } from "./issuer-client.ts";
 import { readRequest, type RequestState } from "./wallet.ts";
+import { purposeFor } from "./purpose.ts";
 import { DEMO_COUNTERPARTY } from "./demo-issuer.ts";
 
 export type Step = "request" | "consent" | "issuing" | "review" | "sent";
@@ -104,6 +105,13 @@ export function reset(): void {
 // screen renders it.
 export async function issue(): Promise<void> {
   if (state.busy) return;
+  // The finality follows what was authorised: a request signed for a vehicle
+  // sale is re-signed as an identity check when RUNT and SIMIT were left out.
+  const purpose = purposeFor(state.consented);
+  if (purpose !== state.request.purpose) {
+    const signed = demoRequest(now(), purpose);
+    set({ signed, request: signed.request, requestState: readRequest(signed, DEMO_COUNTERPARTY, now()) });
+  }
   set({ busy: true, error: undefined, step: "issuing" });
 
   const issuer = state.issuer ?? (await fetchIssuer());

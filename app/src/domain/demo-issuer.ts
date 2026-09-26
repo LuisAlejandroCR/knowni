@@ -7,6 +7,7 @@ import { attestResults, createMemoryRegistry, signRequest } from "@knowni/attest
 import type { SessionRequest } from "@knowni/core";
 import { fromHex, toHex, utf8 } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
+import { IDENTITY_CHECK } from "./purpose.ts";
 
 export const DEMO_ISSUER = "co-operador-demo";
 export const DEMO_COUNTERPARTY = "comprador-de-prueba";
@@ -56,15 +57,15 @@ function nonce(): string {
   return toHex(appSignatures.randomSeed().subarray(0, 16));
 }
 
-export function demoRequest(nowUnix: number): SignedRequest {
+export function demoRequest(nowUnix: number, purpose: string = IDENTITY_CHECK): SignedRequest {
   const request: SessionRequest = {
     relyingPartyId: DEMO_COUNTERPARTY,
-    purpose: "vehicle-sale",
+    purpose,
     nonce: nonce(),
     expiresAt: nowUnix + 600,
     // The parameters this demo asks about, hashed: the real product puts the
     // thresholds here, and they are public.
-    paramsHash: appHash.hash("knowni/demo-params/v1", [utf8("vehicle-sale")]),
+    paramsHash: appHash.hash("knowni/demo-params/v1", [utf8(purpose)]),
   };
   return signRequest(appSignatures, demoKeys().counterpartySeed, request);
 }

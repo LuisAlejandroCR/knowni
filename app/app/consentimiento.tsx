@@ -27,7 +27,11 @@ export default function Consentimiento() {
   return (
     <Screen>
       <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Tu autorización" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 24 }}
+        automaticallyAdjustKeyboardInsets
+        keyboardShouldPersistTaps="handled"
+      >
         <Steps current={2} />
         <Title>Consultar no es{"\n"}compartir.</Title>
         <Body>

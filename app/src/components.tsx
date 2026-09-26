@@ -199,7 +199,7 @@ export function Footer({ children }: { readonly children: ReactNode }) {
 
 // Every screen of this block carries it: what is on the phone is the target
 // design with demonstration data, and saying so is not optional.
-export function DemoStamp({ children = "DISEÑO OBJETIVO · DATOS DE DEMOSTRACIÓN" }: { children?: string }) {
+export function DemoStamp({ children = "" }: { children?: string }) {
   return <Text style={styles.demo}>{children}</Text>;
 }
 

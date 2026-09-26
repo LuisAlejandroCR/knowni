@@ -8,6 +8,7 @@ import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, 
 import { useFlow } from "../src/domain/flow.ts";
 import { color, type } from "../src/theme.ts";
 import { sessionStamp } from "../src/domain/provenance.ts";
+import { purposeLabel } from "../src/domain/purpose.ts";
 
 export default function Home() {
   const flow = useFlow();
@@ -31,9 +32,16 @@ export default function Home() {
         <Row
           icon={<Text>↗</Text>}
           title={valid ? "Una solicitud pendiente" : "Una solicitud que no verifica"}
-          scope={valid ? "Compraventa de vehículo · vence en 10 min" : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
+          scope={valid ? `${purposeLabel(flow.request.purpose)} · vence en 10 min` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
           trailing={<Text>›</Text>}
           onPress={() => router.push("/solicitud")}
+        />
+        <Row
+          icon={<Text>◎</Text>}
+          title="Tu wallet"
+          scope="Cavos · Stellar testnet"
+          trailing={<Text>›</Text>}
+          onPress={() => router.push("/firma")}
         />
         <Note>La contraparte pide respuestas.{"\n"}No una copia de tu cédula.</Note>
       </ScrollView>

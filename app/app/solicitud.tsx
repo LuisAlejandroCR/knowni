@@ -6,6 +6,7 @@ import { Link, router } from "expo-router";
 import { Pressable, ScrollView, Text } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
+import { purposeLabel } from "../src/domain/purpose.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { type as typography } from "../src/theme.ts";
 
@@ -42,9 +43,9 @@ export default function Solicitud() {
         <Card>
           <Text style={{ ...typography.heading }}>{REQUEST.counterparty}</Text>
           <Text style={{ ...typography.small, marginTop: 4 }}>{`Firma verificada · reto ${session.request.nonce.slice(0, 8)}…`}</Text>
-          <Text style={{ ...typography.small, marginTop: 4 }}>Destinatario de demostración · CO</Text>
-          <Row title={REQUEST.purposeLabel} scope="Finalidad" />
-          <Body>{`Solicitud de ejemplo · vence en ${REQUEST.expiresInMinutes} min`}</Body>
+          <Text style={{ ...typography.small, marginTop: 4 }}>Colombia</Text>
+          <Row title={purposeLabel(session.request.purpose)} scope="Finalidad" />
+          <Body>{`Vence en ${REQUEST.expiresInMinutes} min`}</Body>
         </Card>
         {REQUEST.questions.map((question, index) => (
           <Row

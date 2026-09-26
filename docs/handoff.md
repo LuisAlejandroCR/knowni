@@ -47,7 +47,7 @@ hay que volver a anclar la pública.
 | # | PR | Tamaño | Depende de | Quién |
 |---|---|---|---|---|
 | 0 | Push de `fix/app-document-kind` | — | decisión de CI | humano |
-| 1 | Limpieza de restos de Codemagic y archivos sueltos | S | — | agente |
+| 1 | ~~Limpieza de restos de Codemagic y archivos sueltos~~ hecho | S | — | agente |
 | 2 | Cavos en el dev build (`/firma`) | S–M | build solo si falla el redirect | agente + teléfono |
 | 3 | Pago USDC en testnet dentro del recorrido (A10) | M | 2 | agente + teléfono |
 | 4 | Contraparte real: spec | S | — | agente |
@@ -72,6 +72,7 @@ el humano**: esperar al 1 de octubre o abrir el PR ahora y gastar minutos.
 - Borrar `codemagic.yaml` y documentar que el grupo `knowni-signing` de Codemagic sobra (lo borra el humano en la UI).
 - Sin rastrear en la raíz: `app.json` y `.easignore` (salieron de un `eas` corrido desde la raíz), `web/animated-12.mp4`, `web/animated-38.mp4`. Preguntar al humano antes de borrar los `.mp4`.
 - **Aceptación:** `git status` limpio salvo lo que el humano quiera conservar; ningún documento menciona Codemagic como camino vigente.
+- **Hecho:** `codemagic.yaml` borrado; `/app.json` y `/.easignore` de la raíz quedan en `.gitignore`. Queda para el humano: borrar el grupo `knowni-signing` en la UI de Codemagic y decidir los dos `.mp4` de `web/`.
 
 ### PR-2 — Cavos en el dev build
 

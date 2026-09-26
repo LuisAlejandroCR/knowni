@@ -216,26 +216,62 @@ const SOURCE_PREDICATE: Readonly<Record<string, string>> = {
   vehiculo: "assetStanding",
 };
 
+// The predicates the issuer prices, from the sources a person consented to.
+export function sourcePredicates(consented: readonly string[]): readonly string[] {
+  return consented
+    .map((source) => SOURCE_PREDICATE[source])
+    .filter((predicate): predicate is string => predicate !== undefined);
+}
+
+// What the quote asks for, in the asset it names. Stellar amounts carry seven
+// decimals whatever the asset, so the stroops are divided exactly, never rounded.
+export function paymentAmount(terms: PaymentTerms): string {
+  const stroops = BigInt(terms.amountStroops);
+  const whole = stroops / 10_000_000n;
+  const fraction = (stroops % 10_000_000n).toString().padStart(7, "0").replace(/0+$/, "");
+  const asset = terms.asset.type === "native" ? "XLM" : terms.asset.code;
+  return `${whole}${fraction === "" ? "" : `.${fraction}`} ${asset}`;
+}
+
 export type PaidIssuanceOutcome =
-  | { readonly status: "issued"; readonly results: AttestedResults; readonly paymentTx?: string }
-  | { readonly status: "failed"; readonly stage: "quote" | "payment" | "issuance"; readonly reason: string };
+  | {
+      readonly status: "issued";
+      readonly results: AttestedResults;
+      readonly sourceStates: readonly SourceState[];
+      readonly paymentTx?: string;
+    }
+  | {
+      readonly status: "failed";
+      readonly stage: "quote" | "payment" | "issuance";
+      readonly reason: string;
+      readonly paymentTx?: string;
+    };
+
+// Where the coordinator is, so a screen can tell signing from querying.
+export type IssuanceProgress =
+  | { readonly phase: "paying" }
+  | { readonly phase: "querying"; readonly paymentTx?: string };
 
 // The payer-facing coordinator has one ordering: quote, pay if required, then
 // issue. A failed signature or chain submission can never spend a Croma call.
 export async function requestPaidIssuance(
   input: IssuanceInput,
-  wallet: PayerWalletPort,
-  options: { readonly baseUrl?: string; readonly horizonUrl?: string; readonly fetchImpl?: typeof fetch } = {},
+  wallet: PayerWalletPort | undefined,
+  options: {
+    readonly baseUrl?: string;
+    readonly horizonUrl?: string;
+    readonly fetchImpl?: typeof fetch;
+    readonly onProgress?: (progress: IssuanceProgress) => void;
+  } = {},
 ): Promise<PaidIssuanceOutcome> {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const predicates = input.consented
-    .map((source) => SOURCE_PREDICATE[source])
-    .filter((predicate): predicate is string => predicate !== undefined);
-  const quoted = await requestQuote(input.request, predicates, options.baseUrl ?? ISSUER_URL, fetchImpl);
+  const quoted = await requestQuote(input.request, sourcePredicates(input.consented), options.baseUrl ?? ISSUER_URL, fetchImpl);
   if (quoted.status === "failed") return { status: "failed", stage: "quote", reason: quoted.reason };
 
   let paymentTx: string | undefined;
   if (quoted.paymentRequired) {
+    if (wallet === undefined) return { status: "failed", stage: "payment", reason: "wallet_not_connected" };
+    options.onProgress?.({ phase: "paying" });
     const paid = await payQuote({
       terms: quoted.payment!,
       expiresAt: quoted.quote.expiresAt,
@@ -247,10 +283,11 @@ export async function requestPaidIssuance(
     paymentTx = paid.txHash;
   }
 
+  options.onProgress?.({ phase: "querying", paymentTx });
   const issued = await requestIssuance({ ...input, paymentTx }, options.baseUrl ?? ISSUER_URL, fetchImpl);
   return issued.status === "issued"
     ? { ...issued, paymentTx }
-    : { status: "failed", stage: "issuance", reason: issued.reason };
+    : { status: "failed", stage: "issuance", reason: issued.reason, paymentTx };
 }
 
 // Verified on the phone before anything is displayed: the service signs, and

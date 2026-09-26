@@ -298,7 +298,7 @@ persistencia de pagos ni reembolsos, y las pantallas cambian solo en lo que este
 
 | # | Criterio | Verificación |
 |---|---|---|
-| J1 | La wallet con la que la persona entró en `/firma` queda en una sesión compartida que sobrevive a navegar entre pantallas y que el recorrido lee; salir de la wallet o reiniciar el recorrido la vacía | prueba del almacén de sesión: guardar, leer, vaciar y avisar a quien escucha |
+| J1 | La wallet con la que la persona entró en `/firma` queda en una sesión compartida que sobrevive a navegar entre pantallas y que el recorrido lee; solo desconectar la wallet la vacía (D-89) | prueba del almacén de sesión: guardar, leer, vaciar y avisar a quien escucha |
 | J2 | La pantalla de consentimiento muestra el total de `/quote` en el activo de sus términos de pago; si el cobro está activo el botón dice «Pagar X XLM y consultar», y sin wallet conectada dice «Conectar wallet para pagar» y lleva a `/firma` | prueba del texto del botón por estado (sin cotización, gratis, con pago y wallet, con pago sin wallet) |
 | J3 | `flow.issue()` usa `requestPaidIssuance` cuando la cotización exige pago y la emisión simple solo cuando `/quote` declara el cobro desactivado; sin wallet y con cobro activo no llama `/issue` | pruebas del flujo con `fetch` inyectado: la secuencia HTTP es `/quote → Horizon → /issue` |
 | J4 | Si la firma o Horizon fallan, `/issue` no se llama, el recorrido vuelve al consentimiento y el mensaje es una de las razones tipadas de P6, nunca «error» | prueba de pago rechazado: ninguna llamada a `/issue` y la razón en el estado |

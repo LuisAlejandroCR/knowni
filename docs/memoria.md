@@ -96,6 +96,28 @@ esa identidad necesita otro correo o que Cavos borre su registro. Reinstalar la 
 P-256 y con ella la cuenta. Pruebas: 6 de `cavos-control` (K1–K4) y 1 del polyfill. K2 corrido en el iPhone el
 2026-09-26: tras cerrar la app, la misma cuenta pagó 1 XLM (`verificacion.md`, fila 5b).
 
+### D-89 — El recorrido paga primero y consulta después · 2026-09-26
+
+*Qué se hizo:* `flow.issue()` deja de llamar `/issue` directo y pasa por `requestPaidIssuance`
+(P9): `/quote`, pago en Horizon si la cotización lo exige y solo entonces `/issue` con el hash. La
+wallet con la que se entra en `/firma` queda en `app/src/domain/wallet-session.ts`, un almacén en
+memoria que el recorrido lee. El consentimiento cotiza al cambiar las fuentes y el botón dice
+«Pagar X XLM y consultar», o «Conectar wallet para pagar» y lleva a `/firma`. La emisión muestra
+firmando → pago aceptado con su hash → consultando, y la revisión enlaza la transacción en Stellar
+Expert. Las razones de P6 pasan de `firma.tsx` a `payment-text.ts`, compartidas.
+
+*Por qué:* pagar después exigiría al emisor consultar a crédito, y cada llamada a Croma cuesta; con
+el pago primero, un fallo de firma o de Horizon no gasta nada y la persona ve una razón tipada. El
+monto se imprime desde los `amountStroops` de los términos de `/quote`, con aritmética entera: el
+activo lo declara el emisor, nunca el teléfono. La sesión vive en memoria y no se vacía al
+reiniciar el recorrido: la llave ya está sellada al dispositivo (D-88) y volver a pedir el código
+de correo en cada consulta no protege nada más.
+
+*Lo que no cierra:* si Horizon acepta el pago y `/issue` falla, la persona pagó sin respuesta y un
+reintento paga otra vez; el emisor no ofrece aún reusar un pago aceptado. La corrida en el iPhone
+con el emisor cobrando XLM nativo está pendiente (`verificacion.md`); hasta entonces A10 sigue
+parcial. Pruebas: 6 del recorrido (J3–J6) y 3 de sesión y botón (J1–J2); 144 de la app.
+
 ### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 
 El proyecto ZK anterior verifica la firma del emisor dentro del circuito. Aquí el emisor publica una raíz sobre
@@ -2001,6 +2023,7 @@ exige el estado `ready` de Cavos, la primera corrida lo dirá.
 | 2026-09-24 | B2: el código deja de llamar `standing` a lo que el producto llama `sanctions`, en los cinco sitios donde el nombre viajaba —`core/`, las fuentes, el circuito, el fixture de señales y el contrato—. No cambia ningún compromiso: la etiqueta del reclamo es un número, no la cadena, así que renombrarla no mueve un solo hash; lo comprobó el testigo de `IncomeCommitment`, idéntico antes y después. `assetStanding` se queda como está: es otro predicado, sobre un activo y no sobre una persona — D-72. 454 pruebas y 11 del contrato |
 | 2026-09-24 | El ancla del registro deja de ser una forma y pasa a ser una transacción: `66bf1b7d…` lleva el digest del documento firmado como `MEMO_HASH`, y el mismo adaptador que corre en las pruebas lo lee de Horizon real y resuelve el registro con `trustedVia: chain_anchor`. Un documento distinto contra la misma ancla responde `digest_mismatch` — la comprobación que vale es esa, no la que resuelve. Lo que sigue sin hacerse es servir el documento por HTTPS: en el ejercicio salió de memoria, y el registro lo dice así — D-73 |
 | 2026-09-24 | El estado de Poseidon deja de ser una señal por celda y por ronda y pasa a viajar como expresión lineal: mezclar es contabilidad del compilador y solo se materializa lo que se eleva a la quinta. 25 221 → 12 633 restricciones (−50%) y 25 281 → 12 693 cables, iguales sobre las dos curvas; el testigo y el compromiso de ingreso que CI reconstruye no se mueven, que es lo que dice que la permutación es la misma — D-74. 454 pruebas |
+| 2026-09-26 | El recorrido paga primero y consulta después: `flow.issue()` usa `requestPaidIssuance`, la wallet de `/firma` queda en sesión, el botón de consentimiento dice cuánto cuesta y la revisión enlaza el hash de pago — D-89. 144 pruebas de la app; corrida en el iPhone pendiente |
 | 2026-09-26 | La semilla de control de Cavos se sella al Secure Enclave con el mismo ECIES del kit y se abre en cada sesión: la cuenta que devuelve el registro vuelve a firmar tras reiniciar, sin build nativo nuevo — D-88. 128 pruebas de la app |
 | 2026-09-25 | El pitch web adopta el orden de CREVA —promesa, frontera, recorrido, recibos, límites y cierre— sin adoptar su producto. La demo narrada pasa de arriendo a compraventa vehicular para respetar D-13; cada evidencia dice qué prueba y qué no. Propuesta y copy en `web/README.md`, criterios W1–W7 en `docs/plan.md` |
 | 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |

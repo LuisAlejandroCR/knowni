@@ -7,7 +7,7 @@ import { ScrollView, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { setConsent, setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
 import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
-import { consentBlocker } from "../src/domain/consent.ts";
+import { MIN_DOCUMENT_LENGTH, MIN_PLATE_LENGTH, consentBlocker } from "../src/domain/consent.ts";
 
 const SOURCES = [
   { id: "registraduria", title: "Registraduría", needs: "Número de documento" },
@@ -83,6 +83,7 @@ export default function Consentimiento() {
           onChangeText={(text) => setSubject({ documentNumber: cleanDocumentNumber(flow.subject.documentKind, text) })}
           placeholder={numeric ? "1020304050" : "AB123456"}
           keyboardType={numeric ? "number-pad" : "default"}
+          minLength={MIN_DOCUMENT_LENGTH}
         />
         {needsPlate ? (
           <Field
@@ -90,6 +91,7 @@ export default function Consentimiento() {
             value={flow.subject.plate}
             onChangeText={(text) => setSubject({ plate: text.toUpperCase().replace(/[^A-Z0-9]/g, "") })}
             placeholder="ABC123"
+            minLength={MIN_PLATE_LENGTH}
           />
         ) : null}
 

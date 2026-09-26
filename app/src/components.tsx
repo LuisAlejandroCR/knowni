@@ -2,7 +2,7 @@
 // Screen frame, cards, rows, notes and buttons — written once so eight screens
 // stay one product rather than eight interpretations of it.
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type StyleProp, type TextStyle, AccessibilityInfo, ActivityIndicator, Animated, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
@@ -394,28 +394,46 @@ export function Field({
   onChangeText,
   placeholder,
   keyboardType,
+  minLength,
 }: {
   label: string;
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: "default" | "number-pad";
+  minLength?: number;
 }) {
+  const [focused, setFocused] = useState(false);
+  // The field says when it is enough, so the person need not guess from the button.
+  const complete = minLength !== undefined && value.length >= minLength;
   return (
     <View style={{ marginBottom: 12 }}>
       <Text style={styles.label}>{label.toUpperCase()}</Text>
-      <TextInput
-        accessibilityLabel={label}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        keyboardType={keyboardType ?? "default"}
-        autoCapitalize="characters"
-        returnKeyType="done"
-        onSubmitEditing={Keyboard.dismiss}
-        inputAccessoryViewID={Platform.OS === "ios" ? KEYBOARD_DONE : undefined}
-        style={styles.input}
-      />
+      <View>
+        <TextInput
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholderTextColor={color.inkFaint}
+          accessibilityLabel={label}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          keyboardType={keyboardType ?? "default"}
+          autoCapitalize="characters"
+          returnKeyType="done"
+          onSubmitEditing={Keyboard.dismiss}
+          inputAccessoryViewID={Platform.OS === "ios" ? KEYBOARD_DONE : undefined}
+          style={[styles.input, focused && styles.inputFocused, complete && styles.inputWithIcon]}
+        />
+        {complete ? (
+          <View style={styles.inputIcon} pointerEvents="none">
+            <Ionicons name="checkmark-circle" size={22} color="#698447" />
+          </View>
+        ) : null}
+      </View>
+      {minLength !== undefined && !complete ? (
+        <Text style={styles.hint}>{`Mínimo ${minLength} caracteres · ${value.length}/${minLength}`}</Text>
+      ) : null}
       {Platform.OS === "ios" ? (
         <InputAccessoryView nativeID={KEYBOARD_DONE}>
           <View style={styles.keyboardBar}>
@@ -587,6 +605,10 @@ const styles = StyleSheet.create({
     borderTopColor: color.line,
   },
   keyboardDone: { color: color.deep, fontSize: 16, fontWeight: "600" },
+  inputFocused: { borderColor: color.deep, borderWidth: 2 },
+  inputWithIcon: { paddingRight: 44 },
+  inputIcon: { position: "absolute", right: 14, top: 0, bottom: 0, justifyContent: "center" },
+  hint: { ...type.small, color: color.inkFaint, marginTop: 5 },
   input: {
     borderWidth: 1,
     borderColor: color.line,

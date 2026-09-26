@@ -59,6 +59,9 @@ export default function Espacio() {
         <Card>
           <Row icon="🔒" title="Tu documento y tu placa" scope="Se envían solo al emisor que autorizas, nunca a la contraparte" />
         </Card>
+        <Button tone="secondary" onPress={() => router.push("/bienvenida")}>
+          Ver la introducción
+        </Button>
         <Button
           tone="secondary"
           onPress={() =>

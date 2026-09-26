@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { type StyleProp, type TextStyle, AccessibilityInfo, ActivityIndicator, Animated, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { color, radius, space, type } from "./theme.ts";
+import { color, radius, scheme, space, type } from "./theme.ts";
 import { router, usePathname } from "expo-router";
 import { lightTap } from "./haptics.ts";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -201,17 +201,17 @@ export function Glyph({ glyph, size, style }: { glyph: string; size: number; sty
 
 const ICON_TONE: Record<string, { box: object; text: object } | undefined> = {
   "✓": { box: { backgroundColor: color.lime }, text: { color: color.deep } },
-  "!": { box: { backgroundColor: "#ffe4ad" }, text: { color: color.amberInk } },
-  "✕": { box: { backgroundColor: "#eceee9" }, text: { color: color.inkSoft } },
-  "□": { box: { backgroundColor: color.card, borderWidth: 2, borderColor: "#b8c4b2" }, text: {} },
+  "!": { box: { backgroundColor: color.amberSoft }, text: { color: color.amberInk } },
+  "✕": { box: { backgroundColor: color.muted }, text: { color: color.inkSoft } },
+  "□": { box: { backgroundColor: color.card, borderWidth: 2, borderColor: color.checkbox }, text: {} },
 };
 
 // A result the person has to read: success, warning or plain information, each
 // with its own colour and glyph. Bare text inside a tinted card was unreadable
 // on the dark one and easy to miss on the amber one.
 const CALLOUT = {
-  success: { glyph: "✓", box: { backgroundColor: color.deep }, badge: { backgroundColor: color.lime }, title: { color: "#ffffff" }, text: { color: "#ccdbce" } },
-  warning: { glyph: "!", box: { backgroundColor: color.amber, borderWidth: 1, borderColor: color.amberLine }, badge: { backgroundColor: "#ffe4ad" }, title: { color: color.amberInk }, text: { color: color.amberInk } },
+  success: { glyph: "✓", box: { backgroundColor: color.deep }, badge: { backgroundColor: color.lime }, title: { color: color.onDeep }, text: { color: color.onDeepSoft } },
+  warning: { glyph: "!", box: { backgroundColor: color.amber, borderWidth: 1, borderColor: color.amberLine }, badge: { backgroundColor: color.amberSoft }, title: { color: color.amberInk }, text: { color: color.amberInk } },
 } as const;
 
 export function Callout({
@@ -427,7 +427,7 @@ export function Field({
         />
         {complete ? (
           <View style={styles.inputIcon} pointerEvents="none">
-            <Ionicons name="checkmark-circle" size={22} color="#698447" />
+            <Ionicons name="checkmark-circle" size={22} color={color.accent} />
           </View>
         ) : null}
       </View>
@@ -459,9 +459,12 @@ export function DemoStamp(_props: { children?: string }) {
   return null;
 }
 
+// Shadows stay dark in both appearances; a brand-green glow on a dark canvas reads as a bug.
+const shadowInk = scheme === "dark" ? "#000000" : color.deep;
+
 // A soft lift so cards read as objects on the page rather than outlines.
 const shadow = {
-  shadowColor: "#193e36",
+  shadowColor: shadowInk,
   shadowOpacity: 0.07,
   shadowRadius: 12,
   shadowOffset: { width: 0, height: 4 },
@@ -494,12 +497,12 @@ const styles = StyleSheet.create({
   },
   markText: { color: color.lime, fontSize: 19, fontWeight: "800" },
   brandText: { fontSize: 25, letterSpacing: -1.5, fontWeight: "800", color: color.ink },
-  badge: { backgroundColor: "#e9eee6", paddingHorizontal: 9, paddingVertical: 5, borderRadius: radius.pill },
+  badge: { backgroundColor: color.muted, paddingHorizontal: 9, paddingVertical: 5, borderRadius: radius.pill },
   badgeText: { fontSize: 11, fontWeight: "700", color: color.inkSoft },
   badgeSelected: { backgroundColor: color.deep },
   badgeTextSelected: { color: color.lime },
   badgeTappable: { minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
-  label: { ...type.label, color: "#5d6b60", marginBottom: 4 },
+  label: { ...type.label, color: color.inkSoft, marginBottom: 4 },
   title: { ...type.title, color: color.ink, marginVertical: space.sm },
   body: { ...type.body, color: color.inkSoft, marginBottom: space.md },
   card: {
@@ -519,24 +522,24 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: space.sm,
     borderBottomWidth: 1,
-    borderBottomColor: "#e8ece5",
+    borderBottomColor: color.divider,
   },
   rowTappable: { minHeight: 44 },
   rowBody: { flex: 1 },
   rowTitle: { ...type.body, fontWeight: "700", color: color.ink },
   iconText: { fontSize: 14, fontWeight: "700", color: color.deep },
   trailingText: { fontSize: 20, color: color.inkFaint },
-  rowScope: { ...type.small, color: "#647267", marginTop: 3 },
+  rowScope: { ...type.small, color: color.inkFaint, marginTop: 3 },
   icon: {
     width: 36,
     height: 36,
     borderRadius: radius.icon,
-    backgroundColor: "#edf1e9",
+    backgroundColor: color.muted,
     alignItems: "center",
     justifyContent: "center",
   },
-  note: { borderLeftWidth: 3, borderLeftColor: "#b5cf80", paddingLeft: 12, paddingVertical: 3, marginVertical: space.md },
-  noteText: { ...type.small, color: "#4f6052" },
+  note: { borderLeftWidth: 3, borderLeftColor: color.accentLine, paddingLeft: 12, paddingVertical: 3, marginVertical: space.md },
+  noteText: { ...type.small, color: color.inkSoft },
   button: {
     backgroundColor: color.deep,
     borderRadius: radius.pill,
@@ -546,7 +549,7 @@ const styles = StyleSheet.create({
     // control someone cannot use.
     minHeight: 44,
     justifyContent: "center",
-    shadowColor: color.deep,
+    shadowColor: shadowInk,
     shadowOpacity: 0.25,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
@@ -559,9 +562,9 @@ const styles = StyleSheet.create({
   calloutTitle: { ...type.body, fontWeight: "700" },
   calloutText: { ...type.small, marginTop: 3 },
   link: { textDecorationLine: "underline" },
-  buttonDisabled: { backgroundColor: "#dde4d7", shadowOpacity: 0, elevation: 0 },
-  buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
-  buttonTextSecondary: { color: "#294c3e" },
+  buttonDisabled: { backgroundColor: color.disabled, shadowOpacity: 0, elevation: 0 },
+  buttonText: { color: color.onDeep, fontSize: 16, fontWeight: "700" },
+  buttonTextSecondary: { color: color.secondaryInk },
   // White on the pale disabled fill was unreadable; a disabled label still has to be read.
   buttonTextDisabled: { color: color.inkFaint },
   steps: { flexDirection: "row", paddingVertical: 12 },
@@ -571,17 +574,17 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#dfe7d8",
+    backgroundColor: color.track,
     alignItems: "center",
     justifyContent: "center",
   },
   stepDotOn: { backgroundColor: color.deep },
-  stepDotDone: { backgroundColor: "#698447" },
+  stepDotDone: { backgroundColor: color.accent },
   stepDotText: { fontSize: 11, fontWeight: "800", color: color.inkFaint },
-  stepDotTextOn: { color: "#ffffff" },
+  stepDotTextOn: { color: color.onDeep },
   stepLine: { flex: 1, height: 3, borderRadius: 2, marginHorizontal: 4 },
-  stepBarOn: { backgroundColor: "#698447" },
-  stepBarNext: { backgroundColor: "#dfe7d8" },
+  stepBarOn: { backgroundColor: color.accent },
+  stepBarNext: { backgroundColor: color.track },
   stepText: { fontSize: 10, color: color.inkFaint },
   stepTextOn: { color: color.deep, fontWeight: "700" },
   tabBar: {

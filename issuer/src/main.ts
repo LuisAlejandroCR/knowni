@@ -8,7 +8,7 @@ import { createIssuerService, DEFAULT_SOURCE_DEADLINE_MS, type IssuanceResponse 
 import { createMemoryRequestQuota, DEFAULT_MAX_PER_MINUTE } from "./access.ts";
 import { createMemoryIssuanceCache, createPersistentIssuanceCache, DEFAULT_CACHE_MAX_ENTRIES } from "./cache.ts";
 import { createFileIssuanceCacheStore } from "./cache-store.ts";
-import { createPersistentSpentPayments } from "./payments.ts";
+import { assetCurrency, createPersistentSpentPayments, paymentAssetFromEnv } from "./payments.ts";
 import { createFileSpentPaymentStore } from "./spent-store.ts";
 import { notifierFromEnv } from "./notify.ts";
 import { nodeSignatures } from "@knowni/attestation/node";
@@ -52,19 +52,21 @@ const seed = process.env.KNOWNI_ISSUER_SEED
 
 // No treasury account means no charging: the service answers for free rather
 // than collecting into an account nobody named.
+// KNOWNI_PAYMENT_ASSET picks what is charged: USDC by default, native XLM for
+// the testnet demo. An unknown value refuses to start.
 const treasury = process.env.KNOWNI_TREASURY_ACCOUNT;
-const paymentAssetIssuer = process.env.KNOWNI_PAYMENT_ASSET_ISSUER;
-if (treasury !== undefined && paymentAssetIssuer === undefined) {
-  console.error("KNOWNI_PAYMENT_ASSET_ISSUER is required when payments are enabled.");
+const paymentAsset = treasury === undefined ? undefined : paymentAssetFromEnv(process.env);
+if (paymentAsset?.status === "refused") {
+  console.error(paymentAsset.message);
   process.exit(2);
 }
 const payments =
-  treasury === undefined
+  treasury === undefined || paymentAsset?.status !== "configured"
     ? undefined
     : {
         destination: treasury,
         minAmountStroops: BigInt(process.env.KNOWNI_MIN_PAYMENT_STROOPS ?? "1"),
-        asset: { type: "credit" as const, code: "USDC", issuer: paymentAssetIssuer! },
+        asset: paymentAsset.asset,
         horizonUrl: process.env.STELLAR_HORIZON_URL,
       };
 
@@ -114,7 +116,9 @@ createIssuerService({
   spentPayments,
 }).listen(port, () => {
   console.log(`issuer listening on http://localhost:${port}`);
-  console.log(`payments: ${payments === undefined ? "off (no treasury account)" : payments.destination}`);
+  console.log(
+    `payments: ${payments === undefined ? "off (no treasury account)" : `${assetCurrency(payments.asset)} to ${payments.destination}`}`,
+  );
   console.log(`notifications: ${notifier.channel}`);
   console.log(`relying parties: ${accessKeys.length}, ${maxPerMinute}/min each`);
   console.log(`spent payments: ${spentPath ?? "in memory (payments off)"}`);

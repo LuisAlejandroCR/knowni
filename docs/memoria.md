@@ -7,6 +7,23 @@
 
 El razonamiento va aquí, no en el commit. Un commit de este repositorio es una línea.
 
+### D-89 — El emisor puede cobrar XLM nativo; USDC sigue por defecto · 2026-09-26
+
+*Qué se hizo:* `KNOWNI_PAYMENT_ASSET` elige el activo del cobro: `usdc` (por defecto, exige
+`KNOWNI_PAYMENT_ASSET_ISSUER`) o `native`. `paymentAssetFromEnv` en `issuer/src/payments.ts` lo lee
+y un valor desconocido impide el arranque. `quote()` recibe la moneda y el servicio la deriva del
+activo configurado con `assetCurrency`, así que un tesoro nativo cotiza en `XLM`. Criterios X1–X4.
+
+*Por qué:* la demo corre en testnet y un emisor de USDC de prueba es una cuenta más que fondear y
+una línea de confianza más que abrir en cada teléfono. Antes, un tesoro nativo respondía 503
+`payment_misconfigured` porque la cotización salía siempre en USDC. La regla del bloque de pago
+móvil se mantiene: la moneda de la cotización y el activo del cobro no se infieren entre sí ni se
+sustituyen; lo que cambia es que ahora ambos se leen de la misma configuración.
+
+*Lo que no cierra:* los precios son las mismas unidades menores en XLM que en USDC; no hay
+conversión de tipo de cambio, y en mainnet ese número no significaría lo mismo. El pago dentro del
+recorrido de la app va en otra rama.
+
 ### D-86 — El recorrido corre en un iPhone contra el emisor real · 2026-09-25
 
 *Qué se hizo:* EAS reemplaza a Codemagic para iOS (build `development` con `expo-dev-client`, así el

@@ -2,7 +2,9 @@
 // Colours, spacing and type scale live here so a change to the direction is one
 // edit, not eight.
 
-export const color = {
+import { Appearance } from "react-native";
+
+const light = {
   canvas: "#fafbf7",
   page: "#e7e9e4",
   ink: "#182c29",
@@ -16,7 +18,53 @@ export const color = {
   amber: "#fff4dd",
   amberLine: "#e8d0a3",
   amberInk: "#745015",
-} as const;
+  amberSoft: "#ffe4ad",
+  // Text and marks drawn on a `deep` fill (primary button, dark card).
+  onDeep: "#ffffff",
+  onDeepSoft: "#ccdbce",
+  muted: "#edf1e9",
+  divider: "#e8ece5",
+  accent: "#698447",
+  accentLine: "#b5cf80",
+  track: "#dfe7d8",
+  disabled: "#dde4d7",
+  secondaryInk: "#294c3e",
+  checkbox: "#b8c4b2",
+};
+
+// The same roles for a dark system appearance. `deep` flips to a light green so
+// it still reads as the brand on a dark canvas; `onDeep` flips with it.
+const dark: typeof light = {
+  canvas: "#0f1714",
+  page: "#16211d",
+  ink: "#e8efe9",
+  inkSoft: "#b3c1b6",
+  inkFaint: "#93a296",
+  deep: "#b9dc86",
+  lime: "#2e4526",
+  limeSoft: "#22331d",
+  line: "#2c3a33",
+  card: "#17221e",
+  amber: "#33280f",
+  amberLine: "#5a4620",
+  amberInk: "#f3cf86",
+  amberSoft: "#4a3a15",
+  onDeep: "#0f1f18",
+  onDeepSoft: "#2d4a2f",
+  muted: "#1f2b26",
+  divider: "#24302b",
+  accent: "#9cc26a",
+  accentLine: "#5f7d3e",
+  track: "#2c3a33",
+  disabled: "#26322c",
+  secondaryInk: "#cfe6b0",
+  checkbox: "#52625a",
+};
+
+// Read once at launch: styles are created at module load, so the appearance
+// the app opens with is the one it keeps until it is reopened.
+export const scheme: "light" | "dark" = Appearance.getColorScheme() === "dark" ? "dark" : "light";
+export const color = scheme === "dark" ? dark : light;
 
 export const space = {
   xs: 5,

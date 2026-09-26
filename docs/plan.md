@@ -287,12 +287,25 @@ Enclave o el Keystore (`NativeDeviceUnwrapKey`).
 | K3 | Si no hay sobre, no abre o su pública no es la cuenta de Cavos, no se firma nada y la pantalla dice que la llave de esa cuenta no está en este teléfono | pruebas de sobre ausente, alterado y de otra cuenta |
 | K4 | La firma es del hash de la transacción (`raw_hash`) con la semilla recuperada; ni la semilla ni el sobre aparecen en un resultado, error o log | prueba de firma verificable contra el hash y de que la semilla no aparece en el resultado |
 
+### Bloque activo — el emisor cobra XLM nativo en testnet
+
+Para la demo en testnet el emisor debe poder cobrar XLM nativo sin depender de un emisor de USDC.
+USDC sigue siendo el activo por defecto. El bloque toca solo `issuer/` y la documentación; el pago
+dentro del recorrido de la app va en otra rama.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| X1 | Con `KNOWNI_PAYMENT_ASSET=native` el emisor cobra XLM y arranca sin `KNOWNI_PAYMENT_ASSET_ISSUER`; `/quote` publica `currency: "XLM"` y términos con activo `native` | tests unitarios de configuración y de `/quote`; `curl` contra el emisor real en testnet |
+| X2 | Sin la variable, o con `usdc`, el comportamiento es el de hoy: USDC con emisor obligatorio | tests unitarios de configuración y de `/quote` |
+| X3 | La moneda de la cotización siempre coincide con el activo del cobro; nunca se sustituye uno por otro, y un desajuste responde `payment_misconfigured` | tests de `quote` y de `paymentTerms` |
+| X4 | Un valor desconocido de `KNOWNI_PAYMENT_ASSET` impide el arranque en vez de caer a un activo por defecto | test unitario del parser de configuración |
+
 ### Bloque activo — pagar primero, consultar después
 
 Cierra el hueco de A10 dentro del recorrido: `flow.issue()` llamaba `/issue` sin pagar, aunque
 `requestPaidIssuance` ya ordenaba `quote → pago → issue` (P9). El pago es XLM nativo en testnet con
-la cuenta Cavos del bloque K; el emisor publica los términos (rama `feat/issuer-native-xlm`, fuera
-de este bloque). Parte de `feat/cavos-persistent-key` (#140) y no toca `issuer/`.
+la cuenta Cavos del bloque K; el emisor publica los términos (bloque X, PR #149, fuera de este
+bloque). Parte de `feat/cavos-persistent-key` (#140) y no toca `issuer/`.
 
 | # | Criterio | Verificación |
 |---|---|---|

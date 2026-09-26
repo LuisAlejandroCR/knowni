@@ -5,7 +5,7 @@
 import type { AttestedResults, IssuerRegistry } from "@knowni/attestation";
 import type { SessionRequest } from "@knowni/core";
 import { createMemoryRegistry, verifyResults } from "@knowni/attestation";
-import { fromHex } from "@knowni/core";
+import { fromHex, toHex } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
 import { payQuote, type PaymentTerms } from "./stellar-payment.ts";
 import type { PayerWalletPort } from "./wallet-port.ts";
@@ -21,6 +21,13 @@ const ACCESS_KEY = process.env.EXPO_PUBLIC_ISSUER_ACCESS_KEY;
 export interface IssuerIdentity {
   readonly issuerId: string;
   readonly registry: IssuerRegistry;
+}
+
+// The key the issuer serves at /keys, as hex, so the verifier can tell a rotated
+// key from a forged answer.
+export function servedIssuerKey(issuer: IssuerIdentity | undefined): string | undefined {
+  const key = issuer?.registry.publicKeyOf(issuer.issuerId);
+  return key === undefined ? undefined : toHex(key);
 }
 
 // Why a source did not answer, as the issuer describes it to the person whose

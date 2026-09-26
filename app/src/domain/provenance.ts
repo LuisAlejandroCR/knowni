@@ -6,6 +6,13 @@ export function issuerIsReal(pinnedIssuerKeyHex: string | undefined = process.en
   return pinnedIssuerKeyHex !== undefined && pinnedIssuerKeyHex !== "";
 }
 
+// The phone trusts one pinned key; the issuer serves the key it signs with now.
+// When both exist and differ, a refusal is a rotated key, not a forged answer.
+export function issuerKeyChanged(pinnedHex: string | undefined, servedHex: string | undefined): boolean {
+  if (pinnedHex === undefined || pinnedHex === "" || servedHex === undefined) return false;
+  return pinnedHex.toLowerCase() !== servedHex.toLowerCase();
+}
+
 export function sessionStamp(realIssuer: boolean = issuerIsReal()): string {
   return realIssuer
     ? "FUENTES Y EMISOR REALES"

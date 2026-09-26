@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 
 import { DEMO_ISSUER, demoRequest, demoResults, issuerRegistry } from "../../src/domain/demo-issuer.ts";
 import { toHex } from "@knowni/core";
-import { hydrateLedger, requiredFor, verifyOnDevice } from "../../src/domain/verifier.ts";
+import { hydrateLedger, refusalView, requiredFor, verifyOnDevice } from "../../src/domain/verifier.ts";
 import { createMemoryNullifierStore, type AttestedAnswer } from "@knowni/attestation";
 
 // The screen does this at start-up; without it the verifier refuses, because a
@@ -115,4 +115,11 @@ test("a pinned issuer key replaces the demo one, so a real issuer can be trusted
   const registry = issuerRegistry(pinned);
   assert.equal(toHex(registry.publicKeyOf(DEMO_ISSUER)!), pinned);
   assert.notEqual(toHex(issuerRegistry(undefined).publicKeyOf(DEMO_ISSUER)!), pinned);
+});
+
+test("an unauthenticated answer from a rotated issuer key says the key changed", () => {
+  assert.equal(refusalView("results_unauthenticated", true).headline, "La llave del emisor cambió");
+  assert.equal(refusalView("results_unauthenticated", false).headline, "No se puede aceptar");
+  // Any other reason keeps its own words, key change or not.
+  assert.match(refusalView("replayed", true).explanation, /ya se usó/);
 });

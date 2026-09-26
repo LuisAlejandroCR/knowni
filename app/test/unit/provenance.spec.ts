@@ -4,7 +4,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { acceptanceStamp, issuerIsReal, receiptStamp, sessionStamp } from "../../src/domain/provenance.ts";
+import { acceptanceStamp, issuerIsReal, issuerKeyChanged, receiptStamp, sessionStamp } from "../../src/domain/provenance.ts";
 
 test("a pinned key makes the issuer real, an empty one does not", () => {
   assert.equal(issuerIsReal("ab".repeat(32)), true);
@@ -25,4 +25,13 @@ test("without a pinned key nothing claims the issuer is real", () => {
   for (const stamp of [sessionStamp(false), acceptanceStamp(false), receiptStamp(false)]) {
     assert.doesNotMatch(stamp, /EMISOR REAL|RESPUESTA REAL/);
   }
+});
+
+test("the issuer key changed only when a pinned key and a served key both exist and differ", () => {
+  const pinned = "cc".repeat(32);
+  assert.equal(issuerKeyChanged(pinned, "dd".repeat(32)), true);
+  assert.equal(issuerKeyChanged(pinned, pinned), false);
+  assert.equal(issuerKeyChanged(pinned, pinned.toUpperCase()), false);
+  assert.equal(issuerKeyChanged(undefined, "dd".repeat(32)), false);
+  assert.equal(issuerKeyChanged(pinned, undefined), false);
 });

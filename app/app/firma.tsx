@@ -2,9 +2,9 @@
 // Stellar wallet, and 1 XLM paid to itself. A bench for the physical-device
 // run, outside the journey; the transaction hash on screen is the evidence.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Keyboard, Linking, Platform, RefreshControl, ScrollView, TextInput } from "react-native";
-import { cleanOtp, otpComplete } from "../src/domain/otp.ts";
+import { cleanOtp, otpComplete, resendWaitSeconds } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
 import { Body, Button, Callout, Card, Label, Steps, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color } from "../src/theme.ts";
@@ -32,6 +32,12 @@ type Step = "email" | "code" | "wallet";
 const shortAddress = (address: string): string => `${address.slice(0, 6)}…${address.slice(-6)}`;
 const accountUrl = (address: string): string => `https://stellar.expert/explorer/testnet/account/${address}`;
 
+const STEP_TITLE: Record<Step, string> = {
+  email: "Entra con\ntu correo.",
+  code: "Revisa tu\ncorreo.",
+  wallet: "Tu wallet\nde prueba.",
+};
+
 const detail = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 export default function Firma() {
@@ -41,7 +47,7 @@ export default function Firma() {
 function NotConfigured() {
   return (
     <Screen>
-      <TopBar title="Firma real" />
+      <TopBar title="Wallet" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Title>Falta la llave{"\n"}de Cavos.</Title>
         <Body>Esta build no trae EXPO_PUBLIC_CAVOS_APP_ID. Los pasos están en docs/wallets.md.</Body>
@@ -64,6 +70,16 @@ function CavosSigner() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | undefined>();
   const [result, setResult] = useState<PaymentResult | undefined>();
+  const [sentAt, setSentAt] = useState<number | undefined>();
+  const [now, setNow] = useState(() => Date.now());
+  const wait = resendWaitSeconds(sentAt, now);
+
+  // Tick once a second only while the resend countdown is running.
+  useEffect(() => {
+    if (wait === 0) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [wait]);
 
   // One busy flag and one message for every step, so no two calls overlap.
   const run = async (action: () => Promise<void>) => {
@@ -81,6 +97,9 @@ function CavosSigner() {
   const sendCode = () =>
     run(async () => {
       await auth.sendOtp(email.trim());
+      setSentAt(Date.now());
+      setNow(Date.now());
+      setCode("");
       setStep("code");
     });
 
@@ -129,7 +148,7 @@ function CavosSigner() {
 
   return (
     <Screen>
-      <TopBar title="Firma real" />
+      <TopBar title="Wallet" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 24 }}
         refreshControl={
@@ -142,11 +161,15 @@ function CavosSigner() {
           names={["Correo", "Código", "Fondos", "Pago"]}
           current={step === "email" ? 1 : step === "code" ? 2 : funded ? 4 : 3}
         />
-        <Title>Cavos firma{"\n"}en testnet.</Title>
+        <Title>{STEP_TITLE[step]}</Title>
         <Body>
-          Entra con un código por correo, obtén tu wallet Stellar y págate 1 XLM a ti mismo. La llave vive en este
-          teléfono; la app comprueba la firma antes de enviarla y el hash es la evidencia.
+          {step === "email"
+            ? "Te enviamos un código de 6 dígitos. Sin contraseñas: la llave de tu wallet vive en este teléfono."
+            : step === "code"
+              ? `Lo enviamos a ${email.trim()}. Pégalo o escríbelo: entras en cuanto esté completo.`
+              : "Tu wallet Stellar de prueba. Fondéala y págate 1 XLM: el hash de la transacción es la evidencia."}
         </Body>
+        {step === "wallet" ? null : <Label>{step === "email" ? "Correo electrónico" : "Código"}</Label>}
         {step !== "wallet" && (
           <TextInput
             value={step === "email" ? email : code}
@@ -167,12 +190,17 @@ function CavosSigner() {
             returnKeyType="done"
             onSubmitEditing={Keyboard.dismiss}
             inputAccessoryViewID={Platform.OS === "ios" ? KEYBOARD_DONE : undefined}
-            placeholder={step === "email" ? "tu@correo.com" : "Código de 6 dígitos"}
+            placeholder={step === "email" ? "tu@correo.com" : "••••••"}
+            accessibilityLabel={step === "email" ? "Correo electrónico" : "Código de 6 dígitos"}
+            autoFocus
             keyboardType={step === "email" ? "email-address" : "number-pad"}
             autoCapitalize="none"
             autoCorrect={false}
             placeholderTextColor={color.inkFaint}
-            style={{ borderWidth: 1, borderColor: color.line, backgroundColor: color.card, borderRadius: 14, padding: 14, minHeight: 48, marginTop: 16, fontSize: 16, color: color.ink }}
+            style={[
+              { borderWidth: 1, borderColor: color.line, backgroundColor: color.card, borderRadius: 14, padding: 14, minHeight: 52, fontSize: 17, color: color.ink },
+              step === "code" && { fontSize: 28, letterSpacing: 12, textAlign: "center", fontWeight: "700" },
+            ]}
           />
         )}
         <KeyboardDone />
@@ -215,7 +243,7 @@ function CavosSigner() {
         {result?.status === "failed" && (
           <Callout tone="warning" title={REASON[result.reason]} />
         )}
-        <Note>Testnet: el XLM no tiene valor. Pase o falle, anota una fila en docs/verificacion.md.</Note>
+        <Note>Red de prueba: el XLM aquí no tiene valor real.</Note>
       </ScrollView>
       <Footer>
         {step === "email" && (
@@ -226,6 +254,16 @@ function CavosSigner() {
         {step === "code" && (
           <Button onPress={() => void verify()} disabled={busy || !otpComplete(code)} loading={busy}>
             {busy ? "Abriendo…" : "Entrar"}
+          </Button>
+        )}
+        {step === "code" && (
+          <Button tone="secondary" onPress={() => void sendCode()} disabled={busy || wait > 0}>
+            {wait > 0 ? `Pedir otro código en ${wait} s` : "Pedir otro código"}
+          </Button>
+        )}
+        {step === "code" && (
+          <Button tone="secondary" onPress={() => setStep("email")} disabled={busy}>
+            Cambiar correo
           </Button>
         )}
         {step === "wallet" && !funded && (

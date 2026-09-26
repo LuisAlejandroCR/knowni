@@ -3,9 +3,10 @@
 // the issuer and to nobody else.
 
 import { router } from "expo-router";
-import { Pressable, ScrollView, Text } from "react-native";
-import { Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
 
 const SOURCES = [
   { id: "registraduria", title: "Registraduría", needs: "Número de documento" },
@@ -16,7 +17,8 @@ const SOURCES = [
 
 export default function Consentimiento() {
   const flow = useFlow();
-  const needsPlate = flow.consented.includes("vehiculo");
+  const numeric = flow.subject.documentKind === "CC" || flow.subject.documentKind === "CE";
+  const needsPlate =flow.consented.includes("vehiculo");
   const ready =
     flow.consented.length > 0 &&
     flow.subject.documentNumber.length >= 5 &&
@@ -47,12 +49,28 @@ export default function Consentimiento() {
           })}
         </Card>
 
+        <Label>Tipo de documento</Label>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          {DOCUMENT_KINDS.map((kind) => (
+            <Badge
+              key={kind.id}
+              onPress={() =>
+                setSubject({
+                  documentKind: kind.id,
+                  documentNumber: cleanDocumentNumber(kind.id, flow.subject.documentNumber),
+                })
+              }
+            >
+              {flow.subject.documentKind === kind.id ? `✓ ${kind.label}` : kind.label}
+            </Badge>
+          ))}
+        </View>
         <Field
           label="Número de documento"
           value={flow.subject.documentNumber}
-          onChangeText={(text) => setSubject({ documentNumber: text.replace(/\D/g, "") })}
-          placeholder="1020304050"
-          keyboardType="number-pad"
+          onChangeText={(text) => setSubject({ documentNumber: cleanDocumentNumber(flow.subject.documentKind, text) })}
+          placeholder={numeric ? "1020304050" : "AB123456"}
+          keyboardType={numeric ? "number-pad" : "default"}
         />
         {needsPlate ? (
           <Field

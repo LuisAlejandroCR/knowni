@@ -8,7 +8,7 @@ import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar
 import { DEGRADED } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL, RETRYABLE_STATES, sourceStateText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
-import { type as typography } from "../src/theme.ts";
+import { color, type as typography } from "../src/theme.ts";
 
 export default function Degradado() {
   // The missing answers are read from the verified envelope, not invented for
@@ -29,8 +29,8 @@ export default function Degradado() {
     <Screen>
       <TopBar title="Estado de la consulta" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-        <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: "#f4dfb4", alignItems: "center", justifyContent: "center", marginTop: 20 }}>
-          <Text style={{ fontSize: 32 }}>!</Text>
+        <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: "#ffe4ad", alignItems: "center", justifyContent: "center", marginTop: 20, marginBottom: 12 }}>
+          <Text style={{ fontSize: 32, fontWeight: "800", color: color.amberInk }}>!</Text>
         </View>
         <Label>Puedes continuar después</Label>
         <Title>Falta una respuesta.{"\n"}No es un rechazo.</Title>
@@ -51,16 +51,21 @@ export default function Degradado() {
               );
             })
           )}
-          <Text style={{ ...typography.small, marginTop: 8 }}>{DEGRADED.explanation}</Text>
+          <Text style={{ ...typography.small, color: color.amberInk, marginTop: 8 }}>{DEGRADED.explanation}</Text>
         </Card>
-        {answered.map((answer) => (
-          <Row
-            key={answer.predicate}
-            icon="✓"
-            title={PREDICATE_LABEL[answer.predicate] ?? answer.predicate}
-            scope="Se conserva si sigue vigente"
-          />
-        ))}
+        {answered.length === 0 ? null : <Label>Lo que sí se obtuvo</Label>}
+        {answered.length === 0 ? null : (
+          <Card>
+            {answered.map((answer) => (
+              <Row
+                key={answer.predicate}
+                icon="✓"
+                title={PREDICATE_LABEL[answer.predicate] ?? answer.predicate}
+                scope="Se conserva si sigue vigente"
+              />
+            ))}
+          </Card>
+        )}
         <Note>No enviaremos una respuesta completa mientras falte evidencia requerida.</Note>
       </ScrollView>
       <Footer>

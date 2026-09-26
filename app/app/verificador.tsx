@@ -4,12 +4,12 @@
 
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Switch, Text, View } from "react-native";
-import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
+import { ScrollView, Switch, View } from "react-native";
+import { BackButton, Badge, Body, Button, Callout, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { receivedAt, requiredFor, verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
-import { color, type as typography } from "../src/theme.ts";
+import { color } from "../src/theme.ts";
 import { acceptanceStamp, issuerKeyChanged } from "../src/domain/provenance.ts";
 import { servedIssuerKey } from "../src/domain/issuer-client.ts";
 
@@ -74,17 +74,20 @@ export default function Verificador() {
         <Title>{view.headline}</Title>
         <Body>{view.explanation}</Body>
 
-        <Card tone={view.accepted ? "deep" : "amber"}>
-          <Text style={{ ...typography.label, color: view.accepted ? "#ccdbce" : color.amberInk }}>
-            {view.accepted ? "VERIFICADO EN ESTE DISPOSITIVO" : "NO ACEPTADO"}
-          </Text>
+        <Callout
+          tone={view.accepted ? "success" : "warning"}
+          title={view.accepted ? "Verificado en este dispositivo" : "No aceptado"}
+        />
+        <Card>
           {session.answers === undefined ? (
-            <Text style={{ color: view.accepted ? "#fff" : color.ink, marginTop: 6 }}>Sin respuestas verificadas.</Text>
+            <Row icon="□" title="Sin respuestas verificadas" />
           ) : (
             session.answers.map((answer) => (
-              <Text key={answer.predicate} style={{ color: view.accepted ? "#fff" : color.ink, marginTop: 6 }}>
-                {`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
-              </Text>
+              <Row
+                key={answer.predicate}
+                icon={answer.value === "unavailable" ? "!" : "✓"}
+                title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
+              />
             ))
           )}
         </Card>
@@ -96,24 +99,9 @@ export default function Verificador() {
         <Label>Estado de revocación que recibe</Label>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
           {REVOCATIONS.map((option) => (
-            <Pressable
-              key={option}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: revocation === option }}
-              onPress={() => setRevocation(option)}
-              style={{
-                borderWidth: 1,
-                borderColor: revocation === option ? color.deep : color.line,
-                backgroundColor: revocation === option ? color.limeSoft : "transparent",
-                borderRadius: 8,
-                paddingHorizontal: 10,
-                paddingVertical: 8,
-                minHeight: 44,
-                justifyContent: "center",
-              }}
-            >
-              <Text style={typography.small}>{LABEL[option]}</Text>
-            </Pressable>
+            <Badge key={option} selected={revocation === option} onPress={() => setRevocation(option)}>
+              {LABEL[option]}
+            </Badge>
           ))}
         </View>
 

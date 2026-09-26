@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { installPlatformCrypto } from "../src/domain/platform.ts";
 import { createDeviceNullifierStore } from "../src/domain/nullifier-store.ts";
 import { hydrateLedger } from "../src/domain/verifier.ts";
+import { hydrateHistory } from "../src/domain/flow.ts";
 
 installPlatformCrypto();
 
@@ -16,6 +17,8 @@ installPlatformCrypto();
 void hydrateLedger(createDeviceNullifierStore(), (error) => {
   console.warn("nullifier write failed; a spent answer may return after a restart", error);
 });
+
+void hydrateHistory().catch((error: unknown) => console.warn("history read failed", error));
 
 export default function Layout() {
   return (

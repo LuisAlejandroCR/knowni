@@ -62,6 +62,13 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 
 ## Bitácora reciente
 
+- **2026-09-26 — El guion del demo se graba en el iPhone.** `design/demo/guion.md` §1 deja de ser
+  terminal y pantallas de diseño: es la app corriendo en el iPhone, de la solicitud al Explorer, y
+  cada frase cita su fila de `verificacion.md`. La regla sigue siendo la misma —no se dice lo que
+  no corrió—; lo que cambió es cuánto corre: iPhone con emisor real (D-86), pagos firmados con Cavos
+  (D-87, D-88), Groth16 en Android y un contrato desplegado que verificó una prueba real (D-83). El
+  README, `elevenlabs-mcp.md` y la lista de lo que el repositorio no afirma se alinean a eso. Los
+  seis hashes de testnet se releyeron en Horizon: `successful` en todos.
 - **2026-09-25 — El pitch se vuelve una historia visual.** El origen es Colombia
   porque allí vive el primer caso verificable; LATAM es la siguiente expansión y
   global es la arquitectura, no una afirmación de despliegue actual. Dos escenas
@@ -88,6 +95,30 @@ nadie. Verificado en `core/test/no-vendor-imports.test.ts`.
 Numeradas `D-NN` para que un comentario de código pueda citarlas sin repetirlas —
 la convención del proyecto GovTech anterior.
 
+
+### D-88 — La semilla de control de Cavos, sellada al dispositivo · 2026-09-26
+
+*Qué se hizo:* `app/src/domain/cavos-control.ts` guarda la semilla de control Stellar que el kit
+generó en la primera sesión, sellada con ECIES hacia la llave P-256 que el módulo nativo de Cavos
+crea en el Secure Enclave o el Keystore (`NativeDeviceUnwrapKey`, `keyId`
+`knowni.cavos.control.<userId>`). En `AsyncStorage` queda solo `{ address, sealed }`. En cada
+sesión siguiente `connectCavos` abre el sobre, comprueba que la pública de la semilla es la cuenta
+que devolvió el registro de Cavos y entrega un `PayerWalletPort` que firma el hash (`raw_hash`),
+como la llave del dispositivo de D-75. El polyfill de D-87 entrega una sola vez las semillas que
+generó (`drainGeneratedSeeds`); las que no son de la cuenta se ponen en cero.
+
+*Por qué:* con el token de login (D-87) el registro de Cavos ya responde, y devuelve la cuenta de
+la primera sesión; pero `@cavos/kit` 0.2.5 solo guarda la llave en IndexedDB, que React Native no
+tiene, y cada sesión nacía con una llave nueva. La firma no era de la cuenta: `wallet_rejected`
+en el iPhone, cuenta `GBTBYA…MUUQEK`. `expo-secure-store` pedía un build nativo nuevo, y queda uno
+hasta octubre; la llave P-256 del kit ya está en el build instalado. El sobre es el mismo formato
+del kit (`cavos-stellar-dek-ecies`, AES-256-GCM), así que lo abre su `unwrap` sin código nativo.
+
+*Lo que no cierra:* la semilla existe en memoria de JS mientras firma, no dentro del enclave. Una
+cuenta creada antes de este cambio —`GBTBYA…` incluida— no tiene sobre: su llave ya no existe, y
+esa identidad necesita otro correo o que Cavos borre su registro. Reinstalar la app borra la llave
+P-256 y con ella la cuenta. Pruebas: 6 de `cavos-control` (K1–K4) y 1 del polyfill. K2 corrido en el iPhone el
+2026-09-26: tras cerrar la app, la misma cuenta pagó 1 XLM (`verificacion.md`, fila 5b).
 
 ### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 
@@ -1994,6 +2025,7 @@ exige el estado `ready` de Cavos, la primera corrida lo dirá.
 | 2026-09-24 | B2: el código deja de llamar `standing` a lo que el producto llama `sanctions`, en los cinco sitios donde el nombre viajaba —`core/`, las fuentes, el circuito, el fixture de señales y el contrato—. No cambia ningún compromiso: la etiqueta del reclamo es un número, no la cadena, así que renombrarla no mueve un solo hash; lo comprobó el testigo de `IncomeCommitment`, idéntico antes y después. `assetStanding` se queda como está: es otro predicado, sobre un activo y no sobre una persona — D-72. 454 pruebas y 11 del contrato |
 | 2026-09-24 | El ancla del registro deja de ser una forma y pasa a ser una transacción: `66bf1b7d…` lleva el digest del documento firmado como `MEMO_HASH`, y el mismo adaptador que corre en las pruebas lo lee de Horizon real y resuelve el registro con `trustedVia: chain_anchor`. Un documento distinto contra la misma ancla responde `digest_mismatch` — la comprobación que vale es esa, no la que resuelve. Lo que sigue sin hacerse es servir el documento por HTTPS: en el ejercicio salió de memoria, y el registro lo dice así — D-73 |
 | 2026-09-24 | El estado de Poseidon deja de ser una señal por celda y por ronda y pasa a viajar como expresión lineal: mezclar es contabilidad del compilador y solo se materializa lo que se eleva a la quinta. 25 221 → 12 633 restricciones (−50%) y 25 281 → 12 693 cables, iguales sobre las dos curvas; el testigo y el compromiso de ingreso que CI reconstruye no se mueven, que es lo que dice que la permutación es la misma — D-74. 454 pruebas |
+| 2026-09-26 | La semilla de control de Cavos se sella al Secure Enclave con el mismo ECIES del kit y se abre en cada sesión: la cuenta que devuelve el registro vuelve a firmar tras reiniciar, sin build nativo nuevo — D-88. 128 pruebas de la app |
 | 2026-09-25 | El pitch web adopta el orden de CREVA —promesa, frontera, recorrido, recibos, límites y cierre— sin adoptar su producto. La demo narrada pasa de arriendo a compraventa vehicular para respetar D-13; cada evidencia dice qué prueba y qué no. Propuesta y copy en `web/README.md`, criterios W1–W7 en `docs/plan.md` |
 | 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |
 | 2026-09-25 | Bloque de agentes: las tres preguntas contestadas (el agente presenta, nunca sostiene) y primer corte, la delegación firmada de `attestation/` (G2) — D-76. 479 pruebas |

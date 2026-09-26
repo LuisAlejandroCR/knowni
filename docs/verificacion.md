@@ -162,7 +162,8 @@ que alguien corra la app en un teléfono: ninguna fila se llena desde un emulado
 | 2 · Recorrido `/` → `/acuse` con el emisor real | | | | | |
 | 3 · Presentación en modo avión (A12) | | | | | |
 | 4 · Repetición rechazada tras reiniciar la app | | | | | |
-| 5 · Pago testnet firmado en el teléfono | | | | | |
+| 5 · Pago testnet firmado en el teléfono (Cavos, `/firma`) | 2026-09-26 | iPhone, build EAS `development` | `1923b6c` + cambios locales sin commit (stash `local antes de pull`): polyfill Ed25519 y `Cavos.connect` **sin `appId`**, no la variante con token de `main` (D-87) | ✅ código por correo → cuenta `GAUWBXAO…UNI6Z` → Friendbot → 1 XLM a sí misma, firma verificada antes de Horizon. La variante de `main` (token de login al registro) sigue sin correr en un teléfono | tx `d5041412c2add8b23b36e86d251027e8c99e3e777c09df129ee2a142be2b4232`, ledger 4875303, 2026-09-26T05:21:42Z; Horizon: `successful: true`, un `payment` nativo de 1.0000000 de la cuenta a sí misma |
+| 5b · Misma cuenta Cavos firma tras reiniciar la app (K2) | 2026-09-26 | iPhone, build EAS `development` | `feat/cavos-persistent-key` `2aa3bef` | ✅ entrar → pagar 1 XLM → cerrar la app → entrar con la misma identidad → misma `G…` → pago aceptado | Cuenta `GDCI23MF…VWWT`: Friendbot 06:06:47Z, pago 06:06:52Z (`16dd5ca0…`), y tras reiniciar `1c07f12ec292d07fb809f768a0fb1653fe215bee3444a06b5de2ed1de6227127` (ledger 4875857, 06:07:52Z) y `a309c2a4…` (06:08:22Z). Horizon: `successful: true`, `payment` nativo de 1.0000000 de la cuenta a sí misma |
 
 ## Deuda conocida
 
@@ -205,12 +206,18 @@ una prueba ZK. Siguen abiertos y el README lo dice.
 
 ## Afirmaciones que este repositorio **no** hace
 
-- Ningún tiempo de prueba, conteo de restricciones ni fee medido.
-- Ninguna prueba verificada on-chain.
-- Ninguna integración real con Croma, Registraduría, PILA o DataCrédito.
+*Revisada el 2026-09-26: tres afirmaciones de esta lista dejaron de ser ciertas y se reescriben con
+su evidencia arriba.*
+
+- Ningún tiempo de prueba en un iPhone ni con llave de ceremonia. El de un Android sí está medido
+  (fila 1 de *Corrida en teléfono físico*), igual que restricciones y fees.
+- Ninguna prueba generada en un teléfono y verificada en cadena. La prueba que verificó el contrato
+  desplegado salió del portátil (D-83).
+- Ninguna integración real con PILA o DataCrédito. Con Croma sí, y sobre la Registraduría del propio
+  titular, con su consentimiento (D-86).
 - Investigación documental 2026-09-20: Croma, Truora, Incode, Belvo, operadores PILA, RUAF,
   ADRES/BDUA, UGPP y Finanzas Abiertas se clasificaron en `plan.md`. Esto no sustituye una llamada
   real, un contrato comercial ni la comprobación de cobertura por endpoint.
-- Ninguna ejecución en un dispositivo físico.
+- Ninguna entrega entre dos dispositivos: la contraparte corre en el mismo teléfono (D-86).
 - Ninguna afirmación de cumplimiento normativo. `COLOMBIA.md` describe el marco; no es asesoría
   legal ni un concepto.

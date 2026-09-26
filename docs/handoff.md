@@ -5,7 +5,7 @@
 
 # Traspaso — 2026-09-25
 
-Leer en este orden: `AGENTS.md`, `CLAUDE.md`, este archivo, `docs/memoria.md` (D-01 a D-86),
+Leer en este orden: `AGENTS.md`, `CLAUDE.md`, este archivo, `docs/memoria.md` (D-01 a D-88),
 `docs/verificacion.md` (qué está comprobado y qué no), `docs/plan.md` (criterios y auditoría).
 
 ## Dónde está el proyecto
@@ -25,7 +25,7 @@ Leer en este orden: `AGENTS.md`, `CLAUDE.md`, este archivo, `docs/memoria.md` (D
 1. Una rama y un PR por fila de la cola. Commit de una línea, Conventional Commits, en inglés, **sin trailers**.
 2. SDD: si la fila dice *spec primero*, el primer commit es la sección en `docs/plan.md`.
 3. Verify antes de decir hecho: `cd app && npm run typecheck && npm test && npm run bundle`, y `npm run verify` en la raíz si tocas paquetes compartidos. Lo que toca pantalla se mira en el iPhone.
-4. Decisiones nuevas: **D-87 en adelante** en `docs/memoria.md`. Hay otros agentes en worktrees hermanos: revisa el último número antes de escribir uno.
+4. Decisiones nuevas: **D-89 en adelante** en `docs/memoria.md`. Hay otros agentes en worktrees hermanos: revisa el último número antes de escribir uno.
 5. Secretos solo en `.env.local` y `app/.env.local` (gitignored). Documenta el nombre de la variable en `.env.example`, nunca el valor.
 
 ## Cómo levantar el entorno del teléfono

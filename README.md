@@ -131,10 +131,10 @@ entra como otro adaptador sin tocar un solo predicado.
   llama nadie — ver su README.
 - [`anchoring/`](anchoring/) — el puerto de anclaje y sus adaptadores.
 - [`app/`](app/README.md) — iOS y Android: emisión verificada y motor de pago Stellar portable.
-  Falta ejecución en teléfono físico y firma real con las wallets configuradas.
+  Corrió en un iPhone contra el emisor real, y el iPhone firma pagos testnet con Cavos.
 - [`circuits/`](circuits/) — los circuitos Circom. Código fuente; ver estado.
 - [`contracts/knowni-verifier/`](contracts/knowni-verifier/) — el verificador
-  Soroban. Compila y sus pruebas corren; sin desplegar.
+  Soroban. Desplegado en testnet, donde verificó una prueba Groth16 real.
 
 ### Correrlo
 
@@ -172,24 +172,24 @@ sujeto, ni un reclamo. Reproducirlo: `node --experimental-strip-types anchoring/
 | Adaptadores PILA, listas restrictivas, emisor | **Corre.** Contra fuentes sintéticas |
 | Puerto de anclaje, adaptadores Stellar y memoria | **Corre.** Y ancló de verdad: [tx en testnet](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161), memo igual al compromiso |
 | Cliente HTTP de Croma | **Corre.** 21 pruebas sin red y fixtures capturadas de llamadas reales (2026-09-20) |
-| Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas y un `200` sobre una empresa pública. **Ninguna sobre una persona** |
+| Llamada en vivo a Croma | **Sí, acotada.** Catálogo, sondeo de 16 rutas, un `200` sobre una empresa pública y, desde el iPhone, la Registraduría del propio titular con su consentimiento. Ninguna sobre un tercero |
 | Credencial firmada y verificable sin cadena | **Corre.** Firma de la raíz, ruta de Merkle y apertura del compromiso, offline — `attestation/` |
 | Solicitud firmada y anti-replay | **Corre.** La respuesta se ata a audiencia, finalidad, reto y parámetros; el nullifier se gasta una vez, y el conjunto gastado sobrevive al reinicio de la app |
 | Lo que cruza la red | **Corre.** Respuestas firmadas por el emisor. El reclamo y la sal se quedan en el teléfono — y hay una prueba que lo afirma |
 | Modo avión y logs sanitizados | **Corre.** El recorrido se completa con `fetch` desactivado y la cadena caída; ningún log lleva documento, nombre, salario ni cuenta |
 | Aceptación completa | **Corre.** Solicitud, atadura, evidencia y revocación antes de consumir el nullifier; `unknown` es un estado propio |
 | Adaptadores de Croma | **Corren.** Los cuatro del perfil de compraventa, contra los esquemas del OpenAPI de Croma. Ninguno ejercido sobre una persona real |
-| App iOS / Android | **Recorrido real, bloque 5 de 5 pendiente.** La app consulta fuentes reales a través del servicio de emisión y verifica las respuestas en el teléfono. Nunca ejecutada en un dispositivo físico — [`app/`](app/README.md) |
-| Pago móvil | **Ejercido en testnet.** `/quote` entrega activo, destino y monto; Cavos o Freighter firman el sobre, la app verifica la firma y envía a Horizon. El XDR construido a mano fue aceptado en [`fb64700b…`](https://stellar.expert/explorer/testnet/tx/fb64700b55ab1094f00fc60c48990c035976c0938036a47f8084990800b836b9) y el emisor lo verificó de vuelta. Falta la firma real de Cavos en un teléfono, y que la transacción la produzca el teléfono — D-85 |
+| App iOS / Android | **Corrió en un iPhone físico.** Solicitud, consentimiento, consulta real a Registraduría vía Croma, respuesta firmada y "Respuestas verificadas" (D-86). El verificador corre en el mismo teléfono: la entrega a una segunda persona sigue pendiente — [`app/`](app/README.md) |
+| Pago móvil | **Ejercido en testnet.** `/quote` entrega activo, destino y monto; Cavos o Freighter firman el sobre, la app verifica la firma y envía a Horizon. El XDR construido a mano fue aceptado en [`fb64700b…`](https://stellar.expert/explorer/testnet/tx/fb64700b55ab1094f00fc60c48990c035976c0938036a47f8084990800b836b9) y el emisor lo verificó de vuelta. Y el iPhone ya firma con Cavos: 1 XLM a sí mismo en [`d5041412…`](https://stellar.expert/explorer/testnet/tx/d5041412c2add8b23b36e86d251027e8c99e3e777c09df129ee2a142be2b4232), y la misma cuenta tras cerrar la app. Falta que ese pago viva dentro del recorrido: hoy se firma en el banco `/firma` — D-87, D-88 |
 | Registro de emisores | **Anclado de verdad.** Un documento firmado y dos raíces de confianza sobre él —la firma de la autoridad y el digest anclado en cadena—, con una sola suite corriendo contra las dos. El digest viaja en el `MEMO_HASH` de [`66bf1b7d…`](https://stellar.expert/explorer/testnet/tx/66bf1b7dffe75e06517389a851f9ecc526b3847e07a13f009c996d943cb4fc49) y el adaptador lo lee de Horizon real. Falta publicar el documento por HTTPS: en el ejercicio se sirvió desde memoria |
 | Por qué falta una respuesta | **Corre.** `not_found`, `degraded` y `failed` son estados distintos: viajan al titular al lado del sobre firmado, y la contraparte sigue recibiendo `unavailable` sin razón |
 | Qué exige un contrato | **Corre.** El perfil es una lista de requisitos que compone quien pregunta; ninguna función de `core/` codifica la lista de un contrato |
 | Reintentos del emisor | **Corren.** Un HMAC opaco separa contraparte, sujeto, pregunta y pago; retries concurrentes comparten una sola consulta y expiran con el sobre firmado |
-| Circuitos Circom | **Compilan sobre BN254 y sobre BLS12-381 —la curva que Stellar verifica— con constantes derivadas para cada campo, y su compromiso de reclamo es el mismo que el de `core/`.** 12 379 restricciones no lineales y 254 lineales; el orden de las señales públicas lo escribe el compilador y CI lo comprueba. Ninguna prueba real generada ni verificada: falta el setup de confianza — ver [`circuits/README.md`](circuits/README.md) |
-| Contrato Soroban | **Compila, y su política está probada.** Once pruebas sobre las tres reglas —raíz desconocida, nulificador gastado, predicado incumplido, señales que no concuerdan— y sobre el orden de señales que emite el compilador de Circom. Nunca desplegado, y ninguna prueba ZK verificada de verdad |
+| Circuitos Circom | **Compilan sobre BN254 y sobre BLS12-381 —la curva que Stellar verifica— con constantes derivadas para cada campo, y su compromiso de reclamo es el mismo que el de `core/`.** 12 379 restricciones no lineales y 254 lineales; el orden de las señales públicas lo escribe el compilador y CI lo comprueba. Una prueba Groth16 real verifica en Node y en el contrato, y un moto g54 la genera en 9,7 s (1,3 s con la llave ya cargada). Todo con llave de desarrollo: falta la ceremonia — ver [`circuits/README.md`](circuits/README.md) |
+| Contrato Soroban | **Desplegado en testnet, y verificó una prueba real.** Once pruebas sobre las tres reglas —raíz desconocida, nulificador gastado, predicado incumplido, señales que no concuerdan— y sobre el orden de señales que emite el compilador de Circom. En la red aceptó una prueba Groth16 real en [`0db7a479…`](https://stellar.expert/explorer/testnet/tx/0db7a4790d02c3277877ef4b9e79b3449004735928cb73b192bc7694003b0191) y rechazó una señal alterada; enviada desde el portátil — D-83 |
 | Servicio de emisión | **Corre.** Única llave de proveedor, consentimiento por fuente y respuestas firmadas — [`issuer/`](issuer/README.md) |
-| Llamada en vivo a PILA o a un registro sobre una persona | **No.** Ninguna |
-| Ejecución en un teléfono físico | **No.** Ninguna |
+| Llamada en vivo a PILA, o a un registro sobre un tercero | **No.** Ninguna |
+| Ejecución en un teléfono físico | **Sí, parcial.** iPhone: recorrido con Registraduría y pagos firmados. Android: Groth16. Sin probar: modo avión (A12), repetición tras reinicio y dos dispositivos — `docs/verificacion.md`, *Corrida en teléfono físico* |
 
 Ningún número de este repositorio viene de una medición que no se haya
 corrido aquí.

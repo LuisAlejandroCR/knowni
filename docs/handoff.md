@@ -27,6 +27,15 @@ Leer en este orden: `AGENTS.md`, `CLAUDE.md`, este archivo, `docs/memoria.md` (D
 3. Verify antes de decir hecho: `cd app && npm run typecheck && npm test && npm run bundle`, y `npm run verify` en la raíz si tocas paquetes compartidos. Lo que toca pantalla se mira en el iPhone.
 4. Decisiones nuevas: **D-89 en adelante** en `docs/memoria.md`. Hay otros agentes en worktrees hermanos: revisa el último número antes de escribir uno.
 5. Secretos solo en `.env.local` y `app/.env.local` (gitignored). Documenta el nombre de la variable en `.env.example`, nunca el valor.
+6. Antes de tocar una pantalla compartida, anota la rama y los archivos en la tabla de coordinación.
+
+## Coordinación entre sesiones en paralelo
+
+| Rama | Toca | No toca |
+|---|---|---|
+| `claude/dazzling-ptolemy-58ga2v` | pulido visual de `consentimiento.tsx`, `emision.tsx`, `revision.tsx` | lógica de `flow.ts` |
+| `feat/issuer-native-xlm` | `issuer/` (cobro en XLM nativo) | `app/` |
+| `feat/journey-pay-then-query` | `flow.ts`, `issuer-client.ts`, `wallet-session.ts` (nuevo), `firma.tsx`; en las tres pantallas solo el botón de consentimiento, las fases de emisión y la fila del pago en revisión | `issuer/`, estilos |
 
 ## Cómo levantar el entorno del teléfono
 

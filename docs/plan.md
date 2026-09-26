@@ -287,6 +287,22 @@ Enclave o el Keystore (`NativeDeviceUnwrapKey`).
 | K3 | Si no hay sobre, no abre o su pública no es la cuenta de Cavos, no se firma nada y la pantalla dice que la llave de esa cuenta no está en este teléfono | pruebas de sobre ausente, alterado y de otra cuenta |
 | K4 | La firma es del hash de la transacción (`raw_hash`) con la semilla recuperada; ni la semilla ni el sobre aparecen en un resultado, error o log | prueba de firma verificable contra el hash y de que la semilla no aparece en el resultado |
 
+### Bloque activo — pagar primero, consultar después (A10)
+
+Cierra el hueco que deja A10 en *Parcial*: `flow.issue()` llama `/issue` sin pago, y la wallet Cavos
+vive solo en el estado de `/firma`. Este bloque reutiliza el coordinador de P9
+(`requestPaidIssuance`) dentro del recorrido principal. Activo: XLM nativo en testnet, según lo que
+declare `/quote`. No añade custodia, persistencia de pagos en disco ni otro activo.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| J1 | La wallet conectada en `/firma` queda en una sesión compartida de la app, solo en memoria: sobrevive a navegar entre pantallas y a reiniciar el recorrido, y desaparece al cerrar la app (la llave sellada de D-88 sigue siendo lo único en disco) | prueba del store: conectar, leer desde otro consumidor, sobrevivir a `reset()` |
+| J2 | La pantalla de consentimiento pide `/quote` y muestra el total que publicó el emisor; el botón dice «Pagar X XLM y consultar». Si no hay wallet conectada, el botón lleva a conectarla y se vuelve al consentimiento. Con el cobro desactivado el botón sigue siendo «Autorizar y consultar» | prueba del texto del monto desde `amountStroops`; ejercicio en el iPhone |
+| J3 | `flow.issue()` ejecuta `quote → pago → issue` cuando `/quote` exige pago, y emite sin pago solo cuando `/quote` lo declara desactivado | prueba de secuencia HTTP con `fetch` controlado |
+| J4 | Si la firma, Horizon o la wallet fallan, no se llama `/issue`, no se consulta ninguna fuente y el error dice que no se cobró la consulta | prueba: firma rechazada → cero llamadas a `/issue`, estado de vuelta en consentimiento |
+| J5 | La pantalla de emisión distingue tres fases: firmando el pago, pago aceptado por la red (con su hash) y consultando fuentes | prueba del estado `phase` en cada transición; ejercicio en el iPhone |
+| J6 | El hash de la transacción queda en el estado del recorrido y la revisión lo muestra con enlace a Stellar Expert | prueba de `paymentTx` en el estado tras emitir; enlace verificado con `curl` a Horizon en `verificacion.md` |
+
 ## Fases
 
 ### Bloque activo — caché idempotente del emisor

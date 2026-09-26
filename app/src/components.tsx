@@ -306,7 +306,7 @@ const JOURNEY_STEPS = ["Solicitud", "Autorización", "Consulta", "Revisión"] as
 
 export function Steps({ current, names = JOURNEY_STEPS }: { readonly current: number; readonly names?: readonly string[] }) {
   return (
-    <View style={styles.steps} accessibilityLabel={`Paso ${current} de ${names.length}: ${names[current - 1]}`}>
+    <View style={styles.steps} accessibilityLabel={current > names.length ? `${names.length} pasos completados` : `Paso ${current} de ${names.length}: ${names[current - 1]}`}>
       {names.map((name, index) => {
         const state = index + 1 === current ? "on" : index + 1 < current ? "done" : "next";
         return (

@@ -87,6 +87,10 @@ export function toggleConsent(source: string): void {
   set({ consented: on ? state.consented.filter((s) => s !== source) : [...state.consented, source] });
 }
 
+export function setConsent(sources: readonly string[]): void {
+  set({ consented: [...sources] });
+}
+
 export function goTo(step: Step): void {
   set({ step });
 }

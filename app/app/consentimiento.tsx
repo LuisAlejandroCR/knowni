@@ -5,8 +5,9 @@
 import { router } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
-import { setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+import { setConsent, setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
 import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
+import { consentBlocker } from "../src/domain/consent.ts";
 
 const SOURCES = [
   { id: "registraduria", title: "Registraduría", needs: "Número de documento" },
@@ -18,11 +19,10 @@ const SOURCES = [
 export default function Consentimiento() {
   const flow = useFlow();
   const numeric = flow.subject.documentKind === "CC" || flow.subject.documentKind === "CE";
-  const needsPlate =flow.consented.includes("vehiculo");
-  const ready =
-    flow.consented.length > 0 &&
-    flow.subject.documentNumber.length >= 5 &&
-    (!needsPlate || flow.subject.plate.length >= 5);
+  const needsPlate = flow.consented.includes("vehiculo");
+  const blocker = consentBlocker({ consented: flow.consented, ...flow.subject });
+  const ready = blocker === undefined;
+  const allOn = SOURCES.every((source) => flow.consented.includes(source.id));
 
   return (
     <Screen>
@@ -38,6 +38,12 @@ export default function Consentimiento() {
           El emisor consulta con estos datos. La contraparte no los recibe y no consulta nada.
         </Body>
 
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Label>{`Fuentes · ${flow.consented.length} de ${SOURCES.length}`}</Label>
+          <Badge onPress={() => setConsent(allOn ? [] : SOURCES.map((source) => source.id))}>
+            {allOn ? "Quitar todas" : "Elegir todas"}
+          </Badge>
+        </View>
         <Card>
           {SOURCES.map((source) => {
             const on = flow.consented.includes(source.id);
@@ -98,7 +104,7 @@ export default function Consentimiento() {
             void issue();
           }}
         >
-          {ready ? "Autorizar y consultar" : "Selecciona qué autorizas"}
+          {blocker ?? "Autorizar y consultar"}
         </Button>
       </Footer>
       <DemoStamp>CONSULTA REAL A LAS FUENTES AUTORIZADAS</DemoStamp>

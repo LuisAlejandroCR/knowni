@@ -20,3 +20,9 @@ export function resendWaitSeconds(sentAt: number | undefined, now: number): numb
   if (sentAt === undefined) return 0;
   return Math.max(0, Math.ceil((sentAt + RESEND_AFTER_MS - now) / 1000));
 }
+
+// Enough of an address to be worth sending a code to: something@something.tld.
+// The server has the last word; this only keeps an obvious typo off the network.
+export function looksLikeEmail(text: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(text.trim());
+}

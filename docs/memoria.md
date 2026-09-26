@@ -62,6 +62,28 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 
 ## Bitácora reciente
 
+- **2026-09-26 — Las notas del demo quedan en local.** `guion.md` y `edicion.md` siguen la regla
+  de #153 (`design/demo/*.md` en el `.gitignore`), confirmada por el titular: el guion, la narración
+  y el mapa de la grabación viven en su máquina. Lo versionado es el código que los ejecuta,
+  `build_demo.py` e `insert_demo.py`.
+- **2026-09-26 — El README se reduce a lo que un jurado necesita.** Qué corre hoy (el recorrido
+  pagado en el iPhone, D-90), la evidencia en testnet con sus hashes, qué falta, la estructura y
+  cómo correrlo. El razonamiento de fuentes (PILA, antecedentes, perfiles) queda en `docs/plan.md` y
+  en esta memoria; el README deja de decir que el pago vive fuera del recorrido.
+- **2026-09-26 — Tomas reales en la película del pitch.** `design/demo/insert_demo.py` pone la
+  grabación del iPhone dentro de la película generada, en cuatro ventanas elegidas por el titular,
+  como un teléfono rotulado *App real*: lo generado y lo grabado se distinguen a la vista. Escribe un
+  archivo nuevo porque la película sin tomas sigue sirviendo sola, y reutiliza los desenfoques del
+  demo para que ninguna toma muestre documento, correo o código.
+- **2026-09-26 — El video demo tiene voz y subtítulos en el código.** Cada segmento de
+  `design/demo/build_demo.py` lleva su línea de Nayla; el script la quema como subtítulo, mezcla
+  el audio si existe y se niega a renderizar si una línea no cabe a ~15 caracteres por segundo. Para
+  que el jurado alcance a leer, todo va a velocidad real salvo la espera del código (×2) y cada
+  pantalla dura al menos 5 s, sosteniendo su último cuadro: 96,4 s en total, contra 65,6 s de la
+  primera versión acelerada. `guion.md` §1 se reescribe
+  en el orden de la grabación, con cada frase atada a D-86–D-90 o a las filas 5, 5b y 6; la frase del
+  verificador dice *en este mismo teléfono* porque la entrega a otra persona no ha corrido. El
+  pipeline se probó con una fuente sintética: la grabación real no sale de la máquina del titular.
 - **2026-09-26 — El guion del demo se graba en el iPhone.** `design/demo/guion.md` §1 deja de ser
   terminal y pantallas de diseño: es la app corriendo en el iPhone, de la solicitud al Explorer, y
   cada frase cita su fila de `verificacion.md`. La regla sigue siendo la misma —no se dice lo que

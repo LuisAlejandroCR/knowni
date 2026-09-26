@@ -162,6 +162,7 @@ que alguien corra la app en un teléfono: ninguna fila se llena desde un emulado
 | 3 · Presentación en modo avión (A12) | | | | | |
 | 4 · Repetición rechazada tras reiniciar la app | | | | | |
 | 5 · Pago testnet firmado en el teléfono | | | | | |
+| 5b · Misma cuenta Cavos firma tras reiniciar la app (K2) | 2026-09-26 | iPhone, build EAS `development` | `feat/cavos-persistent-key` `2aa3bef` | ✅ entrar → pagar 1 XLM → cerrar la app → entrar con la misma identidad → misma `G…` → pago aceptado | Reporte del usuario; hash de la transacción **pendiente de anotar** |
 
 ## Deuda conocida
 

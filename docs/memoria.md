@@ -93,8 +93,8 @@ del kit (`cavos-stellar-dek-ecies`, AES-256-GCM), así que lo abre su `unwrap` s
 *Lo que no cierra:* la semilla existe en memoria de JS mientras firma, no dentro del enclave. Una
 cuenta creada antes de este cambio —`GBTBYA…` incluida— no tiene sobre: su llave ya no existe, y
 esa identidad necesita otro correo o que Cavos borre su registro. Reinstalar la app borra la llave
-P-256 y con ella la cuenta. Pruebas: 6 de `cavos-control` (K1–K4) y 1 del polyfill; falta la
-corrida del iPhone con reinicio (K2).
+P-256 y con ella la cuenta. Pruebas: 6 de `cavos-control` (K1–K4) y 1 del polyfill. K2 corrido en el iPhone el
+2026-09-26: tras cerrar la app, la misma cuenta pagó 1 XLM (`verificacion.md`, fila 5b).
 
 ### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 

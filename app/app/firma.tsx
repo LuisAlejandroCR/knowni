@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import { Keyboard, Linking, Platform, ScrollView, TextInput } from "react-native";
 import { cleanOtp, otpComplete } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
-import { Body, Button, Callout, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
+import { Body, Button, Callout, Card, Label, Steps, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color } from "../src/theme.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
@@ -27,6 +27,10 @@ const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], str
 type Step = "email" | "code" | "wallet";
 
 // What went wrong, in the kit's own words: a device run cannot debug "failed".
+// A Stellar address is 56 characters; the ends are what a person compares.
+const shortAddress = (address: string): string => `${address.slice(0, 6)}…${address.slice(-6)}`;
+const accountUrl = (address: string): string => `https://stellar.expert/explorer/testnet/account/${address}`;
+
 const detail = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 export default function Firma() {
@@ -113,6 +117,10 @@ function CavosSigner() {
     <Screen>
       <TopBar title="Firma real" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
+        <Steps
+          names={["Correo", "Código", "Fondos", "Pago"]}
+          current={step === "email" ? 1 : step === "code" ? 2 : funded ? 4 : 3}
+        />
         <Title>Cavos firma{"\n"}en testnet.</Title>
         <Body>
           Entra con un código por correo, obtén tu wallet Stellar y págate 1 XLM a ti mismo. La llave vive en este
@@ -149,12 +157,21 @@ function CavosSigner() {
         <KeyboardDone />
         {account !== undefined && (
           <>
-            <Row title="Cuenta" scope={account} />
-            {funded ? (
-              balances.map((balance) => <Row key={balance.asset} title={balance.asset} scope={balance.amount} />)
-            ) : (
-              <Row title="Saldo" scope="Sin fondos en testnet: fondéala primero" />
-            )}
+            <Label>Tu wallet</Label>
+            <Card>
+              <Row
+                icon="◎"
+                title="Cuenta"
+                scope={shortAddress(account)}
+                trailing="↗"
+                onPress={() => void Linking.openURL(accountUrl(account))}
+              />
+              {funded ? (
+                balances.map((balance) => <Row key={balance.asset} icon="✓" title={`${balance.amount} ${balance.asset}`} scope="Saldo" />)
+              ) : (
+                <Row icon="!" title="Sin fondos" scope="Fondéala en testnet primero" />
+              )}
+            </Card>
           </>
         )}
         {message !== undefined && (

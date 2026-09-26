@@ -162,7 +162,7 @@ que alguien corra la app en un teléfono: ninguna fila se llena desde un emulado
 | 3 · Presentación en modo avión (A12) | | | | | |
 | 4 · Repetición rechazada tras reiniciar la app | | | | | |
 | 5 · Pago testnet firmado en el teléfono | | | | | |
-| 5b · Misma cuenta Cavos firma tras reiniciar la app (K2) | 2026-09-26 | iPhone, build EAS `development` | `feat/cavos-persistent-key` `2aa3bef` | ✅ entrar → pagar 1 XLM → cerrar la app → entrar con la misma identidad → misma `G…` → pago aceptado | Reporte del usuario; hash de la transacción **pendiente de anotar** |
+| 5b · Misma cuenta Cavos firma tras reiniciar la app (K2) | 2026-09-26 | iPhone, build EAS `development` | `feat/cavos-persistent-key` `2aa3bef` | ✅ entrar → pagar 1 XLM → cerrar la app → entrar con la misma identidad → misma `G…` → pago aceptado | Cuenta `GDCI23MF…VWWT`: Friendbot 06:06:47Z, pago 06:06:52Z (`16dd5ca0…`), y tras reiniciar `1c07f12ec292d07fb809f768a0fb1653fe215bee3444a06b5de2ed1de6227127` (ledger 4875857, 06:07:52Z) y `a309c2a4…` (06:08:22Z). Horizon: `successful: true`, `payment` nativo de 1.0000000 de la cuenta a sí misma |
 
 ## Deuda conocida
 

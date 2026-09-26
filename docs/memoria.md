@@ -65,7 +65,9 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 - **2026-09-26 — El video demo tiene voz y subtítulos en el código.** Cada segmento de
   `design/demo/build_demo.py` lleva su línea de Nayla; el script la quema como subtítulo, mezcla
   el audio si existe y se niega a renderizar si una línea no cabe a ~15 caracteres por segundo. Para
-  que cupieran, cinco segmentos cambiaron de velocidad (65,6 s en total). `guion.md` §1 se reescribe
+  que el jurado alcance a leer, todo va a velocidad real salvo la espera del código (×2) y cada
+  pantalla dura al menos 5 s, sosteniendo su último cuadro: 96,4 s en total, contra 65,6 s de la
+  primera versión acelerada. `guion.md` §1 se reescribe
   en el orden de la grabación, con cada frase atada a D-86–D-90 o a las filas 5, 5b y 6; la frase del
   verificador dice *en este mismo teléfono* porque la entrega a otra persona no ha corrido. El
   pipeline se probó con una fuente sintética: la grabación real no sale de la máquina del titular.

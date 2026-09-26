@@ -63,11 +63,12 @@ Las filas 5 y 5b de la tabla de teléfono y D-88 entran con el PR #140.
 
 ## §1 — Video demo · el producto corriendo en el iPhone
 
-**Grabación: 2:01 (121 s). Video editado: 1:05,6.** La grabación del iPhone del 2026-09-26 (build
+**Grabación: 2:01 (121 s). Video editado: 1:36,4.** La grabación del iPhone del 2026-09-26 (build
 EAS `development` + Metro) dura 2:01; la edición quita la escritura del documento y del correo,
 la salida a Edge, el selector de apps y el historial repetido, y queda montada por [`build_demo.py`](build_demo.py); el mapa de la fuente, las coordenadas y las reglas de
 privacidad están en [`edicion.md`](edicion.md). Sin maquetas: cada cuadro del teléfono es la app
-corriendo; los tramos rápidos o lentos llevan su velocidad en `SEGMENTS`. Documento, correo y
+corriendo y va a velocidad real, salvo la espera del código por correo (×2). Cada pantalla dura
+al menos 5 s para que el jurado alcance a leerla: una toma más corta sostiene su último cuadro. Documento, correo y
 código van cortados o difuminados.
 
 La voz es Nayla (ElevenLabs), una línea por segmento, a ~15 caracteres por segundo, y la misma línea
@@ -76,22 +77,22 @@ duración real y falla si una línea no cabe.
 
 | Tiempo | Segmento | Qué se ve | Qué se dice | Respaldo |
 |---|---|---|---|---|
-| 0:00–0:03 | `titulo` | Tarjeta: *knowni · Stellar testnet · 26/09/2026* | "Una verificación real, en un iPhone." | fila 6 |
-| 0:03–0:07.6 | `intro` | Las tres láminas de introducción | "Para firmar un contrato no hace falta entregar tu expediente." | — |
-| 0:07.6–0:10.6 | `solicitud` | Nueva solicitud, vence en 10 min; zoom a la tarjeta | "Llega una solicitud firmada, y vence." | README, *Solicitud firmada y anti-replay* |
-| 0:10.6–0:13.6 | `autoriza` | Fuentes, tipo de documento; campo difuminado | "Tú eliges qué fuentes se consultan." | D-86 |
-| 0:13.6–0:15.8 | `conectar` | "Conectar wallet para pagar" (×0,55) | "Sin pago, no hay consulta." | D-90, fila 6 |
-| 0:15.8–0:17.8 | `correo` | Wallet: "Entra con tu correo", campo vacío (×0,35) | "Entras con tu correo." | fila 5 |
-| 0:17.8–0:22.5 | `codigo` | Enviando código, correo y código difuminados (×2,6) | "Un código por correo, y la llave queda sellada en este iPhone." | D-88, fila 5b |
-| 0:22.5–0:25.8 | `fondos` | Wallet con saldo; zoom a la cuenta (×0,9) | "Cuenta de testnet, fondeada con Friendbot." | fila 5b |
-| 0:25.8–0:28.5 | `pagar` | "Pagar 1.2 XLM y consultar" | "Una fuente cuesta 1,2 XLM." | D-89, D-90; `issuer/src/pricing.ts` |
-| 0:28.5–0:35.7 | `consulta` | Firmando → pago aceptado → Registraduría (×1,4) | "La wallet firma el pago. El emisor lo verifica en Stellar y solo entonces consulta la Registraduría." | D-90, fila 6 |
-| 0:35.7–0:41.8 | `stellar` | Stellar Expert: `53e6ea60…2724`, Successful, 1.2 XLM (×1,3) | "La transacción está en Stellar testnet: exitosa, 1,2 XLM al emisor." | fila 6; Horizon, abajo |
-| 0:41.8–0:45.1 | `recibiran` | "Esto es lo que recibirán": solo documento vigente (×0,8) | "La otra parte recibe una sola respuesta." | D-86; fila *El sobre no filtra ningún valor de los reclamos* |
-| 0:45.1–0:50.1 | `enviada` | Confirmar compartir → "Respuesta enviada" | "Confirmas antes de enviar. La respuesta va firmada por el emisor." | D-86 |
-| 0:50.1–0:56.6 | `verifica` | Verificador: verificada → "No se puede aceptar" → "Ya recibida" | "En este mismo teléfono se comprueban firma y destinatario. Repetida, se rechaza." | D-86; `app/src/domain/verifier.ts` |
-| 0:56.6–0:59.6 | `espacio` | Mi espacio: historial | "Y el historial queda en tu teléfono." | D-86 |
-| 0:59.6–1:05.6 | `cierre` | Tarjeta: lo que acabas de ver y lo que falta | "Pago real en testnet, emisor real. Falta la contraparte en otro teléfono." | esta regla |
+| 0:00–0:04 | `titulo` | Tarjeta: *knowni · Stellar testnet · 26/09/2026* | "Una verificación real, en un iPhone." | fila 6 |
+| 0:04–0:09 | `intro` | Las tres láminas de introducción | "Para firmar un contrato no hace falta entregar tu expediente." | — |
+| 0:09–0:14 | `solicitud` | Nueva solicitud, vence en 10 min; zoom a la tarjeta | "Llega una solicitud firmada, y vence." | README, *Solicitud firmada y anti-replay* |
+| 0:14–0:19 | `autoriza` | Fuentes, tipo de documento; campo difuminado | "Tú eliges qué fuentes se consultan." | D-86 |
+| 0:19–0:24 | `conectar` | "Conectar wallet para pagar" | "Sin pago, no hay consulta." | D-90, fila 6 |
+| 0:24–0:29 | `correo` | Wallet: "Entra con tu correo", campo vacío | "Entras con tu correo." | fila 5 |
+| 0:29–0:35.1 | `codigo` | Enviando código, correo y código difuminados (×2) | "Un código por correo, y la llave queda sellada en este iPhone." | D-88, fila 5b |
+| 0:35.1–0:40.1 | `fondos` | Wallet con saldo; zoom a la cuenta | "Cuenta de testnet, fondeada con Friendbot." | fila 5b |
+| 0:40.1–0:45.1 | `pagar` | "Pagar 1.2 XLM y consultar" | "Una fuente cuesta 1,2 XLM." | D-89, D-90; `issuer/src/pricing.ts` |
+| 0:45.1–0:55.1 | `consulta` | Firmando → pago aceptado → Registraduría (tiempo real) | "La wallet firma el pago. El emisor lo verifica en Stellar y solo entonces consulta la Registraduría." | D-90, fila 6 |
+| 0:55.1–1:06.9 | `stellar` | Stellar Expert: `53e6ea60…2724`, Successful, 1.2 XLM (tiempo real) | "La transacción está en Stellar testnet: exitosa, 1,2 XLM al emisor." | fila 6; Horizon, abajo |
+| 1:06.9–1:11.9 | `recibiran` | "Esto es lo que recibirán": solo documento vigente | "La otra parte recibe una sola respuesta." | D-86; fila *El sobre no filtra ningún valor de los reclamos* |
+| 1:11.9–1:16.9 | `enviada` | Confirmar compartir → "Respuesta enviada" | "Confirmas antes de enviar. La respuesta va firmada por el emisor." | D-86 |
+| 1:16.9–1:23.4 | `verifica` | Verificador: verificada → "No se puede aceptar" → "Ya recibida" | "En este mismo teléfono se comprueban firma y destinatario. Repetida, se rechaza." | D-86; `app/src/domain/verifier.ts` |
+| 1:23.4–1:28.4 | `espacio` | Mi espacio: historial | "Y el historial queda en tu teléfono." | D-86 |
+| 1:28.4–1:36.4 | `cierre` | Tarjeta: lo que acabas de ver y lo que falta | "Pago real en testnet, emisor real. Falta la contraparte en otro teléfono." | esta regla |
 
 La frase de `verifica` dice *en este mismo teléfono* a propósito: el rótulo del segmento es *la
 contraparte verifica*, y sin esa aclaración la imagen sugeriría la entrega a una segunda persona,

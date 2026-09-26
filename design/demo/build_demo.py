@@ -21,6 +21,7 @@ VOICE = os.path.join(MEDIA, "voz")
 FONTS = os.environ.get("KNOWNI_FONTS") or "C:/Windows/Fonts"
 CPS = 15  # characters per second the voice can say without rushing
 VOICE_IN = 0.2  # the voice starts after the fade-in
+MIN_DUR = 5.0  # every screen stays long enough to read; short takes hold their last frame
 
 W, H = 1920, 1080
 DEEP, LIME, CANVAS, SOFT, DIM = "#193e36", "#dbef9e", "#fafbf7", "#b9c9c0", "#5f7d73"
@@ -50,26 +51,26 @@ SEGMENTS = [
          sub="La solicitud llega firmada: quién pregunta, para qué\ny hasta cuándo. Vence en 10 minutos.",
          zoom=(48, 850, 1146, 400)),
     dict(name="autoriza", voice="Tú eliges qué fuentes se consultan.",
-         a=8.0, b=11.9, speed=1.3, step=1, eyebrow="02 · AUTORIZACIÓN",
+         a=8.0, b=11.9, step=1, eyebrow="02 · AUTORIZACIÓN",
          title="Consultar\nno es compartir.",
          sub="Tú eliges qué fuentes se consultan. Tu número de\ndocumento va al emisor, nunca a quien pregunta.",
          zoom=(75, 1125, 1140, 770), blurs=[(DOC_READY, 0, 4)]),
     dict(name="conectar", voice="Sin pago, no hay consulta.",
-         a=16.7, b=17.9, speed=0.55, step=2, eyebrow="03 · PAGO PRIMERO",
+         a=16.7, b=17.9, step=2, eyebrow="03 · PAGO PRIMERO",
          title="Sin pago,\nno hay consulta.",
          sub="El emisor cobra antes de tocar una sola fuente.\nLa app pide conectar la wallet.",
          zoom=(75, 2490, 1140, 175), blurs=[(DOC_READY, 0, 2)]),
     dict(name="correo", voice="Entras con tu correo.",
-         a=18.0, b=18.7, speed=0.35, step=2, blurs=[(EMAIL_FIELD, 0, 1)], eyebrow="04 · WALLET CAVOS",
+         a=18.0, b=18.7, step=2, blurs=[(EMAIL_FIELD, 0, 1)], eyebrow="04 · WALLET CAVOS",
          title="Tu wallet vive\nen el teléfono.",
          sub="Entras con un código por correo. Sin contraseñas\ny sin semilla que anotar."),
     dict(name="codigo", voice="Un código por correo, y la llave queda sellada en este iPhone.",
-         a=36.2, b=48.4, speed=2.6, step=2, eyebrow="04 · WALLET CAVOS",
+         a=36.2, b=48.4, speed=2.0, step=2, eyebrow="04 · WALLET CAVOS",
          title="Tu wallet vive\nen el teléfono.",
          sub="La llave de Stellar se guarda sellada con una llave\ndel Secure Enclave de este iPhone.",
          blurs=[(EMAIL_FIELD, 0, 13), (SENT_TO_LINE, 0, 13)]),
     dict(name="fondos", voice="Cuenta de testnet, fondeada con Friendbot.",
-         a=48.6, b=51.6, speed=0.9, step=2, eyebrow="04 · WALLET CAVOS",
+         a=48.6, b=51.6, step=2, eyebrow="04 · WALLET CAVOS",
          title="Cuenta Stellar\nlista en testnet.",
          sub="Fondeada con Friendbot: el XLM de prueba\nno tiene valor real.",
          zoom=(72, 950, 1146, 440)),
@@ -79,16 +80,16 @@ SEGMENTS = [
          sub="Una fuente, 1.2 XLM. Pedir más cuesta más:\nnadie pide datos de sobra gratis.",
          zoom=(75, 2490, 1140, 175), blurs=[(DOC_READY, 0, 3)]),
     dict(name="consulta", voice="La wallet firma el pago. El emisor lo verifica en Stellar y solo entonces consulta la Registraduría.",
-         a=55.0, b=65.0, speed=1.4, step=3, eyebrow="06 · CONSULTA",
+         a=55.0, b=65.0, step=3, eyebrow="06 · CONSULTA",
          title="Pago primero.\nConsulta después.",
          sub="El emisor verifica el pago en Stellar antes\nde llamar a la Registraduría.",
          zoom=(72, 940, 1146, 610)),
     dict(name="stellar", voice="La transacción está en Stellar testnet: exitosa, 1,2 XLM al emisor.",
-         a=71.0, b=79.0, speed=1.3, step=4, gear=False, eyebrow="07 · STELLAR TESTNET",
+         a=71.0, b=82.8, step=4, gear=False, eyebrow="07 · STELLAR TESTNET",
          title="Verificable\npor cualquiera.",
          sub="Transacción 53e6ea60…2724 · Successful\n1.2 XLM de la wallet al emisor, con la\nreferencia de la cotización en el memo."),
     dict(name="recibiran", voice="La otra parte recibe una sola respuesta.",
-         a=85.3, b=87.9, speed=0.8, step=5, eyebrow="08 · ANTES DE COMPARTIR",
+         a=85.3, b=87.9, step=5, eyebrow="08 · ANTES DE COMPARTIR",
          title="Esto es lo que\nrecibirán.",
          sub="Documento vigente: sí. Nada más:\nni nombre, ni número, ni expediente.",
          zoom=(72, 1000, 1146, 810)),
@@ -109,14 +110,14 @@ SEGMENTS = [
 
 TITLE_CARD = dict(name="titulo", voice="Una verificación real, en un iPhone.",
                   eyebrow="STELLAR TESTNET · 26/09/2026", title="knowni",
-                  sub="Una verificación real, grabada en un iPhone.\nDatos personales difuminados.", dur=3.0)
+                  sub="Una verificación real, grabada en un iPhone.\nDatos personales difuminados.", dur=4.0)
 END_CARD = dict(name="cierre", voice="Pago real en testnet, emisor real. Falta la contraparte en otro teléfono.",
                 eyebrow="LO QUE ACABAS DE VER", title="Demuestra más.\nRevela menos.",
                 sub="Pago real en Stellar testnet: 53e6ea60…2724\n"
                     "Emisor real vía Croma · firma verificada en el dispositivo\n"
                     "Aún falta: la contraparte en un segundo teléfono\n"
                     "y la prueba ZK generada en iOS.\n\n"
-                    "github.com/LuisAlejandroCR/knowni", dur=6.0)
+                    "github.com/LuisAlejandroCR/knowni", dur=8.0)
 
 
 def font(bold, size):
@@ -182,10 +183,14 @@ def blur_chain(src, blurs):
     return lines, cur
 
 
+def take_dur(seg):
+    return round((seg["b"] - seg["a"]) / seg.get("speed", 1.0), 3)
+
+
 def seg_dur(seg):
     if "dur" in seg:
         return seg["dur"]
-    return round((seg["b"] - seg["a"]) / seg.get("speed", 1.0), 3)
+    return max(take_dur(seg), MIN_DUR)
 
 
 def voice_file(seg):
@@ -271,7 +276,9 @@ def segment(i, seg, bezel_png):
     f = [f"[0:v]setpts=PTS-STARTPTS,fps=60,{','.join(overlays)}[clean]"]
     bl, cur = blur_chain("clean", seg.get("blurs", []))
     f += bl
-    f.append(f"[{cur}]setpts=PTS/{speed},fps=30,split[p][q]")
+    hold = round(dur - take_dur(seg), 3)
+    pad = f",tpad=stop_mode=clone:stop_duration={hold}" if hold > 0 else ""
+    f.append(f"[{cur}]setpts=PTS/{speed},fps=30{pad},split[p][q]")
     f.append(f"[p]scale={sw}:{sh}[ph]")
     f.append(f"[1:v][ph]overlay={sx}:{sy}[a]")
     f.append(f"[a][2:v]overlay={sx - BEZEL}:{sy - BEZEL}[b]")

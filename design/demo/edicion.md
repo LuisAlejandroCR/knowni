@@ -26,19 +26,19 @@
 |---|---|---|---|
 | 0.0–4.8 | Introducción: tres láminas | — | `intro` 0,2–4,8 |
 | 5.0–8.0 | Nueva solicitud, vence en 10 min | — | `solicitud`, zoom a la tarjeta |
-| 8.0–11.9 | Autorización: fuentes, tipo de documento, ejemplo `1020304050` | — | `autoriza` ×1.3 |
+| 8.0–11.9 | Autorización: fuentes, tipo de documento, ejemplo `1020304050` | — | `autoriza` |
 | **12.0–16.3** | **Teclado numérico: se escribe el documento, cada tecla se resalta** | **documento** | **cortado** |
-| 16.3–17.9 | Documento completo, botón "Conectar wallet para pagar" | documento | `conectar` desde 16.7 ×0,55, campo difuminado |
-| 18.0–18.7 | Wallet: "Entra con tu correo", campo vacío | — | `correo` ×0,35 |
+| 16.3–17.9 | Documento completo, botón "Conectar wallet para pagar" | documento | `conectar` desde 16.7, pausa hasta 5 s, campo difuminado |
+| 18.0–18.7 | Wallet: "Entra con tu correo", campo vacío | — | `correo`, pausa hasta 5 s |
 | **18.7–36.0** | **Se escribe el correo; el teclado agranda cada letra** | **correo** | **cortado** |
-| 36.2–48.4 | Enviando, "Lo enviamos a <correo>", código `751047` | correo, código | `codigo` ×2,6, línea y campo difuminados |
-| 48.6–51.6 | Wallet con saldo, "Volver a tu autorización" | — (dirección pública) | `fondos` ×0,9, zoom a la cuenta |
+| 36.2–48.4 | Enviando, "Lo enviamos a <correo>", código `751047` | correo, código | `codigo` ×2, línea y campo difuminados |
+| 48.6–51.6 | Wallet con saldo, "Volver a tu autorización" | — (dirección pública) | `fondos`, zoom a la cuenta |
 | 52.3–55.0 | Autorización: "Pagar 1.2 XLM y consultar" | documento | `pagar`, campo difuminado |
-| 55.0–65.0 | Consultando: firmando → pago aceptado → Registraduría | — | `consulta` ×1.4, zoom a las tarjetas |
+| 55.0–65.0 | Consultando: firmando → pago aceptado → Registraduría | — | `consulta`, zoom a las tarjetas |
 | 65.0–70.9 | Salida a Edge, Face ID, pestaña vieja `3c1bdad5…` | — | cortado |
-| 71.0–83.0 | Stellar Expert: `53e6ea60…`, Successful, sent 1.2 XLM | — | `stellar` 71–79 ×1.3, sin zoom (la página se desplaza) |
+| 71.0–83.0 | Stellar Expert: `53e6ea60…`, Successful, sent 1.2 XLM | — | `stellar` 71–82,8, sin zoom (la página se desplaza) |
 | 83.0–85.2 | Selector de apps | — | cortado |
-| 85.3–87.9 | "Esto es lo que recibirán": solo documento vigente | — | `recibiran` ×0,8, zoom |
+| 85.3–87.9 | "Esto es lo que recibirán": solo documento vigente | — | `recibiran`, zoom |
 | 88.0–93.0 | Confirmar compartir → "Respuesta enviada" | — | `enviada` |
 | 94.0–100.5 | Verificador: verificada → "No se puede aceptar" (reuso) → "Ya recibida" | — | `verifica`, zoom |
 | 101–107 | Vuelta a revisión y verificador | — | cortado |
@@ -68,10 +68,13 @@ están en `guion.md` §1. `build_demo.py`:
 - antes de renderizar comprueba que cada voz cabe (el audio real si existe, si no ~15 caracteres
   por segundo) y se detiene si una no cabe. `--plan` hace solo esa comprobación.
 
-Para que cupieran se bajó la velocidad de `conectar` (0,55), `correo` (0,35), `codigo` (2,6),
-`fondos` (0,9) y `recibiran` (0,8), y `intro` llega a 4,8 s. Total: 65,6 s. El pipeline completo
-—blur, zoom, subtítulos, voz y concat— se ejecutó el 2026-09-26 contra una fuente sintética
-(`testsrc2` a 1290×2796, sin datos personales): 65,6 s, video y audio estéreo a 48 kHz.
+Ritmo para el jurado: todo va a velocidad real salvo `codigo` (×2, espera del código con el
+campo difuminado), y cada segmento dura al menos `MIN_DUR` = 5 s; una toma más corta sostiene su
+último cuadro con `tpad`, ya difuminado, porque el desenfoque se aplica antes. `stellar` usa
+71,0–82,8 para dejar leer la página entera. Tarjetas: 4 s el título, 8 s el cierre. Total: 96,4 s
+(1:36). El pipeline completo —blur, zoom, pausa, subtítulos, voz y concat— se ejecutó el 2026-09-26
+contra una fuente sintética (`testsrc2` a 1290×2796, sin datos personales): 96,4 s, video y audio
+estéreo a 48 kHz, y el cuadro sostenido de `conectar` conserva el desenfoque.
 
 ## Lo que falta
 
@@ -80,6 +83,5 @@ Para que cupieran se bajó la velocidad de `conectar` (0,55), `correo` (0,35), `
    `--plan` la marca y se baja la `speed` de ese segmento.
 2. **Render local y revisión** (solo en la máquina del titular):
    `python design/demo/build_demo.py`, luego extraer un cuadro cada 0,25 s de `codigo`, `conectar`,
-   `correo` y `pagar` y confirmar que no se lee nada sensible. `conectar` y `correo` ahora corren
-   más lentos: mismo recorte, más cuadros que revisar.
+   `correo` y `pagar` y confirmar que no se lee nada sensible, incluido el cuadro sostenido del final.
 3. Registrar el resultado (duración, fecha) en la tabla de entregables de `guion.md`.

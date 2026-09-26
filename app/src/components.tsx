@@ -253,10 +253,11 @@ export function Button({
 
 // Four steps, named, with the current one marked. A person who cannot tell
 // where they are in a flow cannot tell what is about to happen next.
-export function Steps({ current }: { readonly current: 1 | 2 | 3 | 4 }) {
-  const names = ["Solicitud", "Autorización", "Consulta", "Revisión"];
+const JOURNEY_STEPS = ["Solicitud", "Autorización", "Consulta", "Revisión"] as const;
+
+export function Steps({ current, names = JOURNEY_STEPS }: { readonly current: number; readonly names?: readonly string[] }) {
   return (
-    <View style={styles.steps} accessibilityLabel={`Paso ${current} de 4: ${names[current - 1]}`}>
+    <View style={styles.steps} accessibilityLabel={`Paso ${current} de ${names.length}: ${names[current - 1]}`}>
       {names.map((name, index) => {
         const state = index + 1 === current ? "on" : index + 1 < current ? "done" : "next";
         return (

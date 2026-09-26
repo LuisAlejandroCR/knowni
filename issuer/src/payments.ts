@@ -44,10 +44,34 @@ export function quotedAmountStroops(totalMinor: number, policy: PaymentPolicy): 
   return quoted > policy.minAmountStroops ? quoted : policy.minAmountStroops;
 }
 
+// The currency a quote must be priced in to be paid with this asset. A policy
+// that names no asset charges native, as `verifyPayment` does.
+export function assetCurrency(asset: PaymentAsset | undefined): string {
+  return asset === undefined || asset.type === "native" ? "XLM" : asset.code;
+}
+
+export type PaymentAssetConfig =
+  | { readonly status: "configured"; readonly asset: PaymentAsset }
+  | { readonly status: "refused"; readonly message: string };
+
+// Reads KNOWNI_PAYMENT_ASSET: `usdc` (the default) or `native`. Anything else
+// refuses to start rather than charging in an asset nobody chose.
+export function paymentAssetFromEnv(env: Readonly<Record<string, string | undefined>>): PaymentAssetConfig {
+  const kind = env.KNOWNI_PAYMENT_ASSET ?? "usdc";
+  if (kind === "native") return { status: "configured", asset: { type: "native" } };
+  if (kind !== "usdc") {
+    return { status: "refused", message: "KNOWNI_PAYMENT_ASSET must be `usdc` or `native`." };
+  }
+  const issuer = env.KNOWNI_PAYMENT_ASSET_ISSUER ?? "";
+  if (issuer === "") {
+    return { status: "refused", message: "KNOWNI_PAYMENT_ASSET_ISSUER is required when payments are charged in USDC." };
+  }
+  return { status: "configured", asset: { type: "credit", code: "USDC", issuer } };
+}
+
 export function paymentTerms(totalMinor: number, reference: string, currency: string, policy: PaymentPolicy): PaymentTerms {
   const asset = policy.asset ?? { type: "native" as const };
-  const assetCurrency = asset.type === "native" ? "XLM" : asset.code;
-  if (assetCurrency !== currency) throw new TypeError("payment asset does not match quote currency");
+  if (assetCurrency(asset) !== currency) throw new TypeError("payment asset does not match quote currency");
   return {
     network: "testnet",
     destination: policy.destination,

@@ -3,7 +3,7 @@
 // run, outside the journey; the transaction hash on screen is the evidence.
 
 import { useRef, useState } from "react";
-import { Keyboard, Linking, Platform, ScrollView, TextInput } from "react-native";
+import { Keyboard, Linking, Platform, RefreshControl, ScrollView, TextInput } from "react-native";
 import { cleanOtp, otpComplete } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
 import { Body, Button, Callout, Card, Label, Steps, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
@@ -113,12 +113,31 @@ function CavosSigner() {
       setBalances(await balancesOf(account));
     });
 
+  // Pull down to re-read the balance: the network moves while the screen sits still.
+  const [refreshing, setRefreshing] = useState(false);
+  const refresh = async () => {
+    if (account === undefined) return;
+    setRefreshing(true);
+    try {
+      setBalances(await balancesOf(account));
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const funded = balances.length > 0;
 
   return (
     <Screen>
       <TopBar title="Firma real" />
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 24 }}
+        refreshControl={
+          account === undefined ? undefined : (
+            <RefreshControl refreshing={refreshing} onRefresh={() => void refresh()} tintColor={color.deep} />
+          )
+        }
+      >
         <Steps
           names={["Correo", "Código", "Fondos", "Pago"]}
           current={step === "email" ? 1 : step === "code" ? 2 : funded ? 4 : 3}

@@ -90,7 +90,8 @@ export function Label({ children }: { readonly children: ReactNode }) {
 }
 
 export function Title({ children }: { readonly children: ReactNode }) {
-  return <Text accessibilityRole="header" style={styles.title}>{children}</Text>;
+  // Titles grow with the system text size, but capped: a 32 pt title at 3× breaks every layout.
+  return <Text accessibilityRole="header" maxFontSizeMultiplier={1.4} style={styles.title}>{children}</Text>;
 }
 
 export function Body({ children }: { readonly children: ReactNode }) {

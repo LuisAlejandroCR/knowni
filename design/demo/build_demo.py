@@ -1,10 +1,12 @@
 # build_demo.py: edits the raw iPhone recording (knowni-ios.MP4) into the 16:9 demo.
 # Blurs the document number, e-mail and code; removes dev overlays; adds headline
 # panels, a live zoom card, a journey progress bar, burned-in subtitles and the voice.
-# Outputs out/knowni-demo.mp4. `--plan` prints the timeline and voice fit without rendering.
+# Outputs out/knowni-demo.mp4. `--plan` prints the timeline and voice fit without rendering;
+# `--split-voice` cuts one narration file (voz/narracion.*) into the per-segment files.
 
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -338,7 +340,38 @@ def plan():
     return ok
 
 
+def split_voice():
+    """Cuts voz/narracion.* at its longest pauses into one file per part, in timeline order."""
+    parts = [TITLE_CARD] + SEGMENTS + [END_CARD]
+    src = next((os.path.join(VOICE, f"narracion.{e}") for e in ("wav", "mp3", "m4a")
+                if os.path.exists(os.path.join(VOICE, f"narracion.{e}"))), None)
+    if not src:
+        sys.exit(f"no narration file: save it as {os.path.join(VOICE, 'narracion.mp3')}")
+    total = probe_seconds(src)
+    log = subprocess.run(["ffmpeg", "-hide_banner", "-i", src, "-af", "silencedetect=noise=-35dB:d=0.25",
+                          "-f", "null", "-"], capture_output=True, text=True).stderr
+    starts = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", log)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", log)]
+    gaps = list(zip(starts, ends + [total] * (len(starts) - len(ends))))
+    lead = gaps.pop(0)[1] if gaps and gaps[0][0] < 0.3 else 0.0
+    tail = gaps.pop()[0] if gaps and gaps[-1][1] > total - 0.3 else total
+    # The pause between two lines is longer than a pause inside one: keep the longest ones.
+    cuts = sorted(sorted(gaps, key=lambda g: g[1] - g[0], reverse=True)[:len(parts) - 1])
+    if len(cuts) < len(parts) - 1:
+        sys.exit(f"found {len(cuts) + 1} lines in the narration, expected {len(parts)}")
+    bounds = [lead] + [x for g in cuts for x in g] + [tail]
+    for n, seg in enumerate(parts):
+        a, b = max(bounds[2 * n] - 0.05, 0), min(bounds[2 * n + 1] + 0.05, total)
+        out = os.path.join(VOICE, f"{seg['name']}.wav")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-ss", f"{a:.3f}", "-to", f"{b:.3f}",
+                        "-ar", "48000", out], check=True)
+        print(f"{seg['name']:<10} {b - a:5.2f}s  {seg.get('voice', '')}")
+
+
 def main():
+    if "--split-voice" in sys.argv:
+        split_voice()
+        return
     if "--plan" in sys.argv:
         sys.exit(0 if plan() else 1)
     if not plan():

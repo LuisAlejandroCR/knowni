@@ -78,9 +78,13 @@ estéreo a 48 kHz, y el cuadro sostenido de `conectar` conserva el desenfoque.
 
 ## Lo que falta
 
-1. **Voz**: generar con Nayla las 16 líneas de `guion.md` §1 y guardarlas como
-   `knowni-media/demo/voz/<segmento>.mp3` (`titulo`, `intro`, …, `cierre`). Si una sale larga,
-   `--plan` la marca y se baja la `speed` de ese segmento.
+1. **Voz**: generar con Nayla las 16 líneas de `guion.md` §1, una por archivo
+   (`knowni-media/demo/voz/<segmento>.mp3`) o todas en un audio, `voz/narracion.mp3`. El audio
+   único se corta con `python design/demo/build_demo.py --split-voice`: toma las 15 pausas más
+   largas como límites entre líneas, escribe `voz/<segmento>.wav` e imprime cada trozo con su
+   frase para comprobar que coinciden. Probado con una narración sintética de 63 s y una pausa
+   dentro de la línea de `consulta`: 16 trozos correctos. La voz dura menos que el video (1:03
+   contra 1:36) y así debe ser: cada frase empieza con su pantalla y el resto es imagen.
 2. **Render local y revisión** (solo en la máquina del titular):
    `python design/demo/build_demo.py`, luego extraer un cuadro cada 0,25 s de `codigo`, `conectar`,
    `correo` y `pagar` y confirmar que no se lee nada sensible, incluido el cuadro sostenido del final.

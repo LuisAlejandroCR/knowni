@@ -10,9 +10,12 @@ import { useFlow } from "../src/domain/flow.ts";
 import { color, type } from "../src/theme.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { formatDateTime } from "../src/domain/datetime.ts";
+import { expiryText } from "../src/domain/expiry.ts";
+import { useNowUnix } from "../src/use-now.ts";
 
 export default function Home() {
   const flow = useFlow();
+  const now = useNowUnix();
   const valid = flow.requestState.status === "ok";
   // Once answered, the request is no longer "pending": home says what was done.
   const shared = flow.sharedAt !== undefined;
@@ -67,7 +70,7 @@ export default function Home() {
             <Row
               icon="↗"
               title={valid ? "Una solicitud pendiente" : "Una solicitud que no verifica"}
-              scope={valid ? `${purposeLabel(flow.request.purpose)} · vence en 10 min` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
+              scope={valid ? `${purposeLabel(flow.request.purpose)} · ${expiryText(flow.request.expiresAt, now).toLowerCase()}` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
               trailing="›"
               onPress={() => router.push("/solicitud")}
             />

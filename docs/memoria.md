@@ -62,6 +62,10 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 
 ## Bitácora reciente
 
+- **2026-09-26 — Las notas del demo quedan en local.** `guion.md` y `edicion.md` siguen la regla
+  de #153 (`design/demo/*.md` en el `.gitignore`), confirmada por el titular: el guion, la narración
+  y el mapa de la grabación viven en su máquina. Lo versionado es el código que los ejecuta,
+  `build_demo.py` e `insert_demo.py`.
 - **2026-09-26 — El README se reduce a lo que un jurado necesita.** Qué corre hoy (el recorrido
   pagado en el iPhone, D-90), la evidencia en testnet con sus hashes, qué falta, la estructura y
   cómo correrlo. El razonamiento de fuentes (PILA, antecedentes, perfiles) queda en `docs/plan.md` y

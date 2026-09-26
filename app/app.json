@@ -19,17 +19,7 @@
     "plugins": [
       "expo-router",
       "expo-asset",
-      "expo-web-browser",
-      [
-        "@cavos/kit/app.plugin",
-        {
-          "rpId": "knowni.vercel.app",
-          "scheme": "knowni",
-          "associatedDomains": [
-            "applinks:knowni.vercel.app"
-          ]
-        }
-      ]
+      "expo-web-browser"
     ],
     "owner": "alejoo_oo",
     "extra": {

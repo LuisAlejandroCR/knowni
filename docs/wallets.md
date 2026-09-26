@@ -29,8 +29,10 @@ comprobación en `payQuote`.
    `https://knowni.vercel.app`.
 2. **Variable en EAS:** `EXPO_PUBLIC_CAVOS_APP_ID` en el entorno del perfil que se construye.
 3. **Dominio:** `knowni.vercel.app` ya sirve `assetlinks.json` y `apple-app-site-association`
-   (`web/`). El plugin de `@cavos/kit` en `app/app.json` lo declara como `rpId`. Solo hace falta
-   para passkeys; entrar por código no lo usa.
+   (`web/`). Solo hace falta para passkeys, y entrar por código no lo usa. ⏳ El plugin de
+   `@cavos/kit` (que lo declara como `rpId` y pide *Associated Domains*) **no está** en
+   `app/app.json`: con él, el build de iOS en Codemagic falló tres veces por el perfil de
+   aprovisionamiento. Se vuelve a poner cuando se active el passkey.
 4. **Dev build.** Expo Go no carga el módulo nativo de Cavos. iOS 16+ o Android 9+.
 
 ## Freighter (WalletConnect)

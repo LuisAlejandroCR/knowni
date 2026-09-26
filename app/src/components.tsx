@@ -51,7 +51,15 @@ export function Brand() {
 
 // A badge with an onPress is a control, and a control has to be reachable:
 // 44 px of target and a role, or it is decoration pretending to be a button.
-export function Badge({ children, onPress }: { readonly children: ReactNode; onPress?: () => void }) {
+export function Badge({
+  children,
+  onPress,
+  selected = false,
+}: {
+  readonly children: ReactNode;
+  onPress?: () => void;
+  selected?: boolean;
+}) {
   if (onPress === undefined) {
     return (
       <View style={styles.badge}>
@@ -60,8 +68,13 @@ export function Badge({ children, onPress }: { readonly children: ReactNode; onP
     );
   }
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.badge, styles.badgeTappable, pressed && styles.pressed]}>
-      <Text style={styles.badgeText}>{children}</Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [styles.badge, styles.badgeTappable, selected && styles.badgeSelected, pressed && styles.pressed]}
+    >
+      <Text style={[styles.badgeText, selected && styles.badgeTextSelected]}>{children}</Text>
     </Pressable>
   );
 }
@@ -91,17 +104,22 @@ export function Row({
   scope,
   trailing,
   onPress,
+  checked,
 }: {
   icon?: ReactNode;
   title: string;
   scope?: string;
   trailing?: ReactNode;
   onPress?: () => void;
+  checked?: boolean;
 }) {
+  const tone = typeof icon === "string" ? ICON_TONE[icon] : undefined;
   const content = (
     <>
       {icon === undefined ? null : (
-        <View style={styles.icon}>{typeof icon === "string" ? <Text style={styles.iconText}>{icon}</Text> : icon}</View>
+        <View style={[styles.icon, tone?.box]}>
+          {typeof icon === "string" ? <Text style={[styles.iconText, tone?.text]}>{icon === "□" ? "" : icon}</Text> : icon}
+        </View>
       )}
       <View style={styles.rowBody}>
         <Text style={styles.rowTitle}>{title}</Text>
@@ -113,7 +131,8 @@ export function Row({
   if (onPress === undefined) return <View style={styles.row}>{content}</View>;
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={checked === undefined ? "button" : "checkbox"}
+      accessibilityState={checked === undefined ? undefined : { checked }}
       accessibilityLabel={scope ? `${title}. ${scope}` : title}
       onPress={onPress}
       style={({ pressed }) => [styles.row, styles.rowTappable, pressed && styles.pressed]}
@@ -122,6 +141,15 @@ export function Row({
     </Pressable>
   );
 }
+
+// The glyph already names the state; the colour makes it readable at a glance:
+// green for an answer with evidence, amber for one the source could not give,
+// an empty box for something not yet chosen.
+const ICON_TONE: Record<string, { box: object; text: object } | undefined> = {
+  "✓": { box: { backgroundColor: color.lime }, text: { color: color.deep } },
+  "!": { box: { backgroundColor: "#ffe4ad" }, text: { color: color.amberInk } },
+  "□": { box: { backgroundColor: color.card, borderWidth: 2, borderColor: "#b8c4b2" }, text: {} },
+};
 
 export function Note({ children }: { readonly children: ReactNode }) {
   return (
@@ -170,8 +198,17 @@ export function Steps({ current }: { readonly current: 1 | 2 | 3 | 4 }) {
         const state = index + 1 === current ? "on" : index + 1 < current ? "done" : "next";
         return (
           <View key={name} style={styles.step}>
-            <View style={[styles.stepBar, state === "next" ? styles.stepBarNext : styles.stepBarOn]} />
-            <Text style={[styles.stepText, state === "on" && styles.stepTextOn]}>{`${index + 1}. ${name}`}</Text>
+            <View style={styles.stepHead}>
+              <View style={[styles.stepDot, state === "on" && styles.stepDotOn, state === "done" && styles.stepDotDone]}>
+                <Text style={[styles.stepDotText, state !== "next" && styles.stepDotTextOn]}>
+                  {state === "done" ? "✓" : index + 1}
+                </Text>
+              </View>
+              {index < names.length - 1 ? (
+                <View style={[styles.stepLine, state === "done" ? styles.stepBarOn : styles.stepBarNext]} />
+              ) : null}
+            </View>
+            <Text style={[styles.stepText, state === "on" && styles.stepTextOn]}>{name}</Text>
           </View>
         );
       })}
@@ -202,7 +239,9 @@ export function TabBar() {
             onPress={() => { if (!on) router.replace(tab.href); }}
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
           >
-            <Text importantForAccessibility="no" accessibilityElementsHidden style={[styles.tabIcon, on && styles.tabOn]}>{tab.icon}</Text>
+            <View style={[styles.tabPill, on && styles.tabPillOn]}>
+              <Text importantForAccessibility="no" accessibilityElementsHidden style={[styles.tabIcon, on && styles.tabOn]}>{tab.icon}</Text>
+            </View>
             <Text style={[styles.tabLabel, on && styles.tabOn]}>{tab.label}</Text>
           </Pressable>
         );
@@ -267,6 +306,15 @@ export function DemoStamp(_props: { children?: string }) {
   return null;
 }
 
+// A soft lift so cards read as objects on the page rather than outlines.
+const shadow = {
+  shadowColor: "#193e36",
+  shadowOpacity: 0.07,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+} as const;
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
   topBar: {
@@ -296,6 +344,8 @@ const styles = StyleSheet.create({
   brandText: { fontSize: 25, letterSpacing: -1.5, fontWeight: "800", color: color.ink },
   badge: { backgroundColor: "#e9eee6", paddingHorizontal: 9, paddingVertical: 5, borderRadius: radius.pill },
   badgeText: { fontSize: 11, fontWeight: "700", color: color.inkSoft },
+  badgeSelected: { backgroundColor: color.deep },
+  badgeTextSelected: { color: color.lime },
   badgeTappable: { minHeight: 44, justifyContent: "center", paddingHorizontal: 12 },
   label: { ...type.label, color: "#5d6b60", marginBottom: 4 },
   title: { ...type.title, color: color.ink, marginVertical: space.sm },
@@ -307,8 +357,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: radius.card,
     marginVertical: 12,
+    ...shadow,
   },
-  cardDeep: { backgroundColor: color.deep, borderWidth: 0 },
+  cardDeep: { backgroundColor: color.deep, borderWidth: 0, padding: space.lg },
   cardAmber: { backgroundColor: color.amber, borderColor: color.amberLine },
   row: {
     flexDirection: "row",
@@ -325,8 +376,8 @@ const styles = StyleSheet.create({
   trailingText: { fontSize: 20, color: color.inkFaint },
   rowScope: { ...type.small, color: "#647267", marginTop: 3 },
   icon: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: radius.icon,
     backgroundColor: "#edf1e9",
     alignItems: "center",
@@ -336,23 +387,41 @@ const styles = StyleSheet.create({
   noteText: { ...type.small, color: "#4f6052" },
   button: {
     backgroundColor: color.deep,
-    borderRadius: radius.button,
-    paddingVertical: 16,
+    borderRadius: radius.pill,
+    paddingVertical: 17,
     alignItems: "center",
     // 44 px is the floor for anything tappable; a smaller control is a
     // control someone cannot use.
     minHeight: 44,
     justifyContent: "center",
+    shadowColor: color.deep,
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  buttonSecondary: { backgroundColor: "transparent", paddingVertical: 12 },
-  buttonDisabled: { backgroundColor: "#dde4d7" },
-  buttonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
+  buttonSecondary: { backgroundColor: "transparent", paddingVertical: 12, shadowOpacity: 0, elevation: 0 },
+  buttonDisabled: { backgroundColor: "#dde4d7", shadowOpacity: 0, elevation: 0 },
+  buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
   buttonTextSecondary: { color: "#294c3e" },
   // White on the pale disabled fill was unreadable; a disabled label still has to be read.
   buttonTextDisabled: { color: color.inkFaint },
-  steps: { flexDirection: "row", gap: 6, paddingVertical: 10 },
+  steps: { flexDirection: "row", paddingVertical: 12 },
   step: { flex: 1 },
-  stepBar: { height: 4, borderRadius: 3, marginBottom: 5 },
+  stepHead: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
+  stepDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#dfe7d8",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepDotOn: { backgroundColor: color.deep },
+  stepDotDone: { backgroundColor: "#698447" },
+  stepDotText: { fontSize: 11, fontWeight: "800", color: color.inkFaint },
+  stepDotTextOn: { color: "#ffffff" },
+  stepLine: { flex: 1, height: 3, borderRadius: 2, marginHorizontal: 4 },
   stepBarOn: { backgroundColor: "#698447" },
   stepBarNext: { backgroundColor: "#dfe7d8" },
   stepText: { fontSize: 10, color: color.inkFaint },
@@ -365,6 +434,8 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   tab: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 48, paddingVertical: 4 },
+  tabPill: { paddingHorizontal: 18, paddingVertical: 3, borderRadius: radius.pill },
+  tabPillOn: { backgroundColor: color.lime },
   tabIcon: { fontSize: 20, color: color.inkFaint },
   tabLabel: { fontSize: 11, color: color.inkFaint, marginTop: 2 },
   tabOn: { color: color.deep, fontWeight: "700" },

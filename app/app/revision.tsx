@@ -60,6 +60,8 @@ export default function Revision() {
               style={{
                 ...typography.small,
                 color: "#5a685d",
+                textDecorationLine: "line-through",
+                backgroundColor: "#f1f3ee",
                 borderWidth: 1,
                 borderColor: color.line,
                 borderRadius: 8,
@@ -67,7 +69,7 @@ export default function Revision() {
                 paddingVertical: 5,
               }}
             >
-              {item}
+              {`✕ ${item}`}
             </Text>
           ))}
         </View>

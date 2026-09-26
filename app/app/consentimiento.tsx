@@ -47,6 +47,7 @@ export default function Consentimiento() {
                 icon={on ? "✓" : "□"}
                 title={source.title}
                 scope={source.needs}
+                checked={on}
                 onPress={() => toggleConsent(source.id)}
               />
             );
@@ -58,6 +59,7 @@ export default function Consentimiento() {
           {DOCUMENT_KINDS.map((kind) => (
             <Badge
               key={kind.id}
+              selected={flow.subject.documentKind === kind.id}
               onPress={() =>
                 setSubject({
                   documentKind: kind.id,

@@ -276,6 +276,7 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 | `KNOWNI_ISSUER_SEED` | ⏳ pendiente — firma la raíz publicada |
 | `KNOWNI_ISSUER_ACCESS_KEYS` | ⏳ pendiente — una llave por contraparte, separadas por coma; sin ella el emisor no arranca. Ver D-31 |
 | `KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE` | Opcional; default 20 por llave |
+| `KNOWNI_PAYMENT_ASSET` | Opcional; `usdc` (default, exige `KNOWNI_PAYMENT_ASSET_ISSUER`) o `native` (XLM en testnet). Otro valor impide el arranque |
 | `KNOWNI_SPENT_PAYMENTS_FILE` | ⏳ pendiente — obligatoria si hay tesorería: los pagos ya canjeados. Ver D-37 |
 | `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | ⏳ pendiente — la llave de este app como contraparte, la misma que `KNOWNI_ISSUER_ACCESS_KEYS` reconoce |
 | `EXPO_PUBLIC_CAVOS_APP_ID` | ✅ disponible desde 2026-09-25. Sin ella `cavosConfigured()` da `false` y `/firma` dice que falta. Reemplaza a Privy — D-85. El dominio de passkey (`knowni.vercel.app`) va en el plugin de `app/app.json`, no en una variable |

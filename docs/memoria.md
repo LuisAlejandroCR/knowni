@@ -72,6 +72,28 @@ Numeradas `D-NN` para que un comentario de código pueda citarlas sin repetirlas
 la convención del proyecto GovTech anterior.
 
 
+### D-89 — El recorrido paga la cotización antes de consultar · 2026-09-26
+
+*Qué se hizo:* `flow.issue()` deja de llamar `/issue` directo y pasa por `requestPaidIssuance`, el
+coordinador de P9: `quote → pago → issue`. La wallet que se conecta en `/firma` queda en
+`wallet-session.ts`, un store en memoria que cualquier pantalla lee; la pantalla de consentimiento
+pide `/quote` al cambiar las fuentes y ofrece «Pagar 1.2 XLM y consultar» con el monto que publicó
+el emisor (`amountStroops` dividido exacto, sin redondeo), o lleva a `/firma` si no hay wallet. El
+coordinador avisa `paying` y `querying` para que la emisión distinga firmar de consultar, y el hash
+aceptado queda en `FlowState.paymentTx`, que la revisión enlaza a Stellar Expert.
+
+*Por qué:* A10 pide que el recorrido principal produzca su propia transacción con una wallet real.
+El coordinador y la wallet ya existían (P9, D-88) pero no se tocaban: la wallet vivía en el estado
+de un componente y `issue()` nunca cotizaba. Reusarlo mantiene una sola secuencia probada en vez de
+una segunda en la pantalla.
+
+*Lo que no cierra:* si el pago se acepta y `/issue` falla, reintentar vuelve a cotizar y a pagar; el
+caché del emisor (C3) aceptaría el mismo `paymentTx`, pero la app todavía no lo reenvía. Con Horizon
+fuera de alcance tras enviar, el pago pudo haber entrado: el mensaje no dice «no se cobró». La
+wallet no sobrevive a cerrar la app: hay que entrar otra vez por correo (la llave sellada de D-88
+sí). Pruebas: 10 de `pay-then-query` (J1–J6). Falta la corrida en el iPhone contra el emisor con
+cobro en XLM nativo.
+
 ### D-88 — La semilla de control de Cavos, sellada al dispositivo · 2026-09-26
 
 *Qué se hizo:* `app/src/domain/cavos-control.ts` guarda la semilla de control Stellar que el kit
@@ -2002,6 +2024,7 @@ exige el estado `ready` de Cavos, la primera corrida lo dirá.
 | 2026-09-24 | El ancla del registro deja de ser una forma y pasa a ser una transacción: `66bf1b7d…` lleva el digest del documento firmado como `MEMO_HASH`, y el mismo adaptador que corre en las pruebas lo lee de Horizon real y resuelve el registro con `trustedVia: chain_anchor`. Un documento distinto contra la misma ancla responde `digest_mismatch` — la comprobación que vale es esa, no la que resuelve. Lo que sigue sin hacerse es servir el documento por HTTPS: en el ejercicio salió de memoria, y el registro lo dice así — D-73 |
 | 2026-09-24 | El estado de Poseidon deja de ser una señal por celda y por ronda y pasa a viajar como expresión lineal: mezclar es contabilidad del compilador y solo se materializa lo que se eleva a la quinta. 25 221 → 12 633 restricciones (−50%) y 25 281 → 12 693 cables, iguales sobre las dos curvas; el testigo y el compromiso de ingreso que CI reconstruye no se mueven, que es lo que dice que la permutación es la misma — D-74. 454 pruebas |
 | 2026-09-26 | La semilla de control de Cavos se sella al Secure Enclave con el mismo ECIES del kit y se abre en cada sesión: la cuenta que devuelve el registro vuelve a firmar tras reiniciar, sin build nativo nuevo — D-88. 128 pruebas de la app |
+| 2026-09-26 | El recorrido paga antes de consultar: `flow.issue()` pasa por el coordinador `quote → pago → issue`, la wallet de `/firma` se comparte en memoria, el consentimiento muestra el monto cotizado y la revisión enlaza el hash. Un pago rechazado no llega a `/issue` — D-89. 145 pruebas de la app; falta el iPhone |
 | 2026-09-25 | El pitch web adopta el orden de CREVA —promesa, frontera, recorrido, recibos, límites y cierre— sin adoptar su producto. La demo narrada pasa de arriendo a compraventa vehicular para respetar D-13; cada evidencia dice qué prueba y qué no. Propuesta y copy en `web/README.md`, criterios W1–W7 en `docs/plan.md` |
 | 2026-09-25 | Adaptador de keypair del dispositivo detrás de `PayerWalletPort`, firmando por `raw_hash` como Privy; P10 nuevo y probado, A10 sigue parcial — D-75 |
 | 2026-09-25 | Bloque de agentes: las tres preguntas contestadas (el agente presenta, nunca sostiene) y primer corte, la delegación firmada de `attestation/` (G2) — D-76. 479 pruebas |

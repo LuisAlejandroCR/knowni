@@ -1,6 +1,7 @@
-// index.ts: the app entry. Cavos's runtime shim first, then the router.
-// The shim installs crypto.getRandomValues and a Buffer that Stellar's XDR
-// needs on Hermes; it must run before any chain code loads.
+// index.ts: the app entry. Crypto setup first, then Cavos's shim, then the router.
+// @noble reads globalThis.crypto once, when it is imported, so the random source
+// must exist before any chain code loads; Cavos's shim adds the Buffer XDR needs.
 
+import "./src/crypto-setup.ts";
 import "@cavos/kit/react-native";
 import "expo-router/entry";

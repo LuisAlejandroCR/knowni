@@ -10,7 +10,8 @@ import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { receivedAt, requiredFor, verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
 import { color, type as typography } from "../src/theme.ts";
-import { acceptanceStamp } from "../src/domain/provenance.ts";
+import { acceptanceStamp, issuerKeyChanged } from "../src/domain/provenance.ts";
+import { servedIssuerKey } from "../src/domain/issuer-client.ts";
 
 const REVOCATIONS: readonly RevocationSetting[] = ["live", "stale", "unknown", "revoked"];
 const LABEL: Record<RevocationSetting, string> = {
@@ -41,6 +42,7 @@ export default function Verificador() {
         policy,
         receivedAt(session.sharedAt, Math.floor(Date.now() / 1000)),
         requiredFor(session.consented),
+        issuerKeyChanged(process.env.EXPO_PUBLIC_ISSUER_PUBLIC_KEY, servedIssuerKey(session.issuer)),
       ),
     [session, revocation, policy],
   );

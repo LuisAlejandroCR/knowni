@@ -89,6 +89,25 @@ export function disclosureFor(request: SessionRequest, nowUnix: number): Disclos
   };
 }
 
+export function refusalView(reason: string, keyChanged: boolean): VerificationView {
+  if (reason === "results_unauthenticated" && keyChanged) {
+    return {
+      accepted: false,
+      idempotent: false,
+      headline: "La llave del emisor cambió",
+      explanation: "El emisor firma con una llave distinta de la que este teléfono reconoce. Hay que volver a anclar su llave.",
+      notes: [],
+    };
+  }
+  return {
+    accepted: false,
+    idempotent: false,
+    headline: "No se puede aceptar",
+    explanation: REFUSAL[reason] ?? "La respuesta no pasó la verificación.",
+    notes: [],
+  };
+}
+
 // The counterparty receives the answer when it is shared, not when someone
 // opens its screen: judging at the later moment expired answers that arrived
 // in time. Before anything is shared, the moment is now.
@@ -122,6 +141,7 @@ export function verifyOnDevice(
   policy: PolicySetting,
   nowUnix: number,
   required: readonly string[] = ["personhood", "capacity"],
+  keyChanged = false,
 ): VerificationView {
   // Refused, not accepted: without the spent set an answer already used could
   // pass as new, and "no lo sabemos todavía" never becomes "sí".
@@ -154,15 +174,7 @@ export function verifyOnDevice(
     requiredPredicates: required,
   });
 
-  if (outcome.status === "refused") {
-    return {
-      accepted: false,
-      idempotent: false,
-      headline: "No se puede aceptar",
-      explanation: REFUSAL[outcome.reason] ?? "La respuesta no pasó la verificación.",
-      notes: [],
-    };
-  }
+  if (outcome.status === "refused") return refusalView(outcome.reason, keyChanged);
   return {
     accepted: true,
     idempotent: outcome.idempotent,

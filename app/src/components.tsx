@@ -251,7 +251,21 @@ export function TabBar() {
 }
 
 // The iOS number pad has no return key; this bar gives every field a way out.
-const KEYBOARD_DONE = "knowni-keyboard-done";
+export const KEYBOARD_DONE = "knowni-keyboard-done";
+
+// The same "Listo" bar for a TextInput that is not a Field.
+export function KeyboardDone() {
+  if (Platform.OS !== "ios") return null;
+  return (
+    <InputAccessoryView nativeID={KEYBOARD_DONE}>
+      <View style={styles.keyboardBar}>
+        <Pressable accessibilityRole="button" onPress={Keyboard.dismiss} hitSlop={12}>
+          <Text style={styles.keyboardDone}>Listo</Text>
+        </Pressable>
+      </View>
+    </InputAccessoryView>
+  );
+}
 
 export function Field({
   label,

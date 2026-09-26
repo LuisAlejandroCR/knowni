@@ -47,7 +47,7 @@ hay que volver a anclar la pública.
 | # | PR | Tamaño | Depende de | Quién |
 |---|---|---|---|---|
 | 0 | Push de `fix/app-document-kind` | — | decisión de CI | humano |
-| 1 | Limpieza de restos de Codemagic y archivos sueltos | S | — | agente |
+| 1 | ~~Limpieza de restos de Codemagic y archivos sueltos~~ hecho | S | — | agente |
 | 2 | Cavos en el dev build (`/firma`) | S–M | build solo si falla el redirect | agente + teléfono |
 | 3 | Pago USDC en testnet dentro del recorrido (A10) | M | 2 | agente + teléfono |
 | 4 | Contraparte real: spec | S | — | agente |
@@ -72,6 +72,7 @@ el humano**: esperar al 1 de octubre o abrir el PR ahora y gastar minutos.
 - Borrar `codemagic.yaml` y documentar que el grupo `knowni-signing` de Codemagic sobra (lo borra el humano en la UI).
 - Sin rastrear en la raíz: `app.json` y `.easignore` (salieron de un `eas` corrido desde la raíz), `web/animated-12.mp4`, `web/animated-38.mp4`. Preguntar al humano antes de borrar los `.mp4`.
 - **Aceptación:** `git status` limpio salvo lo que el humano quiera conservar; ningún documento menciona Codemagic como camino vigente.
+- **Hecho:** `codemagic.yaml` borrado; `/app.json` y `/.easignore` de la raíz quedan en `.gitignore`. Queda para el humano: borrar el grupo `knowni-signing` en la UI de Codemagic y decidir los dos `.mp4` de `web/`.
 
 ### PR-2 — Cavos en el dev build
 
@@ -80,6 +81,18 @@ Nunca ha corrido en un teléfono (D-85), y el #116 quitó el config plugin de Ca
 redirect `knowni://cavos-auth` puede fallar.
 - **Aceptación:** el hash de la transacción en pantalla abre en el explorador de testnet y queda en `verificacion.md`.
 - Si el redirect falla y exige un cambio nativo, eso gasta el último build del mes: avisar antes.
+- **Revisado (2026-09-26), sin teléfono:** el camino de `/firma` **no usa el redirect**.
+  `NativeCavosAuth.sendOtp` y `verifyOtp` (`@cavos/kit` 0.2.5, `dist/react-native/index.js`) solo hacen
+  `POST` a `cavos.xyz`; `redirectUri` se exige en el constructor pero únicamente lo leen `login`
+  (Google/Apple) y `sendMagicLink`, que la app no llama. El módulo nativo `CavosKit` entra por
+  autolinking (`expo-module.config.json`), no por el config plugin que quitó el #116, y `@cavos/kit`
+  ya estaba en `package.json` (`1d1a8e7`) antes del dev client (`11dd13f`). **No hace falta build.**
+- **Lo que falta es solo la corrida:** `EXPO_PUBLIC_CAVOS_APP_ID` en `app/.env.local` (Metro la
+  inlinea; reiniciar con `npx expo start --dev-client --lan -c`), abrir **Wallet** → correo → código →
+  *Fondear* (Friendbot) → *Pagar 1 XLM*. Si sale `Cannot find native module 'CavosKit'`, el build
+  `12aeaef3…` no lo trae y entonces sí es build.
+- Google/Apple o enlace mágico sí necesitan `knowni://cavos-auth` en *Callback URLs* del dashboard de
+  Cavos; el esquema `knowni` ya lo registra `app.json` sin el plugin.
 
 ### PR-3 — Pago USDC dentro del recorrido (A10)
 

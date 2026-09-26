@@ -7,6 +7,8 @@ import { Button, Card, Label, Row, Screen, TabBar, TopBar, Title } from "../src/
 import { reset, useFlow } from "../src/domain/flow.ts";
 import { ISSUER_URL } from "../src/domain/issuer-client.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
+import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
+import { formatDateTime } from "../src/domain/datetime.ts";
 
 export default function Espacio() {
   const flow = useFlow();
@@ -30,6 +32,21 @@ export default function Espacio() {
             ))
           )}
         </Card>
+        <Label>{`Historial · ${flow.history.length}`}</Label>
+        <Card>
+          {flow.history.length === 0 ? (
+            <Row icon="□" title="Sin actividad todavía" scope="Aquí verás cada solicitud que compartas o rechaces." />
+          ) : (
+            flow.history.map((entry) => (
+              <Row
+                key={`${entry.outcome}-${entry.at}`}
+                icon={entry.outcome === "shared" ? "✓" : "✕"}
+                title={`${entry.outcome === "shared" ? "Compartiste con" : "Rechazaste a"} ${counterpartyLabel(entry.purpose).toLowerCase()}`}
+                scope={`${purposeLabel(entry.purpose)} · ${formatDateTime(entry.at)}`}
+              />
+            ))
+          )}
+        </Card>
         <Label>Emisor</Label>
         <Card>
           <Row
@@ -42,12 +59,15 @@ export default function Espacio() {
         <Card>
           <Row icon="🔒" title="Tu documento y tu placa" scope="Se envían solo al emisor que autorizas, nunca a la contraparte" />
         </Card>
+        <Button tone="secondary" onPress={() => router.push("/bienvenida")}>
+          Ver la introducción
+        </Button>
         <Button
           tone="secondary"
           onPress={() =>
             Alert.alert(
               "¿Borrar y empezar de nuevo?",
-              "Se borran de este teléfono las respuestas, tu documento y tu placa, y llega una solicitud nueva. Lo que ya compartiste no se puede retirar.",
+              "Se borran de este teléfono las respuestas, tu documento y tu placa, y llega una solicitud nueva. El historial se conserva. Lo que ya compartiste no se puede retirar.",
               [
                 { text: "Cancelar", style: "cancel" },
                 {

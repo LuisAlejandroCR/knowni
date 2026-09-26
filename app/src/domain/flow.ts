@@ -23,6 +23,8 @@ import { currentWalletSession } from "./wallet-session.ts";
 import { readRequest, type RequestState } from "./wallet.ts";
 import { purposeFor } from "./purpose.ts";
 import { DEMO_COUNTERPARTY } from "./demo-issuer.ts";
+import { HISTORY_LIMIT, addEntry, type HistoryEntry, type Outcome } from "./history.ts";
+import { loadHistory, saveHistory } from "./history-store.ts";
 
 export type Step = "request" | "consent" | "issuing" | "review" | "sent";
 
@@ -66,6 +68,8 @@ export interface FlowState {
   // The testnet payment for this issuance. Shown to the person, never part of
   // what the counterparty receives.
   readonly paymentTx: string | undefined;
+  // Every request answered or declined on this phone, newest first. Survives reset.
+  readonly history: readonly HistoryEntry[];
 }
 
 const now = () => Math.floor(Date.now() / 1000);
@@ -90,6 +94,7 @@ function initial(): FlowState {
     price: undefined,
     stage: "idle",
     paymentTx: undefined,
+    history: [],
   };
 }
 
@@ -130,16 +135,30 @@ export function goTo(step: Step): void {
   set({ step });
 }
 
+function record(outcome: Outcome, at: number): readonly HistoryEntry[] {
+  const history = addEntry(state.history, { outcome, purpose: state.request.purpose, at });
+  void saveHistory(history).catch((error: unknown) => console.warn("history write failed", error));
+  return history;
+}
+
 export function share(): void {
-  set({ step: "sent", sharedAt: now() });
+  const at = now();
+  set({ step: "sent", sharedAt: at, history: record("shared", at) });
 }
 
 export function decline(): void {
-  set({ declinedAt: now(), consented: [] });
+  const at = now();
+  set({ declinedAt: at, consented: [], history: record("declined", at) });
+}
+
+// Reads the stored history once at launch; entries recorded meanwhile stay first.
+export async function hydrateHistory(): Promise<void> {
+  const stored = await loadHistory();
+  set({ history: [...state.history, ...stored].slice(0, HISTORY_LIMIT) });
 }
 
 export function reset(): void {
-  state = initial();
+  state = { ...initial(), history: state.history };
   for (const listener of listeners) listener();
 }
 

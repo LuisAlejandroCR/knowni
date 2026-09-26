@@ -5,17 +5,23 @@
 
 # Prompt ganador para ElevenLabs MCP
 
-## Qué está construido y probado — 2026-09-25
+## Qué está construido y qué no — 2026-09-26
 
-Lo que se puede afirmar, con su evidencia en `docs/verificacion.md`:
+Lo que se puede afirmar, con su evidencia en `docs/verificacion.md` (cada hash releído en Horizon
+el 2026-09-26):
 
 * **El recorrido corrió en un iPhone físico** (build de desarrollo): la persona eligió Registraduría,
   el emisor real consultó vía Croma su propio documento con consentimiento, firmó la respuesta, y el
   verificador en el mismo teléfono la aceptó: "Respuestas verificadas" (D-86).
 * **La contraparte solo recibe la respuesta mínima**: "Documento vigente: Sí". Ni nombre, ni número,
   ni expediente.
+* **El iPhone firma sus propias transacciones**: la wallet de Cavos se pagó 1 XLM en testnet
+  (`d5041412…`), y la misma cuenta volvió a firmar tras cerrar la app (`1c07f12e…`) — filas 5 y 5b,
+  D-87, D-88.
+* **Un teléfono genera la prueba Groth16**: 9,7 s la primera vez, 1,3 s después, en un moto g54
+  Android, con llave de desarrollo (fila 1).
 * **Stellar testnet, con evidencia real**:
-  * un pago USDC aceptado y verificado (`fb64700b…`);
+  * un pago USDC aceptado y verificado de vuelta por el emisor (`fb64700b…`);
   * compromisos anclados como `MEMO_HASH` y leídos de vuelta desde Horizon (`0dc0fdf4…`, `66bf1b7d…`);
   * un **contrato Soroban desplegado** (`CAGZRVSL…L3O6U`) que **verificó una prueba Groth16 real**
     en la red, y rechazó una señal alterada (`0db7a479…`, D-83).
@@ -26,14 +32,20 @@ Lo que todavía **no** se puede afirmar:
 
 * La contraparte en otro dispositivo: hoy el verificador corre en el mismo teléfono, y la entrega y
   el acuse todavía no viajan entre dos personas.
-* Una transacción originada desde el teléfono: las de testnet salieron del portátil; la wallet Cavos
-  en el teléfono está en integración.
-* La prueba Groth16 generada **en** el teléfono, y una llave de ceremonia en lugar de la de desarrollo.
+* El pago dentro del recorrido: el iPhone firma en el banco `/firma`, no al pedir la emisión.
+* La prueba generada en el iPhone, o la del teléfono verificada en cadena: la del teléfono es
+  Android y local; la que verificó el contrato salió del portátil. Ninguna con llave de ceremonia.
 * Modo avión en un dispositivo físico.
 * SICAAC, listas, RUNT y SIMIT consultados con consentimiento real: solo Registraduría lo fue.
 
-Por eso el pitch dice: **"el recorrido ya corrió en un teléfono con datos reales, y la verificación ya
-dejó evidencia real en Stellar testnet"**, y no "todo ya funciona entre dos personas".
+Por eso el pitch dice: **"el recorrido ya corrió en un teléfono con datos reales, el teléfono ya
+firma en Stellar testnet, y un contrato ya verificó una prueba real"**, y no "todo ya funciona entre
+dos personas".
+
+**Nota sobre el prompt de abajo.** Se escribió el 2026-09-25 y trata como pendientes la
+transacción firmada en el teléfono y la prueba generada en el teléfono. Subestimar no es mentir: si
+la pieza ya se generó, sirve. Si se regenera, esas dos salen de la escena 6 y entran a la 5, y la
+prueba se dice "en un teléfono", no "en el iPhone".
 
 Las dos competencias, separadas:
 
@@ -323,9 +335,12 @@ Ahora se puede enseñar, **en el pitch de Stellar** (grabación real, no generad
 * La revisión: la contraparte recibe solo "Documento vigente: Sí".
 * El verificador en el mismo teléfono: "Respuestas verificadas".
 * La finalidad que sigue al consentimiento y la hora real de compartir.
+* El banco `/firma`: Cavos firma 1 XLM en el iPhone y el hash abre en el Explorer.
 * Código y pruebas que sostienen el comportamiento.
 
-**Nunca muestres tu número de documento en pantalla**: tápalo o usa el campo vacío al grabar.
+El orden y el texto exacto están en [`guion.md`](guion.md), §1.
+
+**Nunca muestres tu número de documento ni tu correo en pantalla**: tápalos al grabar.
 
 Placa breve sobre esa grabación:
 "Real query on a physical iPhone. The counterparty runs on the same device; two-device delivery pending."
@@ -333,9 +348,9 @@ Placa breve sobre esa grabación:
 Para la evidencia on-chain, muestra el Explorer real
 (<https://stellar.expert/explorer/testnet/tx/0db7a4790d02c3277877ef4b9e79b3449004735928cb73b192bc7694003b0191>)
 y di:
-"A Soroban contract on Stellar testnet has already verified a real zero-knowledge proof, and the
-journey has already run on a physical phone with a real registry query. The remaining milestone is a
-second person receiving the answer, and the phone signing its own transaction."
+"A Soroban contract on Stellar testnet has already verified a real zero-knowledge proof, the
+journey has already run on a physical phone with a real registry query, and the phone already signs
+its own testnet payments. The remaining milestone is a second person receiving the answer."
 
 Eso es más potente que exagerar: demuestra que sabes exactamente qué está construido, qué fue
 probado y cuál es el siguiente salto.

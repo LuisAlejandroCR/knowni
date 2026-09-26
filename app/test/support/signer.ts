@@ -11,7 +11,7 @@ const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 export const SIGNER_SEED = new Uint8Array(32).fill(7);
 export const SIGNER_ACCOUNT = accountIdOf(ed25519.getPublicKey(SIGNER_SEED));
 
-// What Privy's raw_hash returns: the bare signature of the transaction hash.
+// What a raw_hash wallet returns: the bare signature of the transaction hash.
 export const signHash = (hashHex: string, seed: Uint8Array = SIGNER_SEED): string =>
   toHex(ed25519.sign(Buffer.from(hashHex, "hex"), seed));
 

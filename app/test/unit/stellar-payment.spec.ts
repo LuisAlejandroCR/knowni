@@ -1,5 +1,5 @@
 // stellar-payment.spec.ts: a quote becomes one signed Stellar transaction.
-// Tests cover Privy's raw-hash contract, submission shape and failures without
+// Tests cover the raw-hash contract (device key), submission shape and failures without
 // reaching a network or depending on a wallet SDK.
 
 import { test } from "node:test";
@@ -17,10 +17,10 @@ const terms: PaymentTerms = {
   paymentRef: "ab".repeat(32),
 };
 
-function privy(signs = true): PayerWalletPort {
+function device(signs = true): PayerWalletPort {
   return {
-    id: "privy",
-    label: "Privy",
+    id: "device",
+    label: "Llave del dispositivo",
     signingMethod: "raw_hash",
     accountId: async () => SIGNER_ACCOUNT,
     connect: async () => SIGNER_ACCOUNT,
@@ -32,7 +32,7 @@ function privy(signs = true): PayerWalletPort {
   };
 }
 
-test("Privy signs the transaction hash and Horizon receives only a signed envelope", async () => {
+test("the device key signs the transaction hash and Horizon receives only a signed envelope", async () => {
   let submitted = "";
   const fetchImpl = (async (url: string | URL | Request, init?: RequestInit) => {
     if (String(url).endsWith(`/accounts/${SIGNER_ACCOUNT}`)) {
@@ -41,7 +41,7 @@ test("Privy signs the transaction hash and Horizon receives only a signed envelo
     submitted = String(init?.body);
     return new Response(JSON.stringify({ hash: "cd".repeat(32) }), { status: 200 });
   }) as typeof fetch;
-  const result = await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: privy(), fetchImpl });
+  const result = await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: device(), fetchImpl });
   assert.deepEqual(result, { status: "paid", txHash: "cd".repeat(32) });
   assert.match(submitted, /^tx=/);
   const xdr = Buffer.from(decodeURIComponent(submitted.slice(3)), "base64");
@@ -54,7 +54,7 @@ test("an expired quote is refused before account lookup or signature", async () 
     terms,
     expiresAt: 100,
     nowUnix: 100,
-    wallet: privy(),
+    wallet: device(),
     fetchImpl: (async () => {
       called = true;
       throw new Error("must not run");
@@ -67,12 +67,12 @@ test("an expired quote is refused before account lookup or signature", async () 
 test("wallet rejection and an unfunded account remain distinct", async () => {
   const account = (async () => new Response(JSON.stringify({ sequence: "7" }), { status: 200 })) as typeof fetch;
   assert.deepEqual(
-    await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: privy(false), fetchImpl: account }),
+    await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: device(false), fetchImpl: account }),
     { status: "failed", reason: "wallet_rejected" },
   );
   const missing = (async () => new Response("{}", { status: 404 })) as typeof fetch;
   assert.deepEqual(
-    await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: privy(), fetchImpl: missing }),
+    await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet: device(), fetchImpl: missing }),
     { status: "failed", reason: "account_not_found" },
   );
 });
@@ -102,7 +102,7 @@ test("Freighter signs the unsigned envelope and cannot swap the transaction", as
 
 test("an invalid payment reference is never sent for signature", async () => {
   let signed = false;
-  const wallet = privy();
+  const wallet = device();
   const guarded = { ...wallet, signTransaction: async () => { signed = true; return "11".repeat(64); } };
   const account = (async () => new Response(JSON.stringify({ sequence: "7" }), { status: 200 })) as typeof fetch;
   assert.deepEqual(
@@ -128,7 +128,7 @@ function submitCounter() {
 
 test("a raw-hash signature from another key is refused before Horizon", async () => {
   const horizon = submitCounter();
-  const wallet = { ...privy(), signTransaction: async (hash: string) => signHash(hash, OTHER_SEED) };
+  const wallet = { ...device(), signTransaction: async (hash: string) => signHash(hash, OTHER_SEED) };
   assert.deepEqual(await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet, fetchImpl: horizon.fetchImpl }), {
     status: "failed",
     reason: "wallet_rejected",
@@ -138,7 +138,7 @@ test("a raw-hash signature from another key is refused before Horizon", async ()
 
 test("a raw-hash signature over a different hash is refused too", async () => {
   const horizon = submitCounter();
-  const wallet = { ...privy(), signTransaction: async () => signHash("00".repeat(32)) };
+  const wallet = { ...device(), signTransaction: async () => signHash("00".repeat(32)) };
   assert.deepEqual(await payQuote({ terms, expiresAt: 200, nowUnix: 100, wallet, fetchImpl: horizon.fetchImpl }), {
     status: "failed",
     reason: "wallet_rejected",
@@ -149,7 +149,7 @@ test("a raw-hash signature over a different hash is refused too", async () => {
 test("a Freighter envelope signed by another account is refused before Horizon", async () => {
   const horizon = submitCounter();
   const wallet: PayerWalletPort = {
-    ...privy(),
+    ...device(),
     id: "freighter",
     signingMethod: "envelope",
     signTransaction: async (unsigned) => signEnvelope(unsigned, OTHER_SEED),
@@ -164,7 +164,7 @@ test("a Freighter envelope signed by another account is refused before Horizon",
 test("a Freighter envelope with the payer's hint but a forged signature is refused", async () => {
   const horizon = submitCounter();
   const wallet: PayerWalletPort = {
-    ...privy(),
+    ...device(),
     id: "freighter",
     signingMethod: "envelope",
     signTransaction: async (unsigned) => {

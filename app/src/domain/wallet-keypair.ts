@@ -1,6 +1,6 @@
 // wallet-keypair.ts: a payer wallet whose key lives on this device.
-// It signs the transaction hash like Privy does, so the payment path is the
-// same one a passkey wallet will take; the seed never leaves this closure.
+// It signs the transaction hash (raw_hash) and payQuote builds the envelope;
+// the seed never leaves this closure.
 
 import { ed25519 } from "@noble/curves/ed25519";
 import { accountIdOf } from "./stellar-payment.ts";

@@ -35,13 +35,13 @@ export function boundToDevice(session: Session, deviceId: string): boolean {
   return session.deviceId === deviceId;
 }
 
-export interface PrivyAuthBridge {
+export interface AuthBridge {
   loginWithPasskey(): Promise<{ readonly userId: string } | undefined>;
   loginWithEmailCode(token: string): Promise<{ readonly userId: string } | undefined>;
   logout(): Promise<void>;
 }
 
-export function createPrivyAuth(bridge: PrivyAuthBridge | undefined): AuthPort {
+export function createSessionAuth(bridge: AuthBridge | undefined): AuthPort {
   const open = (userId: string, factor: Factor, deviceId: string, nowUnix: number): Session => ({
     userId,
     factor,

@@ -1,5 +1,5 @@
-// wallet-keypair.spec.ts: the device key pays through the same raw-hash path
-// as Privy. The signature must verify against the signed transaction's hash,
+// wallet-keypair.spec.ts: the device key pays through the raw-hash path.
+// The signature must verify against the signed transaction's hash,
 // and the seed must not travel anywhere.
 
 import { test } from "node:test";

@@ -1,17 +1,17 @@
 // wallet-port.ts: who signs the payer's transaction, behind one interface.
-// Privy, Freighter over WalletConnect or a key on the device — none of them
+// Cavos, Freighter over WalletConnect or a key on the device — none of them
 // submits to Stellar, so the sending and the balance are shared code.
 
 export interface PayerWalletPort {
-  readonly id: "privy" | "freighter" | "device";
+  readonly id: "cavos" | "freighter" | "device";
   readonly label: string;
   readonly signingMethod: "raw_hash" | "envelope" | "unsupported";
   // Present once connected. A wallet with no account id is a wallet that has
   // not been connected yet, not an empty one.
   accountId(): Promise<string | undefined>;
   connect(): Promise<string | undefined>;
-  // The payload follows signingMethod: a hex transaction hash for Privy or the
-  // device keypair, or an unsigned base64 envelope for Freighter. The caller
+  // The payload follows signingMethod: a hex transaction hash for the
+  // device keypair, or an unsigned base64 envelope for Cavos and Freighter. The caller
   // validates the result.
   signTransaction(unsignedXdr: string): Promise<string | undefined>;
   disconnect(): Promise<void>;
@@ -45,7 +45,7 @@ export async function balancesOf(accountId: string, fetchImpl: typeof fetch = fe
 }
 
 // The adapter that needs no account anywhere: the app's own key, which is what
-// the demo runs on until a Privy app id exists.
+// the demo runs on without any wallet provider.
 export function createDeviceWallet(accountIdValue: string): PayerWalletPort {
   let connected: string | undefined;
   return {

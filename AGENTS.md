@@ -278,9 +278,8 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
 | `KNOWNI_ISSUER_RATE_LIMIT_PER_MINUTE` | Opcional; default 20 por llave |
 | `KNOWNI_SPENT_PAYMENTS_FILE` | ⏳ pendiente — obligatoria si hay tesorería: los pagos ya canjeados. Ver D-37 |
 | `EXPO_PUBLIC_ISSUER_ACCESS_KEY` | ⏳ pendiente — la llave de este app como contraparte, la misma que `KNOWNI_ISSUER_ACCESS_KEYS` reconoce |
-| `EXPO_PUBLIC_PRIVY_APP_ID` | ✅ disponible desde 2026-09-25. Sin ella `privyConfigured()` da `false` y la wallet de passkey no se ofrece. No basta para firmar: ver la siguiente |
-| `EXPO_PUBLIC_PRIVY_RP` | ⏳ pendiente — el dominio HTTPS que sirve los ficheros de asociación de passkey (`apple-app-site-association`, `assetlinks.json`). Vacío, `loginWithPasskey` no tiene contra qué validar. Es el mismo dominio que publica el documento de registro: ver `web/` |
-| `KNOWNI_APPLE_TEAM_ID` | ⏳ pendiente — diez caracteres alfanuméricos de la cuenta de desarrollador de Apple. Solo lo lee `web/build.ts`, para generar el fichero de asociación |
+| `EXPO_PUBLIC_CAVOS_APP_ID` | ✅ disponible desde 2026-09-25. Sin ella `cavosConfigured()` da `false` y `/firma` dice que falta. Reemplaza a Privy — D-85. El dominio de passkey (`knowni.vercel.app`) va en el plugin de `app/app.json`, no en una variable |
+| `KNOWNI_APPLE_TEAM_ID` | ✅ `5462H7MWHB` — diez caracteres alfanuméricos de la cuenta de desarrollador de Apple. Solo lo lee `web/build.ts`, para generar el fichero de asociación |
 | `KNOWNI_ANDROID_CERT_SHA256` | ⏳ pendiente — huella del certificado con el que se **firma el build que se instala**; si hay Play App Signing, la de Play. Solo lo lee `web/build.ts` |
 | `KNOWNI_REGISTRY_SEED` | ⏳ pendiente — firma el documento de registro. Nunca sale de donde se firma: por eso `web/` se construye en local y Vercel no recibe ninguna variable. Ver D-73 |
 | `JEV_VERCEL_API_KEY` | Vercel AI Gateway, modelo `typesafe-ai/jev`. Solo herramienta de desarrollo: ningún dato de un sujeto sale hacia un modelo |

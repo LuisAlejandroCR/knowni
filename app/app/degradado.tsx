@@ -3,6 +3,7 @@
 // cumple": a technical failure must not read as a verdict about a person.
 
 import { Link } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { DEGRADED } from "../src/fixtures.ts";
@@ -30,7 +31,7 @@ export default function Degradado() {
       <TopBar title="Estado de la consulta" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: "#ffe4ad", alignItems: "center", justifyContent: "center", marginTop: 20, marginBottom: 12 }}>
-          <Text style={{ fontSize: 32, fontWeight: "800", color: color.amberInk }}>!</Text>
+          <Ionicons name="time-outline" size={32} color={color.amberInk} />
         </View>
         <Label>Puedes continuar después</Label>
         <Title>Falta una respuesta.{"\n"}No es un rechazo.</Title>

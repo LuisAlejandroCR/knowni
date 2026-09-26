@@ -5,7 +5,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
-import { createEd25519Subtle, installEd25519Subtle } from "../../src/domain/ed25519-subtle.ts";
+import { ed25519 } from "@noble/curves/ed25519";
+import { createEd25519Subtle, drainGeneratedSeeds, installEd25519Subtle } from "../../src/domain/ed25519-subtle.ts";
 
 const real = webcrypto.subtle;
 const shim = createEd25519Subtle();
@@ -56,4 +57,14 @@ test("a crypto object that refuses new properties is replaced, keeping getRandom
   assert.equal(installEd25519Subtle(target), true);
   assert.ok(target.crypto?.subtle !== undefined);
   assert.deepEqual(target.crypto?.getRandomValues?.(new Uint8Array(2)), new Uint8Array([7, 7]));
+});
+
+test("the seeds it made are handed over once, then forgotten", async () => {
+  drainGeneratedSeeds();
+  const pair = await shim.generateKey({ name: "Ed25519" }, false, ["sign"]);
+  const publicRaw = new Uint8Array(await shim.exportKey("raw", pair.publicKey));
+  const drained = drainGeneratedSeeds();
+  assert.equal(drained.length, 1);
+  assert.deepEqual(ed25519.getPublicKey(drained[0]!), publicRaw);
+  assert.equal(drainGeneratedSeeds().length, 0);
 });

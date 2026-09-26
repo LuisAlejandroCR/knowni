@@ -1,9 +1,12 @@
 // cavos-bridge.ts: the only file that touches the Cavos native kit.
-// Signs a person in by email code and hands the wallet port a plain bridge,
-// so the adapter and the payment stay testable under Node.
+// Signs a person in by email code and returns a wallet port whose control seed
+// is sealed to this device, so the same account signs after a restart (D-88).
 
-import { Cavos, NativeCavosAuth, type Identity } from "@cavos/kit/react-native";
-import { CAVOS_APP_ID, tokenFromAuthData, type CavosBridge } from "./domain/wallet-cavos.ts";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Cavos, NativeCavosAuth, NativeDeviceUnwrapKey, type Identity } from "@cavos/kit/react-native";
+import { recallControl, rememberControl, type ControlResult } from "./domain/cavos-control.ts";
+import { drainGeneratedSeeds } from "./domain/ed25519-subtle.ts";
+import { CAVOS_APP_ID, tokenFromAuthData } from "./domain/wallet-cavos.ts";
 
 // Must match the dashboard's Callback URLs exactly.
 export const CAVOS_REDIRECT = "knowni://cavos-auth";
@@ -30,7 +33,15 @@ export function createCavosAuth(): NativeCavosAuth {
   return auth;
 }
 
-export async function connectCavos(identity: Identity, auth: NativeCavosAuth): Promise<CavosBridge> {
+const sealedStore = {
+  get: (key: string) => AsyncStorage.getItem(key),
+  set: (key: string, value: string) => AsyncStorage.setItem(key, value),
+};
+
+// The kit keeps its control key only in IndexedDB, absent on React Native: a
+// new session gets the registered account and no key. The seed it generated
+// the first time is sealed here, and opened on every later session.
+export async function connectCavos(identity: Identity, auth: NativeCavosAuth): Promise<ControlResult> {
   const wallet = await Cavos.connect({
     chain: "stellar",
     network: "testnet",
@@ -40,9 +51,11 @@ export async function connectCavos(identity: Identity, auth: NativeCavosAuth): P
     auth: { getAuthToken: () => loginTokens.get(auth) ?? null } as never,
   });
   if (wallet.chain !== "stellar") throw new Error(`Cavos devolvió una wallet ${wallet.chain}, no Stellar`);
-  return {
-    address: async () => wallet.address,
-    signXdr: (unsignedXdr) => wallet.signXdr(unsignedXdr),
-    logout: () => auth.clearStoredIdentity(),
+  const deps = {
+    key: await NativeDeviceUnwrapKey.loadOrCreate({ keyId: `knowni.cavos.control.${identity.userId}` }),
+    store: sealedStore,
   };
+  const input = { userId: identity.userId, address: wallet.address };
+  const fresh = await rememberControl({ ...input, seeds: drainGeneratedSeeds() }, deps);
+  return fresh.status === "ready" ? fresh : recallControl(input, deps);
 }

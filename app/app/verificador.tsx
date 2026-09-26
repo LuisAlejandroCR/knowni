@@ -8,7 +8,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
-import { requiredFor, verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
+import { receivedAt, requiredFor, verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
 import { color, type as typography } from "../src/theme.ts";
 import { acceptanceStamp } from "../src/domain/provenance.ts";
 
@@ -39,7 +39,7 @@ export default function Verificador() {
         `demo-${revocation}-${policy}`,
         revocation,
         policy,
-        Math.floor(Date.now() / 1000),
+        receivedAt(session.sharedAt, Math.floor(Date.now() / 1000)),
         requiredFor(session.consented),
       ),
     [session, revocation, policy],

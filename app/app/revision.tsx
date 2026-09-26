@@ -7,7 +7,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
-import { useFlow } from "../src/domain/flow.ts";
+import { share, useFlow } from "../src/domain/flow.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
@@ -72,9 +72,14 @@ export default function Revision() {
         <Note>Este resultado no autoriza la firma del contrato ni sustituye sus requisitos legales.</Note>
       </ScrollView>
       <Footer>
-        <Link href="/acuse" asChild>
-          <Button>Compartir con la contraparte de prueba →</Button>
-        </Link>
+        <Button
+          onPress={() => {
+            share();
+            router.push("/acuse");
+          }}
+        >
+          Compartir con la contraparte de prueba →
+        </Button>
       </Footer>
       <DemoStamp>RESPUESTAS FIRMADAS Y VERIFICADAS · ENVÍO REAL BLOQUEADO</DemoStamp>
     </Screen>

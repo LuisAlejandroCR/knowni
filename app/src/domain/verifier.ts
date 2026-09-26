@@ -89,6 +89,13 @@ export function disclosureFor(request: SessionRequest, nowUnix: number): Disclos
   };
 }
 
+// The counterparty receives the answer when it is shared, not when someone
+// opens its screen: judging at the later moment expired answers that arrived
+// in time. Before anything is shared, the moment is now.
+export function receivedAt(sharedAt: number | undefined, nowUnix: number): number {
+  return sharedAt ?? nowUnix;
+}
+
 // The same map the issuer prices with: each consented source answers one
 // predicate, and the counterparty requires exactly those — not a fixed pair
 // the person may never have authorised.

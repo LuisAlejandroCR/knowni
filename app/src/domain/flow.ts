@@ -33,6 +33,8 @@ export interface FlowState {
   readonly sourceStates: readonly SourceState[];
   readonly error: string | undefined;
   readonly busy: boolean;
+  // When the person shared the answer: the moment the counterparty receives it.
+  readonly sharedAt: number | undefined;
 }
 
 const now = () => Math.floor(Date.now() / 1000);
@@ -52,6 +54,7 @@ function initial(): FlowState {
     sourceStates: [],
     error: undefined,
     busy: false,
+    sharedAt: undefined,
   };
 }
 
@@ -85,6 +88,10 @@ export function toggleConsent(source: string): void {
 
 export function goTo(step: Step): void {
   set({ step });
+}
+
+export function share(): void {
+  set({ step: "sent", sharedAt: now() });
 }
 
 export function reset(): void {

@@ -96,6 +96,29 @@ esa identidad necesita otro correo o que Cavos borre su registro. Reinstalar la 
 P-256 y con ella la cuenta. Pruebas: 6 de `cavos-control` (K1–K4) y 1 del polyfill. K2 corrido en el iPhone el
 2026-09-26: tras cerrar la app, la misma cuenta pagó 1 XLM (`verificacion.md`, fila 5b).
 
+### D-90 — Pagar primero, consultar después, dentro del recorrido · 2026-09-26
+
+*Qué se hizo:* `flow.issue()` pasa por `requestPaidIssuance` (`quote → pago → issue`, P9) en vez
+de llamar `/issue` directo. La wallet sale de `app/src/domain/wallet-session.ts`, un almacén en
+memoria que `/firma` llena al conectar Cavos; sin wallet, un puerto vacío hace que `payQuote`
+responda `wallet_not_connected` antes de Horizon y de `/issue`. `requestPaidIssuance` avisa las
+etapas (`signing`, `querying`) y el flujo las expone como `stage`; `paymentTx` vive en el estado del
+flujo, fuera de `results`. La pantalla de autorización pide `/quote` al cambiar el consentimiento
+y el botón dice *Pagar X XLM y consultar* (XLM desde `amountStroops` con `BigInt`); sin wallet lleva
+a `/firma`. Emisión nombra la etapa y revisión muestra el hash con enlace a Stellar Expert. Los
+textos de P6 pasan de `firma.tsx` a `payment-copy.ts` para que ambos los compartan.
+
+*Por qué:* A10 seguía *Parcial* porque el recorrido no producía su propia transacción: el pago
+existía probado (P9) pero ninguna pantalla lo usaba, y la cuenta Cavos vivía solo en el estado de
+`/firma`. Un pago fallido deja a la persona en autorización con "No se consultó ninguna fuente": la
+consulta a Croma es lo que cuesta, y no se gasta sin pago.
+
+*Lo que no cierra:* la cotización del botón es de muestra; `issue()` cotiza otra vez y paga esa, así
+que el precio puede cambiar si el emisor cambia su tarifa entre las dos. La sesión de wallet no
+sobrevive a cerrar la app: hay que volver a entrar en `/firma` (la llave sí sobrevive, D-88). D-89
+queda para la rama `feat/issuer-native-xlm`. Pruebas: 9 de `pay-then-query` (Q2–Q5) y 1 de
+`wallet-session` (Q1). Falta la corrida en el iPhone contra el emisor con cobro nativo.
+
 ### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 
 El proyecto ZK anterior verifica la firma del emisor dentro del circuito. Aquí el emisor publica una raíz sobre

@@ -3,9 +3,12 @@
 // the issuer and to nobody else.
 
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
-import { setConsent, setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+import { refreshQuote, setConsent, setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+import { consentAction } from "../src/domain/payment-text.ts";
+import { useWalletSession } from "../src/domain/wallet-session.ts";
 import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
 import { consentBlocker } from "../src/domain/consent.ts";
 
@@ -23,6 +26,12 @@ export default function Consentimiento() {
   const blocker = consentBlocker({ consented: flow.consented, ...flow.subject });
   const ready = blocker === undefined;
   const allOn = SOURCES.every((source) => flow.consented.includes(source.id));
+  const wallet = useWalletSession();
+  // The price follows the ticks: the button names the amount before anything is paid (J2).
+  useEffect(() => {
+    void refreshQuote();
+  }, [flow.consented]);
+  const action = consentAction({ blocker, price: flow.price, walletConnected: wallet !== undefined });
 
   return (
     <Screen>
@@ -100,11 +109,15 @@ export default function Consentimiento() {
         <Button
           disabled={!ready || flow.busy}
           onPress={() => {
+            if (action.kind === "connect") {
+              router.push("/firma");
+              return;
+            }
             router.push("/emision");
             void issue();
           }}
         >
-          {blocker ?? "Autorizar y consultar"}
+          {action.label}
         </Button>
       </Footer>
       <DemoStamp>CONSULTA REAL A LAS FUENTES AUTORIZADAS</DemoStamp>

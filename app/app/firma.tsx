@@ -12,18 +12,10 @@ import { canCopy, copyText } from "../src/clipboard.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
+import { PAYMENT_REASON } from "../src/domain/payment-text.ts";
 import { cavosConfigured } from "../src/domain/wallet-cavos.ts";
 import { balancesOf, type Balance, type PayerWalletPort } from "../src/domain/wallet-port.ts";
-
-const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], string> = {
-  quote_expired: "El pago venció antes de firmarse.",
-  invalid_terms: "Los términos del pago no se pudieron construir.",
-  wallet_not_connected: "La wallet no está conectada.",
-  account_not_found: "La cuenta no existe en testnet todavía: fondéala primero.",
-  wallet_rejected: "La wallet no firmó, o su firma no es de esta cuenta sobre esta transacción.",
-  horizon_rejected: "Horizon rechazó la transacción firmada.",
-  unreachable: "No se pudo hablar con Horizon.",
-};
+import { setWalletSession } from "../src/domain/wallet-session.ts";
 
 // K3: the account Cavos registered, but its key is not on this phone.
 const CONTROL_MISSING = {
@@ -118,6 +110,8 @@ function CavosSigner() {
       const port = control.wallet;
       const connected = await port.connect();
       setWallet(port);
+      // The journey pays its quote with this same wallet (J1).
+      setWalletSession(port);
       setAccount(connected);
       setStep("wallet");
       if (connected !== undefined) setBalances(await balancesOf(connected));
@@ -254,7 +248,7 @@ function CavosSigner() {
           </Callout>
         )}
         {result?.status === "failed" && (
-          <Callout tone="warning" title={REASON[result.reason]} />
+          <Callout tone="warning" title={PAYMENT_REASON[result.reason]} />
         )}
         <Note>Red de prueba: el XLM aquí no tiene valor real.</Note>
       </ScrollView>

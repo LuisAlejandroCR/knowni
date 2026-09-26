@@ -4,11 +4,12 @@
 
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
 import { Body, Button, Callout, Spinner, Card, DemoStamp, Footer, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { sourceLabel } from "../src/domain/sources.ts";
+import { explorerUrl } from "../src/domain/self-payment.ts";
 
 const SLOW_AFTER_S = 20;
 
@@ -41,13 +42,27 @@ export default function Emision() {
           <Title>Una consulta.{"\n"}Solo lo necesario.</Title>
           <Body>Aún no compartimos nada con la contraparte.</Body>
         </View>
+        {flow.stage === "paying" ? (
+          <Card>
+            <Row icon={<Spinner />} title="Firmando el pago" scope="Hasta que Stellar lo acepte no se consulta ninguna fuente" />
+          </Card>
+        ) : null}
+        {flow.paymentTx === undefined ? null : (
+          <Callout
+            tone="success"
+            title="Pago aceptado por la red."
+            onPressText={() => void Linking.openURL(explorerUrl(flow.paymentTx!))}
+          >
+            {flow.paymentTx}
+          </Callout>
+        )}
         <Card>
           {flow.consented.map((source) => (
             <Row
               key={source}
-              icon={flow.busy ? <Spinner /> : "✓"}
+              icon={flow.stage === "querying" ? <Spinner /> : flow.busy ? "·" : "✓"}
               title={sourceLabel(source)}
-              scope={flow.busy ? "Consultando" : "Consulta terminada"}
+              scope={flow.stage === "querying" ? "Consultando" : flow.busy ? "En espera" : "Consulta terminada"}
             />
           ))}
         </Card>
@@ -71,7 +86,7 @@ export default function Emision() {
       </ScrollView>
       <Footer>
         <Button disabled={flow.busy} loading={flow.busy} onPress={() => router.replace("/revision")}>
-          {flow.busy ? `Esperando al emisor… ${waited} s` : "Ver revisión →"}
+          {flow.stage === "paying" ? "Firmando el pago…" : flow.busy ? `Esperando al emisor… ${waited} s` : "Ver revisión →"}
         </Button>
       </Footer>
       <DemoStamp>EMISIÓN REAL · LAS RESPUESTAS SE VERIFICAN EN ESTE TELÉFONO</DemoStamp>

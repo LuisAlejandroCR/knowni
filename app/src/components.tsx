@@ -288,7 +288,7 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         isSecondary && styles.buttonSecondary,
-        disabled && styles.buttonDisabled,
+        disabled && !isSecondary && styles.buttonDisabled,
         pressed && !disabled && styles.pressed,
       ]}
     >

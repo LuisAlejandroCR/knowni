@@ -11,3 +11,12 @@ export function cleanOtp(text: string): string {
 export function otpComplete(code: string): boolean {
   return code.length === OTP_LENGTH;
 }
+
+// A new code can be asked for 30 s after the last one was sent: long enough
+// for the email to arrive, short enough that a lost one is not a dead end.
+export const RESEND_AFTER_MS = 30_000;
+
+export function resendWaitSeconds(sentAt: number | undefined, now: number): number {
+  if (sentAt === undefined) return 0;
+  return Math.max(0, Math.ceil((sentAt + RESEND_AFTER_MS - now) / 1000));
+}

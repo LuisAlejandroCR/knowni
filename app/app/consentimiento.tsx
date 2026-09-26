@@ -3,9 +3,12 @@
 // the issuer and to nobody else.
 
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
-import { setConsent, setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+import { setConsent, setSubject, toggleConsent, useFlow, issue, loadPrice } from "../src/domain/flow.ts";
+import { xlmFromStroops } from "../src/domain/payment-copy.ts";
+import { useWalletSession } from "../src/domain/wallet-session.ts";
 import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
 import { consentBlocker } from "../src/domain/consent.ts";
 
@@ -23,6 +26,12 @@ export default function Consentimiento() {
   const blocker = consentBlocker({ consented: flow.consented, ...flow.subject });
   const ready = blocker === undefined;
   const allOn = SOURCES.every((source) => flow.consented.includes(source.id));
+  // Pay first, query after: the button names the price /quote gave, and with no
+  // wallet it goes to connect one instead of consulting.
+  const wallet = useWalletSession();
+  useEffect(() => void loadPrice(), [flow.consented]);
+  const price = flow.price?.paymentRequired === true ? flow.price.stroops : undefined;
+  const needsWallet = price !== undefined && wallet === undefined;
 
   return (
     <Screen>
@@ -100,11 +109,17 @@ export default function Consentimiento() {
         <Button
           disabled={!ready || flow.busy}
           onPress={() => {
+            if (needsWallet) return router.push("/firma");
             router.push("/emision");
             void issue();
           }}
         >
-          {blocker ?? "Autorizar y consultar"}
+          {blocker ??
+            (needsWallet
+              ? "Conectar wallet para pagar"
+              : price === undefined
+                ? "Autorizar y consultar"
+                : `Pagar ${xlmFromStroops(price)} XLM y consultar`)}
         </Button>
       </Footer>
       <DemoStamp>CONSULTA REAL A LAS FUENTES AUTORIZADAS</DemoStamp>

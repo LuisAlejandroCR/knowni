@@ -117,8 +117,8 @@ async function call(url: string, init?: RequestInit, fetchImpl: typeof fetch = f
 // The issuer's public key comes from the service's registry endpoint, never
 // from the credential: a credential that carries its own key proves only that
 // somebody had a key.
-export async function fetchIssuer(baseUrl = ISSUER_URL): Promise<IssuerIdentity | undefined> {
-  const response = await call(`${baseUrl}/keys`);
+export async function fetchIssuer(baseUrl = ISSUER_URL, fetchImpl: typeof fetch = fetch): Promise<IssuerIdentity | undefined> {
+  const response = await call(`${baseUrl}/keys`, undefined, fetchImpl);
   if (response === undefined || !response.ok) return undefined;
   const body = (await response.json()) as { issuerId?: string; publicKey?: string };
   if (typeof body.issuerId !== "string" || typeof body.publicKey !== "string") return undefined;
@@ -216,26 +216,43 @@ const SOURCE_PREDICATE: Readonly<Record<string, string>> = {
   vehiculo: "assetStanding",
 };
 
+// What the issuer prices is predicates, not sources: the same mapping for the
+// displayed quote and the one that is paid.
+export const predicatesOf = (consented: readonly string[]): readonly string[] =>
+  consented.map((source) => SOURCE_PREDICATE[source]).filter((predicate): predicate is string => predicate !== undefined);
+
 export type PaidIssuanceOutcome =
-  | { readonly status: "issued"; readonly results: AttestedResults; readonly paymentTx?: string }
+  | {
+      readonly status: "issued";
+      readonly results: AttestedResults;
+      readonly sourceStates: readonly SourceState[];
+      readonly paymentTx?: string;
+    }
   | { readonly status: "failed"; readonly stage: "quote" | "payment" | "issuance"; readonly reason: string };
+
+export interface PaidIssuanceOptions {
+  readonly baseUrl?: string;
+  readonly horizonUrl?: string;
+  readonly fetchImpl?: typeof fetch;
+  // Told when the payment starts and when the sources start, so a screen can
+  // say which of the two it is waiting on.
+  readonly onStage?: (stage: "signing" | "querying", paymentTx?: string) => void;
+}
 
 // The payer-facing coordinator has one ordering: quote, pay if required, then
 // issue. A failed signature or chain submission can never spend a Croma call.
 export async function requestPaidIssuance(
   input: IssuanceInput,
   wallet: PayerWalletPort,
-  options: { readonly baseUrl?: string; readonly horizonUrl?: string; readonly fetchImpl?: typeof fetch } = {},
+  options: PaidIssuanceOptions = {},
 ): Promise<PaidIssuanceOutcome> {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const predicates = input.consented
-    .map((source) => SOURCE_PREDICATE[source])
-    .filter((predicate): predicate is string => predicate !== undefined);
-  const quoted = await requestQuote(input.request, predicates, options.baseUrl ?? ISSUER_URL, fetchImpl);
+  const quoted = await requestQuote(input.request, predicatesOf(input.consented), options.baseUrl ?? ISSUER_URL, fetchImpl);
   if (quoted.status === "failed") return { status: "failed", stage: "quote", reason: quoted.reason };
 
   let paymentTx: string | undefined;
   if (quoted.paymentRequired) {
+    options.onStage?.("signing");
     const paid = await payQuote({
       terms: quoted.payment!,
       expiresAt: quoted.quote.expiresAt,
@@ -247,6 +264,7 @@ export async function requestPaidIssuance(
     paymentTx = paid.txHash;
   }
 
+  options.onStage?.("querying", paymentTx);
   const issued = await requestIssuance({ ...input, paymentTx }, options.baseUrl ?? ISSUER_URL, fetchImpl);
   return issued.status === "issued"
     ? { ...issued, paymentTx }

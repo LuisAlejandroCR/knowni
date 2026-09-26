@@ -1,7 +1,8 @@
 // firma.tsx: a real device signature on testnet — email code, the Cavos
-// Stellar wallet, and 1 XLM paid to itself. A bench for the physical-device
-// run, outside the journey; the transaction hash on screen is the evidence.
+// Stellar wallet, and 1 XLM paid to itself. The wallet connected here is the
+// one the journey pays the issuer with (wallet-session.ts).
 
+import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Linking, Platform, RefreshControl, ScrollView, TextInput } from "react-native";
 import { cleanOtp, looksLikeEmail, otpComplete, resendWaitSeconds } from "../src/domain/otp.ts";
@@ -12,18 +13,10 @@ import { canCopy, copyText } from "../src/clipboard.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
+import { PAYMENT_REASON as REASON } from "../src/domain/payment-copy.ts";
 import { cavosConfigured } from "../src/domain/wallet-cavos.ts";
 import { balancesOf, type Balance, type PayerWalletPort } from "../src/domain/wallet-port.ts";
-
-const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], string> = {
-  quote_expired: "El pago venció antes de firmarse.",
-  invalid_terms: "Los términos del pago no se pudieron construir.",
-  wallet_not_connected: "La wallet no está conectada.",
-  account_not_found: "La cuenta no existe en testnet todavía: fondéala primero.",
-  wallet_rejected: "La wallet no firmó, o su firma no es de esta cuenta sobre esta transacción.",
-  horizon_rejected: "Horizon rechazó la transacción firmada.",
-  unreachable: "No se pudo hablar con Horizon.",
-};
+import { connectWalletSession } from "../src/domain/wallet-session.ts";
 
 // K3: the account Cavos registered, but its key is not on this phone.
 const CONTROL_MISSING = {
@@ -119,6 +112,7 @@ function CavosSigner() {
       const connected = await port.connect();
       setWallet(port);
       setAccount(connected);
+      if (connected !== undefined) connectWalletSession(port, connected);
       setStep("wallet");
       if (connected !== undefined) setBalances(await balancesOf(connected));
     });
@@ -284,6 +278,11 @@ function CavosSigner() {
         )}
         {step === "wallet" && funded && (
           <Button onPress={() => void pay()} disabled={busy} loading={busy}>{busy ? "Firmando…" : "Pagarme 1 XLM"}</Button>
+        )}
+        {step === "wallet" && funded && router.canGoBack() && (
+          <Button tone="secondary" onPress={() => router.back()} disabled={busy}>
+            Volver a tu autorización
+          </Button>
         )}
       </Footer>
       <DemoStamp>STELLAR TESTNET</DemoStamp>

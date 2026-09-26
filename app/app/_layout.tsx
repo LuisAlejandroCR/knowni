@@ -21,7 +21,14 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#fafbf7" } }} />
+      <Stack screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "#fafbf7" },
+          // Slide in from the side and swipe back from anywhere on the screen, not just the edge.
+          animation: "slide_from_right",
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
+        }} />
     </SafeAreaProvider>
   );
 }

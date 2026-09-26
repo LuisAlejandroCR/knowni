@@ -7,6 +7,7 @@ import { ActivityIndicator, InputAccessoryView, Keyboard, Platform, Pressable, S
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 import { router, usePathname } from "expo-router";
+import { lightTap } from "./haptics.ts";
 
 export function Screen({ children }: { readonly children: ReactNode }) {
   return <SafeAreaView style={styles.screen}>{children}</SafeAreaView>;
@@ -227,7 +228,14 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      onPress={disabled ? undefined : onPress}
+      onPress={
+        disabled || onPress === undefined
+          ? undefined
+          : () => {
+              if (!isSecondary) void lightTap();
+              onPress();
+            }
+      }
       style={({ pressed }) => [
         styles.button,
         isSecondary && styles.buttonSecondary,

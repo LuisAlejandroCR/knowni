@@ -4,7 +4,7 @@
 
 import { Link, router } from "expo-router";
 import { Alert, ScrollView, Text, View } from "react-native";
-import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { BackButton, Badge, Body, Button, Callout, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { decline, useFlow } from "../src/domain/flow.ts";
@@ -15,6 +15,8 @@ import { type as typography } from "../src/theme.ts";
 export default function Solicitud() {
   const session = useFlow();
   const now = useNowUnix();
+  // The signed expiry is checked again here: a request read at launch can run out on screen.
+  const expired = now >= session.request.expiresAt;
 
   // A request that did not verify is not shown as a question: the screen says
   // what happened and offers no way to answer it.
@@ -61,10 +63,15 @@ export default function Solicitud() {
             />
           ))}
         </Card>
+        {expired ? (
+          <Callout tone="warning" title="Esta solicitud venció">
+            Ya no se puede responder. Pide a la contraparte que envíe una nueva.
+          </Callout>
+        ) : null}
       </ScrollView>
       <Footer>
         <Link href="/consentimiento" asChild>
-          <Button>Continuar</Button>
+          <Button disabled={expired}>{expired ? "Solicitud vencida" : "Continuar"}</Button>
         </Link>
         <Button
           tone="secondary"

@@ -30,7 +30,7 @@ export default function Acuse() {
         <View style={{ height: 85, alignItems: "center", justifyContent: "center" }}>
           <View style={{ width: 80, height: 80, borderRadius: 26, backgroundColor: color.limeSoft, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-9deg" }] }}>
             <View style={{ transform: [{ rotate: "9deg" }] }}>
-              <Ionicons name="paper-plane" size={38} color="#244e40" />
+              <Ionicons name="paper-plane" size={38} color={color.deep} />
             </View>
           </View>
         </View>

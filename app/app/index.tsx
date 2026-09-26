@@ -29,12 +29,12 @@ export default function Home() {
         <Title>Demuestra más.{"\n"}Revela menos.</Title>
         <Body>Demuestra que calificas para firmar, sin decir quién eres.</Body>
         <Card tone="deep">
-          <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: "#dcedb0", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+          <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: color.lime, alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
             <Ionicons name="shield-checkmark" size={32} color={color.deep} />
           </View>
-          <Text style={{ ...type.label, color: "#ccdbce" }}>TUS CREDENCIALES</Text>
-          <Text style={{ fontSize: 23, fontWeight: "700", color: "#fff", marginTop: 4 }}>Respuestas bajo{"\n"}tu control.</Text>
-          <Text style={{ ...type.body, color: "#ccdbce", marginTop: 8 }}>Revisa cada solicitud antes de responder.</Text>
+          <Text style={{ ...type.label, color: color.onDeepSoft }}>TUS CREDENCIALES</Text>
+          <Text style={{ fontSize: 23, fontWeight: "700", color: color.onDeep, marginTop: 4 }}>Respuestas bajo{"\n"}tu control.</Text>
+          <Text style={{ ...type.body, color: color.onDeepSoft, marginTop: 8 }}>Revisa cada solicitud antes de responder.</Text>
         </Card>
         {shared ? (
           <>

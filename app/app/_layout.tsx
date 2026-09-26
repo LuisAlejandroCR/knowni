@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { installPlatformCrypto } from "../src/domain/platform.ts";
 import { createDeviceNullifierStore } from "../src/domain/nullifier-store.ts";
 import { hydrateLedger } from "../src/domain/verifier.ts";
+import { color } from "../src/theme.ts";
 
 installPlatformCrypto();
 
@@ -20,10 +21,10 @@ void hydrateLedger(createDeviceNullifierStore(), (error) => {
 export default function Layout() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style="auto" />
       <Stack screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: "#fafbf7" },
+          contentStyle: { backgroundColor: color.canvas },
           // Slide in from the side and swipe back from anywhere on the screen, not just the edge.
           animation: "slide_from_right",
           gestureEnabled: true,

@@ -340,6 +340,51 @@ def plan():
     return ok
 
 
+def spoken_len(text):
+    """Characters as the voice says them: "1,2" is read "uno coma dos"."""
+    return len(re.sub(r"\d+,\d+", "uno coma dos", text))
+
+
+def pick_cuts(gaps, lead, tail, lengths, bonus=0.1):
+    """Chooses one pause per line break so each piece lasts what its line's length predicts.
+
+    A pause inside a line (after a period or a colon) can be as long as one between lines, so the
+    longest pauses alone split the wrong places. A dynamic program scores every piece by how far its
+    duration is from its share of the characters, relative to that share, and prefers longer pauses
+    as breaks when two choices score alike.
+    """
+    k, n_gaps = len(lengths) - 1, len(gaps)
+    if n_gaps < k:
+        return None
+    # Speaking rate over the pieces, counting the pauses inside lines as part of the line.
+    breaks = sorted((e - s for s, e in gaps), reverse=True)[:k]
+    rate = sum(lengths) / (tail - lead - sum(breaks))
+    ends = [lead] + [e for _, e in gaps]    # where a piece can start
+    starts = [s for s, _ in gaps] + [tail]  # where a piece can end
+
+    def cost(line, i, j):  # piece `line` runs from after cut i-1 to before cut j
+        span, want = starts[j] - ends[i], lengths[line] / rate
+        return ((span - want) / want) ** 2 - (bonus * (gaps[j][1] - gaps[j][0]) if j < n_gaps else 0)
+
+    inf = float("inf")
+    # best[line][j]: lowest cost for lines 0..line with line ending at cut j (j == n_gaps is the tail).
+    best = [[inf] * (n_gaps + 1) for _ in lengths]
+    back = [[-1] * (n_gaps + 1) for _ in lengths]
+    for j in range(n_gaps):
+        best[0][j] = cost(0, 0, j)
+    for line in range(1, k + 1):
+        for j in [n_gaps] if line == k else range(line, n_gaps):
+            for i in range(line - 1, j):
+                c = best[line - 1][i] + cost(line, i + 1, j)
+                if c < best[line][j]:
+                    best[line][j], back[line][j] = c, i
+    picked, j = [], n_gaps
+    for line in range(k, 0, -1):
+        j = back[line][j]
+        picked.append(gaps[j])
+    return picked[::-1]
+
+
 def split_voice():
     """Cuts voz/narracion.* at its longest pauses into one file per part, in timeline order."""
     parts = [TITLE_CARD] + SEGMENTS + [END_CARD]
@@ -355,17 +400,22 @@ def split_voice():
     gaps = list(zip(starts, ends + [total] * (len(starts) - len(ends))))
     lead = gaps.pop(0)[1] if gaps and gaps[0][0] < 0.3 else 0.0
     tail = gaps.pop()[0] if gaps and gaps[-1][1] > total - 0.3 else total
-    # The pause between two lines is longer than a pause inside one: keep the longest ones.
-    cuts = sorted(sorted(gaps, key=lambda g: g[1] - g[0], reverse=True)[:len(parts) - 1])
-    if len(cuts) < len(parts) - 1:
-        sys.exit(f"found {len(cuts) + 1} lines in the narration, expected {len(parts)}")
+    cuts = pick_cuts(gaps, lead, tail, [spoken_len(seg.get("voice", "")) for seg in parts])
+    if cuts is None:
+        sys.exit(f"found {len(gaps) + 1} lines in the narration, expected {len(parts)}")
     bounds = [lead] + [x for g in cuts for x in g] + [tail]
+    lengths = [spoken_len(seg.get("voice", "")) for seg in parts]
+    spans = [bounds[2 * n + 1] - bounds[2 * n] for n in range(len(parts))]
+    rate = sum(lengths) / sum(spans)
     for n, seg in enumerate(parts):
         a, b = max(bounds[2 * n] - 0.05, 0), min(bounds[2 * n + 1] + 0.05, total)
+        ratio = spans[n] * rate / lengths[n]
+        flag = "ok" if 0.6 <= ratio <= 1.6 else "??"  # ?? = far from its line's length: listen to it
         out = os.path.join(VOICE, f"{seg['name']}.wav")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", src, "-ss", f"{a:.3f}", "-to", f"{b:.3f}",
                         "-ar", "48000", out], check=True)
-        print(f"{seg['name']:<10} {b - a:5.2f}s  {seg.get('voice', '')}")
+        print(f"{seg['name']:<10} {b - a:5.2f}s {flag}  {seg.get('voice', '')}")
+    print("listen to two or three parts before rendering: the cut follows pauses and line length")
 
 
 def main():

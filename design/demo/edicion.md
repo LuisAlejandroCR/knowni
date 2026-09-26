@@ -80,10 +80,13 @@ estéreo a 48 kHz, y el cuadro sostenido de `conectar` conserva el desenfoque.
 
 1. **Voz**: generar con Nayla las 16 líneas de `guion.md` §1, una por archivo
    (`knowni-media/demo/voz/<segmento>.mp3`) o todas en un audio, `voz/narracion.mp3`. El audio
-   único se corta con `python design/demo/build_demo.py --split-voice`: toma las 15 pausas más
-   largas como límites entre líneas, escribe `voz/<segmento>.wav` e imprime cada trozo con su
-   frase para comprobar que coinciden. Probado con una narración sintética de 63 s y una pausa
-   dentro de la línea de `consulta`: 16 trozos correctos. La voz dura menos que el video (1:03
+   único se corta con `python design/demo/build_demo.py --split-voice`, escribe
+   `voz/<segmento>.wav` e imprime cada trozo con su frase y `ok` o `??`. Elegir las 15 pausas más
+   largas falló con la narración real (2026-09-26): ElevenLabs pausa tras un punto o dos puntos
+   dentro de una línea tanto como entre líneas. Ahora un programa dinámico elige la pausa de cada
+   corte para que cada trozo dure lo que predice el largo de su frase ("1,2" cuenta como "uno coma
+   dos"). En 500 narraciones sintéticas con ritmo de 14 a 19 caracteres por segundo y pausas
+   internas de hasta 1,2 s —más largas que las de entre líneas—, 496 salieron exactas. La voz dura menos que el video (1:03
    contra 1:36) y así debe ser: cada frase empieza con su pantalla y el resto es imagen.
 2. **Render local y revisión** (solo en la máquina del titular):
    `python design/demo/build_demo.py`, luego extraer un cuadro cada 0,25 s de `codigo`, `conectar`,

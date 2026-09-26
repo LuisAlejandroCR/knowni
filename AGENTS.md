@@ -315,9 +315,10 @@ Viven en `.env` (gitignored). Documentar el **nombre**, nunca el contenido.
   al agente a commitear y pushear **a la rama de trabajo**. A `main` nunca, y ningún push sin la
   verificación de cierre en verde.
 - El repositorio es **público** (comprobado en GitHub el 2026-09-26). Se versionan `AGENTS.md`, `CLAUDE.md`, `LEARNINGS.md`, `README.md`
-  y solo cuatro documentos — `docs/plan.md`, `docs/memoria.md`, `docs/verificacion.md` y
-  `docs/CROMA.md` — porque son los que un agente necesita para trabajar. El resto de `docs/` está
-  en el `.gitignore` y vive en local, y sigue así con el repositorio público.
+  y solo cinco documentos — `docs/plan.md`, `docs/memoria.md`, `docs/verificacion.md`,
+  `docs/CROMA.md` y `docs/wallets.md` (la app lo cita al usuario) — porque son los que un agente
+  necesita para trabajar. El resto de `docs/` y los `.md` de `design/demo/` están en el `.gitignore`
+  y viven en local, y siguen así con el repositorio público.
 
 ## Herencia — qué viene de dónde
 

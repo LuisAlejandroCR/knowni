@@ -21,9 +21,10 @@ docs/*
 !docs/memoria.md
 !docs/verificacion.md
 !docs/CROMA.md
-!docs/handoff.md
 !docs/wallets.md
-!docs/cavos-kit-report.md
+
+# design/demo/: guion y prompt del video — material de entrega, vive en local.
+design/demo/*.md
 
 # soroban test snapshots — generados en cada corrida de `cargo test`
 contracts/**/test_snapshots/

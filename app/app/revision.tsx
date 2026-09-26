@@ -3,8 +3,8 @@
 // screen the whole design exists for.
 
 import { Link, router } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { ScrollView, Text, View } from "react-native";
+import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
 import { share, useFlow } from "../src/domain/flow.ts";
@@ -37,7 +37,7 @@ export default function Revision() {
 
   return (
     <Screen>
-      <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Antes de compartir" />
+      <TopBar left={<BackButton />} title="Antes de compartir" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Steps current={4} />
         <Title>Esto es lo que{"\n"}recibirán.</Title>
@@ -46,7 +46,7 @@ export default function Revision() {
           {answers.map((answer) => (
             <Row
               key={answer.predicate}
-              icon={<Text>{answer.value === "unavailable" ? "!" : "✓"}</Text>}
+              icon={answer.value === "unavailable" ? "!" : "✓"}
               title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
               scope={answer.doesNotEstimate}
             />

@@ -37,14 +37,14 @@ export default function Degradado() {
         <Body>La fuente del vehículo no respondió. No sabemos el resultado.</Body>
         <Card tone="amber">
           {missing.length === 0 ? (
-            <Row icon={<Text>!</Text>} title={DEGRADED.source} scope={DEGRADED.note} />
+            <Row icon="!" title={DEGRADED.source} scope={DEGRADED.note} />
           ) : (
             missing.map((answer) => {
               const state = stateOf(answer.predicate);
               return (
                 <Row
                   key={answer.predicate}
-                  icon={<Text>!</Text>}
+                  icon="!"
                   title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
                   scope={state === undefined ? answer.doesNotEstimate : sourceStateText(state)}
                 />
@@ -56,7 +56,7 @@ export default function Degradado() {
         {answered.map((answer) => (
           <Row
             key={answer.predicate}
-            icon={<Text>✓</Text>}
+            icon="✓"
             title={PREDICATE_LABEL[answer.predicate] ?? answer.predicate}
             scope="Se conserva si sigue vigente"
           />

@@ -79,7 +79,7 @@ duración real y falla si una línea no cabe.
 |---|---|---|---|---|
 | 0:00–0:04 | `titulo` | Tarjeta: *knowni · Stellar testnet · 26/09/2026* | "Una verificación real, en un iPhone." | fila 6 |
 | 0:04–0:09 | `intro` | Las tres láminas de introducción | "Para firmar un contrato no hace falta entregar tu expediente." | — |
-| 0:09–0:14 | `solicitud` | Nueva solicitud, vence en 10 min; zoom a la tarjeta | "Llega una solicitud firmada, y vence." | README, *Solicitud firmada y anti-replay* |
+| 0:09–0:14 | `solicitud` | Nueva solicitud, vence en 10 min; zoom a la tarjeta | "Llega una solicitud firmada, y vence." | `core/src/session.ts`, `app/src/domain/expiry.ts`; D-86 |
 | 0:14–0:19 | `autoriza` | Fuentes, tipo de documento; campo difuminado | "Tú eliges qué fuentes se consultan." | D-86 |
 | 0:19–0:24 | `conectar` | "Conectar wallet para pagar" | "Sin pago, no hay consulta." | D-90, fila 6 |
 | 0:24–0:29 | `correo` | Wallet: "Entra con tu correo", campo vacío | "Entras con tu correo." | fila 5 |

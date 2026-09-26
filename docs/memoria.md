@@ -62,6 +62,10 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 
 ## Bitácora reciente
 
+- **2026-09-26 — El README se reduce a lo que un jurado necesita.** Qué corre hoy (el recorrido
+  pagado en el iPhone, D-90), la evidencia en testnet con sus hashes, qué falta, la estructura y
+  cómo correrlo. El razonamiento de fuentes (PILA, antecedentes, perfiles) queda en `docs/plan.md` y
+  en esta memoria; el README deja de decir que el pago vive fuera del recorrido.
 - **2026-09-26 — Tomas reales en la película del pitch.** `design/demo/insert_demo.py` pone la
   grabación del iPhone dentro de la película generada, en cuatro ventanas elegidas por el titular,
   como un teléfono rotulado *App real*: lo generado y lo grabado se distinguen a la vista. Escribe un

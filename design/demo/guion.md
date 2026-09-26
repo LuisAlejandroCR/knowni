@@ -13,6 +13,7 @@ obligatorios, y este archivo cubre dos.
 | Repositorio público con README | ⏳ el repositorio sigue **privado** | decisión pendiente del titular |
 | Video demo del producto corriendo | ⏳ por grabar | este guion, §1 |
 | Video pitch, máximo 3 minutos | ⏳ por grabar | este guion, §2 |
+| Pieza ElevenLabs (Challenge 3) | ✅ renderizada 2026-09-26, sin publicar | [§3](#3--pieza-elevenlabs--challenge-3) |
 | Evidencia on-chain en testnet | ✅ listo | [`0dc0fdf4…f8161`](https://stellar.expert/explorer/testnet/tx/0dc0fdf46ebffc72257b068fe0022a6b732c6f4b9dda5503aaa8b005f18f8161) |
 
 Los criterios pesan así: funcionalidad y testnet 30 %, integración Stellar 25 %, originalidad 20 %,
@@ -94,3 +95,24 @@ expedientes.
 2. Grabar los dos videos con este guion.
 3. Confirmar que el historial de git refleja a los contribuyentes declarados.
 4. `LICENSE` ya está en la raíz; las bases exigen un archivo de licencia visible.
+
+## §3 — Pieza ElevenLabs · Challenge 3
+
+Hecha con el prompt de `elevenlabs-mcp.md`, solo con el MCP de ElevenLabs: 8 escenas Kling 3 Pro,
+voz Nayla (eleven_v3), música eleven_music_v2 y 4 efectos. El montaje (corte, subtítulos, títulos,
+mezcla) es ffmpeg sin IA. Flujo: <https://elevenlabs.io/app/flows/JGy7DCEAaO64sI1f7VlG>.
+
+Los archivos pesan y **no entran al repositorio**; viven en `knowni-media/elevenlabs/out/`, al lado
+del clon, junto con `build.py`, que los reconstruye desde los clips:
+
+| Entregable | Archivo |
+|---|---|
+| Película 16:9, 1080p, 84,9 s, subtítulos EN quemados | `knowni-16x9-subs.mp4` |
+| Versión limpia sin subtítulos | `knowni-16x9-clean.mp4` |
+| Versión social 9:16 | `knowni-9x16-subs.mp4` |
+| Corte de 30 s (escenas 2, 4 y 8) | `knowni-30s.mp4` |
+| SRT en inglés · transcripción en español | `knowni-en.srt` · `knowni-transcripcion-es.txt` |
+| Stems WAV: voz, música, efectos | `stem-voice.wav` · `stem-music.wav` · `stem-sfx.wav` |
+
+Diferencias con el prompt: 1080p y no 4K; la voz va acelerada 1,12× para caber en 85 s; la placa
+del carro de la escena 3 va difuminada porque el modelo le inventó caracteres.

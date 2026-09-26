@@ -45,6 +45,13 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 
 ## Bitácora reciente
 
+- **2026-09-26 — El guion del demo se graba en el iPhone.** `design/demo/guion.md` §1 deja de ser
+  terminal y pantallas de diseño: es la app corriendo en el iPhone, de la solicitud al Explorer, y
+  cada frase cita su fila de `verificacion.md`. La regla sigue siendo la misma —no se dice lo que
+  no corrió—; lo que cambió es cuánto corre: iPhone con emisor real (D-86), pagos firmados con Cavos
+  (D-87, D-88), Groth16 en Android y un contrato desplegado que verificó una prueba real (D-83). El
+  README, `elevenlabs-mcp.md` y la lista de lo que el repositorio no afirma se alinean a eso. Los
+  seis hashes de testnet se releyeron en Horizon: `successful` en todos.
 - **2026-09-25 — El pitch se vuelve una historia visual.** El origen es Colombia
   porque allí vive el primer caso verificable; LATAM es la siguiente expansión y
   global es la arquitectura, no una afirmación de despliegue actual. Dos escenas

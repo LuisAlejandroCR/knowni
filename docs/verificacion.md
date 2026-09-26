@@ -205,12 +205,18 @@ una prueba ZK. Siguen abiertos y el README lo dice.
 
 ## Afirmaciones que este repositorio **no** hace
 
-- Ningún tiempo de prueba, conteo de restricciones ni fee medido.
-- Ninguna prueba verificada on-chain.
-- Ninguna integración real con Croma, Registraduría, PILA o DataCrédito.
+*Revisada el 2026-09-26: tres afirmaciones de esta lista dejaron de ser ciertas y se reescriben con
+su evidencia arriba.*
+
+- Ningún tiempo de prueba en un iPhone ni con llave de ceremonia. El de un Android sí está medido
+  (fila 1 de *Corrida en teléfono físico*), igual que restricciones y fees.
+- Ninguna prueba generada en un teléfono y verificada en cadena. La prueba que verificó el contrato
+  desplegado salió del portátil (D-83).
+- Ninguna integración real con PILA o DataCrédito. Con Croma sí, y sobre la Registraduría del propio
+  titular, con su consentimiento (D-86).
 - Investigación documental 2026-09-20: Croma, Truora, Incode, Belvo, operadores PILA, RUAF,
   ADRES/BDUA, UGPP y Finanzas Abiertas se clasificaron en `plan.md`. Esto no sustituye una llamada
   real, un contrato comercial ni la comprobación de cobertura por endpoint.
-- Ninguna ejecución en un dispositivo físico.
+- Ninguna entrega entre dos dispositivos: la contraparte corre en el mismo teléfono (D-86).
 - Ninguna afirmación de cumplimiento normativo. `COLOMBIA.md` describe el marco; no es asesoría
   legal ni un concepto.

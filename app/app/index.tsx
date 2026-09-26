@@ -16,6 +16,7 @@ export default function Home() {
   const valid = flow.requestState.status === "ok";
   // Once answered, the request is no longer "pending": home says what was done.
   const shared = flow.sharedAt !== undefined;
+  const declined = !shared && flow.declinedAt !== undefined;
 
   return (
     <Screen>
@@ -46,8 +47,22 @@ export default function Home() {
             </Card>
           </>
         ) : null}
-        {shared ? null : <Label>Pendiente</Label>}
-        {shared ? null : (
+        {declined ? (
+          <>
+            <Label>Rechazada</Label>
+            <Card>
+              <Row
+                icon="✕"
+                title="Rechazaste la solicitud"
+                scope={`${purposeLabel(flow.request.purpose)} · no se envió nada`}
+                trailing="›"
+                onPress={() => router.push("/solicitud")}
+              />
+            </Card>
+          </>
+        ) : null}
+        {shared || declined ? null : <Label>Pendiente</Label>}
+        {shared || declined ? null : (
           <Card>
             <Row
               icon="↗"
@@ -64,7 +79,7 @@ export default function Home() {
         {shared ? (
           <Button tone="secondary" onPress={() => router.push("/acuse")}>Ver lo que compartiste</Button>
         ) : (
-          <Button onPress={() => router.push("/solicitud")}>Revisar solicitud →</Button>
+          <Button onPress={() => router.push("/solicitud")}>{declined ? "Volver a verla" : "Revisar solicitud →"}</Button>
         )}
       </Footer>
       <TabBar />

@@ -5,7 +5,7 @@
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { Body, Button, Spinner, Card, DemoStamp, Footer, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { sourceLabel } from "../src/domain/sources.ts";
@@ -33,7 +33,7 @@ export default function Emision() {
           {flow.consented.map((source) => (
             <Row
               key={source}
-              icon={flow.busy ? "◌" : "✓"}
+              icon={flow.busy ? <Spinner /> : "✓"}
               title={sourceLabel(source)}
               scope={flow.busy ? "Consultando" : "Consulta terminada"}
             />
@@ -53,7 +53,7 @@ export default function Emision() {
         <Note>Si una fuente no responde, verás “Sin respuesta”, nunca “No cumple”.</Note>
       </ScrollView>
       <Footer>
-        <Button disabled={flow.busy} onPress={() => router.replace("/revision")}>
+        <Button disabled={flow.busy} loading={flow.busy} onPress={() => router.replace("/revision")}>
           {flow.busy ? "Esperando al emisor…" : "Ver revisión →"}
         </Button>
       </Footer>

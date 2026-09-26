@@ -3,7 +3,7 @@
 // stay one product rather than eight interpretations of it.
 
 import type { ReactNode } from "react";
-import { InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 import { router, usePathname } from "expo-router";
@@ -12,10 +12,14 @@ export function Screen({ children }: { readonly children: ReactNode }) {
   return <SafeAreaView style={styles.screen}>{children}</SafeAreaView>;
 }
 
+// Every screen off the tab roots gets a way back by default: a screen that
+// cannot be left except by finishing it is a trap.
 export function TopBar({ left, title, right }: { left?: ReactNode; title?: string; right?: ReactNode }) {
+  const path = usePathname();
+  const isRoot = TABS.some((tab) => tab.href === path);
   return (
     <View style={styles.topBar}>
-      <View style={styles.topSide}>{left}</View>
+      <View style={styles.topSide}>{left ?? (isRoot ? null : <BackButton />)}</View>
       {title === undefined ? null : <Text accessibilityRole="header" numberOfLines={1} style={styles.topTitle}>{title}</Text>}
       <View style={[styles.topSide, styles.topRight]}>{right}</View>
     </View>
@@ -151,6 +155,52 @@ const ICON_TONE: Record<string, { box: object; text: object } | undefined> = {
   "□": { box: { backgroundColor: color.card, borderWidth: 2, borderColor: "#b8c4b2" }, text: {} },
 };
 
+// A result the person has to read: success, warning or plain information, each
+// with its own colour and glyph. Bare text inside a tinted card was unreadable
+// on the dark one and easy to miss on the amber one.
+const CALLOUT = {
+  success: { glyph: "✓", box: { backgroundColor: color.deep }, badge: { backgroundColor: color.lime }, title: { color: "#ffffff" }, text: { color: "#ccdbce" } },
+  warning: { glyph: "!", box: { backgroundColor: color.amber, borderWidth: 1, borderColor: color.amberLine }, badge: { backgroundColor: "#ffe4ad" }, title: { color: color.amberInk }, text: { color: color.amberInk } },
+} as const;
+
+export function Callout({
+  tone,
+  title,
+  children,
+  onPressText,
+}: {
+  tone: keyof typeof CALLOUT;
+  title: string;
+  children?: ReactNode;
+  onPressText?: () => void;
+}) {
+  const look = CALLOUT[tone];
+  return (
+    <View accessibilityRole={tone === "warning" ? "alert" : undefined} style={[styles.callout, look.box]}>
+      <View style={[styles.calloutBadge, look.badge]}>
+        <Text style={[styles.iconText, { color: tone === "success" ? color.deep : color.amberInk }]}>{look.glyph}</Text>
+      </View>
+      <View style={styles.rowBody}>
+        <Text style={[styles.calloutTitle, look.title]}>{title}</Text>
+        {children === undefined ? null : (
+          <Text
+            onPress={onPressText}
+            accessibilityRole={onPressText === undefined ? undefined : "link"}
+            style={[styles.calloutText, look.text, onPressText !== undefined && styles.link]}
+          >
+            {children}
+          </Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
+// For a row whose state is "still working": motion says it is alive.
+export function Spinner() {
+  return <ActivityIndicator size="small" color={color.deep} />;
+}
+
 export function Note({ children }: { readonly children: ReactNode }) {
   return (
     <View style={styles.note}>
@@ -164,11 +214,13 @@ export function Button({
   onPress,
   tone = "primary",
   disabled = false,
+  loading = false,
 }: {
   children: ReactNode;
   onPress?: () => void;
   tone?: "primary" | "secondary";
   disabled?: boolean;
+  loading?: boolean;
 }) {
   const isSecondary = tone === "secondary";
   return (
@@ -183,7 +235,10 @@ export function Button({
         pressed && !disabled && styles.pressed,
       ]}
     >
-      <Text style={[styles.buttonText, isSecondary && styles.buttonTextSecondary, disabled && styles.buttonTextDisabled]}>{children}</Text>
+      <View style={styles.buttonInner}>
+        {loading ? <ActivityIndicator size="small" color={color.inkFaint} /> : null}
+        <Text style={[styles.buttonText, isSecondary && styles.buttonTextSecondary, disabled && styles.buttonTextDisabled]}>{children}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -415,6 +470,12 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   buttonSecondary: { backgroundColor: "transparent", paddingVertical: 12, shadowOpacity: 0, elevation: 0 },
+  buttonInner: { flexDirection: "row", alignItems: "center", gap: 10 },
+  callout: { flexDirection: "row", gap: 12, padding: space.md, borderRadius: radius.card, marginVertical: 12, alignItems: "flex-start" },
+  calloutBadge: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+  calloutTitle: { ...type.body, fontWeight: "700" },
+  calloutText: { ...type.small, marginTop: 3 },
+  link: { textDecorationLine: "underline" },
   buttonDisabled: { backgroundColor: "#dde4d7", shadowOpacity: 0, elevation: 0 },
   buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
   buttonTextSecondary: { color: "#294c3e" },

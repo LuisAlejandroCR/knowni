@@ -1,9 +1,10 @@
 // espacio.tsx: what the wallet holds right now, in plain language.
 // Reached from "Mi espacio", which used to be a label that did nothing.
 
-import { ScrollView } from "react-native";
-import { Card, Label, Row, Screen, TabBar, TopBar, Title } from "../src/components.tsx";
-import { useFlow } from "../src/domain/flow.ts";
+import { router } from "expo-router";
+import { Alert, ScrollView } from "react-native";
+import { Button, Card, Label, Row, Screen, TabBar, TopBar, Title } from "../src/components.tsx";
+import { reset, useFlow } from "../src/domain/flow.ts";
 import { ISSUER_URL } from "../src/domain/issuer-client.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 
@@ -41,6 +42,28 @@ export default function Espacio() {
         <Card>
           <Row icon="🔒" title="Tu documento y tu placa" scope="Se envían solo al emisor que autorizas, nunca a la contraparte" />
         </Card>
+        <Button
+          tone="secondary"
+          onPress={() =>
+            Alert.alert(
+              "¿Borrar y empezar de nuevo?",
+              "Se borran de este teléfono las respuestas, tu documento y tu placa, y llega una solicitud nueva. Lo que ya compartiste no se puede retirar.",
+              [
+                { text: "Cancelar", style: "cancel" },
+                {
+                  text: "Borrar",
+                  style: "destructive",
+                  onPress: () => {
+                    reset();
+                    router.replace("/");
+                  },
+                },
+              ],
+            )
+          }
+        >
+          Borrar y empezar de nuevo
+        </Button>
       </ScrollView>
       <TabBar />
     </Screen>

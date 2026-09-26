@@ -8,6 +8,7 @@ import { cleanOtp, otpComplete } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
 import { Body, Button, Callout, Card, Label, Steps, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color } from "../src/theme.ts";
+import { canCopy, copyText } from "../src/clipboard.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
@@ -58,6 +59,7 @@ function CavosSigner() {
   const [code, setCode] = useState("");
   const [wallet, setWallet] = useState<PayerWalletPort | undefined>();
   const [account, setAccount] = useState<string | undefined>();
+  const [copied, setCopied] = useState(false);
   const [balances, setBalances] = useState<readonly Balance[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | undefined>();
@@ -166,6 +168,11 @@ function CavosSigner() {
                 trailing="↗"
                 onPress={() => void Linking.openURL(accountUrl(account))}
               />
+              {canCopy() ? (
+                <Button tone="secondary" onPress={() => void copyText(account).then((ok) => setCopied(ok))}>
+                  {copied ? "✓ Dirección copiada" : "Copiar dirección"}
+                </Button>
+              ) : null}
               {funded ? (
                 balances.map((balance) => <Row key={balance.asset} icon="✓" title={`${balance.amount} ${balance.asset}`} scope="Saldo" />)
               ) : (

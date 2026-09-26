@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 import { router, usePathname } from "expo-router";
 import { lightTap } from "./haptics.ts";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export function Screen({ children }: { readonly children: ReactNode }) {
   return <SafeAreaView style={styles.screen}>{children}</SafeAreaView>;
@@ -38,7 +39,7 @@ export function BackButton() {
       onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
       style={({ pressed }) => [styles.back, pressed && styles.pressed]}
     >
-      <Text style={styles.backText}>←</Text>
+      <Ionicons name="chevron-back" size={26} color={color.ink} />
     </Pressable>
   );
 }
@@ -310,9 +311,9 @@ export function Steps({ current, names = JOURNEY_STEPS }: { readonly current: nu
 // The way between the three places a person comes back to: their answers, their
 // wallet and what they hold. The journey screens stay a stack above it.
 const TABS = [
-  { href: "/", label: "Inicio", icon: "⌂" },
-  { href: "/firma", label: "Wallet", icon: "◎" },
-  { href: "/espacio", label: "Mi espacio", icon: "☰" },
+  { href: "/", label: "Inicio", icon: "home" },
+  { href: "/firma", label: "Wallet", icon: "wallet" },
+  { href: "/espacio", label: "Mi espacio", icon: "file-tray-full" },
 ] as const;
 
 export function TabBar() {
@@ -331,7 +332,13 @@ export function TabBar() {
             style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
           >
             <View style={[styles.tabPill, on && styles.tabPillOn]}>
-              <Text importantForAccessibility="no" accessibilityElementsHidden style={[styles.tabIcon, on && styles.tabOn]}>{tab.icon}</Text>
+              <Ionicons
+                importantForAccessibility="no"
+                accessibilityElementsHidden
+                name={on ? tab.icon : `${tab.icon}-outline`}
+                size={22}
+                color={on ? color.deep : color.inkFaint}
+              />
             </View>
             <Text style={[styles.tabLabel, on && styles.tabOn]}>{tab.label}</Text>
           </Pressable>
@@ -433,7 +440,6 @@ const styles = StyleSheet.create({
   topRight: { alignItems: "flex-end" },
   topTitle: { ...type.heading, color: color.ink, flexShrink: 1, textAlign: "center" },
   back: { minWidth: 44, minHeight: 44, justifyContent: "center" },
-  backText: { fontSize: 22, color: color.ink },
   // One pressed state for every control, so a tap always answers back.
   pressed: { opacity: 0.6 },
   brand: { flexDirection: "row", alignItems: "center", gap: 7 },
@@ -547,7 +553,6 @@ const styles = StyleSheet.create({
   tab: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 48, paddingVertical: 4 },
   tabPill: { paddingHorizontal: 18, paddingVertical: 3, borderRadius: radius.pill },
   tabPillOn: { backgroundColor: color.lime },
-  tabIcon: { fontSize: 20, color: color.inkFaint },
   tabLabel: { fontSize: 11, color: color.inkFaint, marginTop: 2 },
   tabOn: { color: color.deep, fontWeight: "700" },
   keyboardBar: {

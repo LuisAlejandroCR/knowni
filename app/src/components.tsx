@@ -3,7 +3,7 @@
 // stay one product rather than eight interpretations of it.
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { AccessibilityInfo, ActivityIndicator, Animated, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { type StyleProp, type TextStyle, AccessibilityInfo, ActivityIndicator, Animated, InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 import { router, usePathname } from "expo-router";
@@ -150,14 +150,14 @@ export function Row({
     <>
       {icon === undefined ? null : (
         <View style={[styles.icon, tone?.box]}>
-          {typeof icon === "string" ? <Text style={[styles.iconText, tone?.text]}>{icon === "□" ? "" : icon}</Text> : icon}
+          {typeof icon === "string" ? <Glyph glyph={icon} size={18} style={[styles.iconText, tone?.text]} /> : icon}
         </View>
       )}
       <View style={styles.rowBody}>
         <Text style={styles.rowTitle}>{title}</Text>
         {scope ? <Text style={styles.rowScope}>{scope}</Text> : null}
       </View>
-      {typeof trailing === "string" ? <Text style={styles.trailingText}>{trailing}</Text> : trailing}
+      {typeof trailing === "string" ? <Glyph glyph={trailing} size={20} style={styles.trailingText} /> : trailing}
     </>
   );
   if (onPress === undefined) return <View style={styles.row}>{content}</View>;
@@ -177,6 +177,26 @@ export function Row({
 // The glyph already names the state; the colour makes it readable at a glance:
 // green for an answer with evidence, amber for one the source could not give,
 // an empty box for something not yet chosen.
+// Screens keep writing the short glyphs they always did; here each one becomes
+// a drawn icon, so a check looks like a check on every font and platform.
+// Anything not in the map (a step number, say) stays text.
+const GLYPH_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
+  "✓": "checkmark",
+  "!": "alert",
+  "↗": "arrow-forward",
+  "›": "chevron-forward",
+  "◎": "wallet-outline",
+  "🔒": "lock-closed",
+};
+
+export function Glyph({ glyph, size, style }: { glyph: string; size: number; style?: StyleProp<TextStyle> }) {
+  if (glyph === "□") return null;
+  const name = GLYPH_ICON[glyph];
+  if (name === undefined) return <Text style={style}>{glyph}</Text>;
+  const flat = StyleSheet.flatten(style) ?? {};
+  return <Ionicons name={name} size={size} color={typeof flat.color === "string" ? flat.color : color.deep} />;
+}
+
 const ICON_TONE: Record<string, { box: object; text: object } | undefined> = {
   "✓": { box: { backgroundColor: color.lime }, text: { color: color.deep } },
   "!": { box: { backgroundColor: "#ffe4ad" }, text: { color: color.amberInk } },
@@ -207,7 +227,7 @@ export function Callout({
   return (
     <Animated.View accessibilityRole={tone === "warning" ? "alert" : undefined} style={[styles.callout, look.box, entrance]}>
       <View style={[styles.calloutBadge, look.badge]}>
-        <Text style={[styles.iconText, { color: tone === "success" ? color.deep : color.amberInk }]}>{look.glyph}</Text>
+        <Glyph glyph={look.glyph} size={18} style={[styles.iconText, { color: tone === "success" ? color.deep : color.amberInk }]} />
       </View>
       <View style={styles.rowBody}>
         <Text style={[styles.calloutTitle, look.title]}>{title}</Text>

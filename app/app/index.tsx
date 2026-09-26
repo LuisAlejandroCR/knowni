@@ -3,6 +3,7 @@
 // broken promise, which is what this screen used to be.
 
 import { router } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ScrollView, Text, View } from "react-native";
 import { Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
@@ -22,7 +23,7 @@ export default function Home() {
         <Body>Demuestra que calificas para firmar, sin decir quién eres.</Body>
         <Card tone="deep">
           <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: "#dcedb0", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-            <Text style={{ fontSize: 32, color: color.deep }}>✓</Text>
+            <Ionicons name="shield-checkmark" size={32} color={color.deep} />
           </View>
           <Text style={{ ...type.label, color: "#ccdbce" }}>TUS CREDENCIALES</Text>
           <Text style={{ fontSize: 23, fontWeight: "700", color: "#fff", marginTop: 4 }}>Respuestas bajo{"\n"}tu control.</Text>

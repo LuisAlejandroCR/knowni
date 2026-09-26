@@ -3,6 +3,7 @@
 // screen that lets someone believe otherwise is the failure.
 
 import { Link } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { ScrollView, Text, View } from "react-native";
 import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color, type as typography } from "../src/theme.ts";
@@ -28,7 +29,9 @@ export default function Acuse() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <View style={{ height: 85, alignItems: "center", justifyContent: "center" }}>
           <View style={{ width: 80, height: 80, borderRadius: 26, backgroundColor: color.limeSoft, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-9deg" }] }}>
-            <Text style={{ fontSize: 42, color: "#244e40", transform: [{ rotate: "9deg" }] }}>↗</Text>
+            <View style={{ transform: [{ rotate: "9deg" }] }}>
+              <Ionicons name="paper-plane" size={38} color="#244e40" />
+            </View>
           </View>
         </View>
         <Title>Respuesta enviada.{"\n"}Tú conservas{"\n"}el control.</Title>

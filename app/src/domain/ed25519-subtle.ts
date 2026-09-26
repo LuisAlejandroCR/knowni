@@ -7,6 +7,15 @@ import { ed25519 } from "@noble/curves/ed25519";
 
 const SEED = Symbol("ed25519-seed");
 
+// Seeds this shim generated, held until cavos-control seals the one of the
+// account Cavos registered; the kit itself cannot keep them (D-88).
+const generated: Uint8Array[] = [];
+const GENERATED_MAX = 4;
+
+export function drainGeneratedSeeds(): Uint8Array[] {
+  return generated.splice(0, generated.length);
+}
+
 interface ShimKey {
   readonly type: "private" | "public";
   readonly algorithm: { readonly name: "Ed25519" };
@@ -39,6 +48,8 @@ export function createEd25519Subtle() {
     async generateKey(algorithm: unknown, _extractable: boolean, usages: readonly string[]) {
       requireEd25519(algorithm);
       const seed = ed25519.utils.randomPrivateKey();
+      generated.push(seed.slice());
+      if (generated.length > GENERATED_MAX) generated.shift()?.fill(0);
       return { privateKey: privateKey(seed, usages), publicKey: publicKey(ed25519.getPublicKey(seed)) };
     },
 

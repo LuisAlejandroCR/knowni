@@ -161,7 +161,8 @@ que alguien corra la app en un teléfono: ninguna fila se llena desde un emulado
 | 2 · Recorrido `/` → `/acuse` con el emisor real | | | | | |
 | 3 · Presentación en modo avión (A12) | | | | | |
 | 4 · Repetición rechazada tras reiniciar la app | | | | | |
-| 5 · Pago testnet firmado en el teléfono | | | | | |
+| 5 · Pago testnet firmado en el teléfono (Cavos, `/firma`) | 2026-09-26 | iPhone, build EAS `development` | `1923b6c` + cambios locales sin commit (stash `local antes de pull`): polyfill Ed25519 y `Cavos.connect` **sin `appId`**, no la variante con token de `main` (D-87) | ✅ código por correo → cuenta `GAUWBXAO…UNI6Z` → Friendbot → 1 XLM a sí misma, firma verificada antes de Horizon. La variante de `main` (token de login al registro) sigue sin correr en un teléfono | tx `d5041412c2add8b23b36e86d251027e8c99e3e777c09df129ee2a142be2b4232`, ledger 4875303, 2026-09-26T05:21:42Z; Horizon: `successful: true`, un `payment` nativo de 1.0000000 de la cuenta a sí misma |
+| 5b · Misma cuenta Cavos firma tras reiniciar la app (K2) | 2026-09-26 | iPhone, build EAS `development` | `feat/cavos-persistent-key` `2aa3bef` | ✅ entrar → pagar 1 XLM → cerrar la app → entrar con la misma identidad → misma `G…` → pago aceptado | Cuenta `GDCI23MF…VWWT`: Friendbot 06:06:47Z, pago 06:06:52Z (`16dd5ca0…`), y tras reiniciar `1c07f12ec292d07fb809f768a0fb1653fe215bee3444a06b5de2ed1de6227127` (ledger 4875857, 06:07:52Z) y `a309c2a4…` (06:08:22Z). Horizon: `successful: true`, `payment` nativo de 1.0000000 de la cuenta a sí misma |
 
 ## Deuda conocida
 

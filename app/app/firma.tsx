@@ -13,7 +13,7 @@ import { successTap } from "../src/haptics.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
-import { cavosConfigured, createCavosWallet } from "../src/domain/wallet-cavos.ts";
+import { cavosConfigured } from "../src/domain/wallet-cavos.ts";
 import { balancesOf, type Balance, type PayerWalletPort } from "../src/domain/wallet-port.ts";
 
 const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], string> = {
@@ -25,6 +25,13 @@ const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], str
   horizon_rejected: "Horizon rechazó la transacción firmada.",
   unreachable: "No se pudo hablar con Horizon.",
 };
+
+// K3: the account Cavos registered, but its key is not on this phone.
+const CONTROL_MISSING = {
+  missing: "La llave de esta cuenta no está en este teléfono: se creó en otra instalación o antes de que la app la guardara.",
+  unreadable: "La llave guardada de esta cuenta no se pudo abrir en este teléfono.",
+  other_account: "La llave guardada en este teléfono es de otra cuenta.",
+} as const;
 
 type Step = "email" | "code" | "wallet";
 
@@ -107,7 +114,9 @@ function CavosSigner() {
   const verify = (entered: string = code) =>
     run(async () => {
       const identity = await auth.verifyOtp(email.trim(), entered);
-      const port = createCavosWallet(await connectCavos(identity, auth));
+      const control = await connectCavos(identity, auth);
+      if (control.status !== "ready") throw new Error(CONTROL_MISSING[control.status]);
+      const port = control.wallet;
       const connected = await port.connect();
       setWallet(port);
       setAccount(connected);

@@ -271,6 +271,22 @@ Secuencia de implementación:
 5. conectar el pago al flujo antes de `/issue`, mostrando fallos recuperables;
 6. ejecutar pruebas de app y repositorio, typecheck y build antes de abrir el PR.
 
+### Bloque activo — llave de control Cavos que sobrevive al reinicio
+
+`@cavos/kit` 0.2.5 guarda la llave de control Stellar solo en IndexedDB, que React Native no
+tiene: cada sesión nace con una llave nueva mientras el registro de Cavos devuelve la cuenta de la
+primera, y la firma no es de esa cuenta (`wallet_rejected`, D-88). Este bloque es la condición
+previa del pago dentro del recorrido: sin él, ningún pago sobrevive a cerrar la app. No usa un
+build nativo nuevo: sella con la llave P-256 que el módulo nativo de Cavos ya crea en el Secure
+Enclave o el Keystore (`NativeDeviceUnwrapKey`).
+
+| # | Criterio | Verificación |
+|---|---|---|
+| K1 | La primera conexión guarda la semilla de control que generó el kit, sellada con ECIES hacia la llave P-256 del dispositivo; en disco solo queda el sobre sellado, nunca la semilla | prueba del sello con una llave P-256 de software; el sobre no contiene la semilla |
+| K2 | Una sesión nueva de la misma identidad abre el sobre, comprueba que la pública de la semilla es la cuenta que devolvió Cavos y firma con ella: la misma cuenta paga tras reiniciar la app | prueba de ida y vuelta; corrida en el iPhone: entrar, cerrar la app, entrar, pagar 1 XLM |
+| K3 | Si no hay sobre, no abre o su pública no es la cuenta de Cavos, no se firma nada y la pantalla dice que la llave de esa cuenta no está en este teléfono | pruebas de sobre ausente, alterado y de otra cuenta |
+| K4 | La firma es del hash de la transacción (`raw_hash`) con la semilla recuperada; ni la semilla ni el sobre aparecen en un resultado, error o log | prueba de firma verificable contra el hash y de que la semilla no aparece en el resultado |
+
 ## Fases
 
 ### Bloque activo — caché idempotente del emisor

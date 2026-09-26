@@ -29,7 +29,7 @@ export const space = {
 export const type = {
   eyebrow: { fontSize: 11, letterSpacing: 1.8, fontWeight: "700" },
   label: { fontSize: 11, letterSpacing: 1.3, fontWeight: "700" },
-  title: { fontSize: 29, lineHeight: 32, letterSpacing: -1.2, fontWeight: "800" },
+  title: { fontSize: 32, lineHeight: 36, letterSpacing: -1.2, fontWeight: "800" },
   heading: { fontSize: 17, fontWeight: "700" },
   body: { fontSize: 14, lineHeight: 20 },
   small: { fontSize: 12, lineHeight: 17 },

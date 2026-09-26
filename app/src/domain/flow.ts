@@ -36,6 +36,8 @@ export interface FlowState {
   readonly busy: boolean;
   // When the person shared the answer: the moment the counterparty receives it.
   readonly sharedAt: number | undefined;
+  // When the person turned the request down. Nothing is consulted or sent after it.
+  readonly declinedAt: number | undefined;
 }
 
 const now = () => Math.floor(Date.now() / 1000);
@@ -56,6 +58,7 @@ function initial(): FlowState {
     error: undefined,
     busy: false,
     sharedAt: undefined,
+    declinedAt: undefined,
   };
 }
 
@@ -84,7 +87,12 @@ export function setSubject(subject: Partial<Subject>): void {
 
 export function toggleConsent(source: string): void {
   const on = state.consented.includes(source);
-  set({ consented: on ? state.consented.filter((s) => s !== source) : [...state.consented, source] });
+  // Choosing a source is changing one's mind: the request is no longer declined.
+  set({ consented: on ? state.consented.filter((s) => s !== source) : [...state.consented, source], declinedAt: undefined });
+}
+
+export function setConsent(sources: readonly string[]): void {
+  set({ consented: [...sources], declinedAt: undefined });
 }
 
 export function goTo(step: Step): void {
@@ -93,6 +101,10 @@ export function goTo(step: Step): void {
 
 export function share(): void {
   set({ step: "sent", sharedAt: now() });
+}
+
+export function decline(): void {
+  set({ declinedAt: now(), consented: [] });
 }
 
 export function reset(): void {

@@ -3,15 +3,18 @@
 // is a question they cannot refuse.
 
 import { Link, router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
-import { useFlow } from "../src/domain/flow.ts";
+import { decline, useFlow } from "../src/domain/flow.ts";
+import { expiryText } from "../src/domain/expiry.ts";
+import { useNowUnix } from "../src/use-now.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Solicitud() {
   const session = useFlow();
+  const now = useNowUnix();
 
   // A request that did not verify is not shown as a question: the screen says
   // what happened and offers no way to answer it.
@@ -44,7 +47,7 @@ export default function Solicitud() {
           <Text style={{ ...typography.heading }}>{counterpartyLabel(session.request.purpose)}</Text>
           <Row title={purposeLabel(session.request.purpose)} scope="Finalidad" />
           <View style={{ flexDirection: "row", marginTop: 8 }}>
-            <Badge>{`⏱ Vence en ${REQUEST.expiresInMinutes} min`}</Badge>
+            <Badge>{`⏱ ${expiryText(session.request.expiresAt, now)}`}</Badge>
           </View>
         </Card>
         <Label>Te preguntan</Label>
@@ -63,9 +66,24 @@ export default function Solicitud() {
         <Link href="/consentimiento" asChild>
           <Button>Continuar</Button>
         </Link>
-        <Link href="/" asChild>
-          <Button tone="secondary">Rechazar solicitud</Button>
-        </Link>
+        <Button
+          tone="secondary"
+          onPress={() =>
+            Alert.alert("¿Rechazar la solicitud?", "No se consultará ni se enviará nada.", [
+              { text: "Cancelar", style: "cancel" },
+              {
+                text: "Rechazar",
+                style: "destructive",
+                onPress: () => {
+                  decline();
+                  router.replace("/");
+                },
+              },
+            ])
+          }
+        >
+          Rechazar solicitud
+        </Button>
       </Footer>
       <DemoStamp>SOLICITUD FIRMADA Y VERIFICADA EN EL DISPOSITIVO</DemoStamp>
     </Screen>

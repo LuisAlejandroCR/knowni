@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Linking, Platform, RefreshControl, ScrollView, TextInput } from "react-native";
-import { cleanOtp, otpComplete, resendWaitSeconds } from "../src/domain/otp.ts";
+import { cleanOtp, looksLikeEmail, otpComplete, resendWaitSeconds } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
 import { Body, Button, Callout, Card, Label, Steps, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color } from "../src/theme.ts";
@@ -168,7 +168,7 @@ function CavosSigner() {
       >
         <Steps
           names={["Correo", "Código", "Fondos", "Pago"]}
-          current={step === "email" ? 1 : step === "code" ? 2 : funded ? 4 : 3}
+          current={step === "email" ? 1 : step === "code" ? 2 : result?.status === "paid" ? 5 : funded ? 4 : 3}
         />
         <Title>{STEP_TITLE[step]}</Title>
         <Body>
@@ -196,8 +196,12 @@ function CavosSigner() {
                   }
             }
             textContentType={step === "email" ? "emailAddress" : "oneTimeCode"}
-            returnKeyType="done"
-            onSubmitEditing={Keyboard.dismiss}
+            returnKeyType={step === "email" ? "send" : "done"}
+            onSubmitEditing={() => {
+              Keyboard.dismiss();
+              // The keyboard's own "Enviar" key does what the button does.
+              if (step === "email" && looksLikeEmail(email) && !busy) void sendCode();
+            }}
             inputAccessoryViewID={Platform.OS === "ios" ? KEYBOARD_DONE : undefined}
             placeholder={step === "email" ? "tu@correo.com" : "••••••"}
             accessibilityLabel={step === "email" ? "Correo electrónico" : "Código de 6 dígitos"}
@@ -256,7 +260,7 @@ function CavosSigner() {
       </ScrollView>
       <Footer>
         {step === "email" && (
-          <Button onPress={() => void sendCode()} disabled={busy || email.trim() === ""} loading={busy}>
+          <Button onPress={() => void sendCode()} disabled={busy || !looksLikeEmail(email)} loading={busy}>
             {busy ? "Enviando…" : "Enviarme un código"}
           </Button>
         )}

@@ -3,7 +3,7 @@
 // screen the whole design exists for.
 
 import { Link, router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
@@ -42,6 +42,7 @@ export default function Revision() {
         <Steps current={4} />
         <Title>Esto es lo que{"\n"}recibirán.</Title>
         <Body>{`${counterpartyLabel(purpose)}\nSolo para: ${purposeLabel(purpose).toLowerCase()}.`}</Body>
+        <Label>{`Lo que recibirán · ${answers.length}`}</Label>
         <Card>
           {answers.map((answer) => (
             <Row
@@ -52,7 +53,7 @@ export default function Revision() {
             />
           ))}
         </Card>
-        <Label>Fuera de la respuesta objetivo</Label>
+        <Label>{`Lo que no recibirán · ${WITHHELD.length}`}</Label>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 9, marginTop: 8 }}>
           {WITHHELD.map((item) => (
             <Text
@@ -77,10 +78,23 @@ export default function Revision() {
       </ScrollView>
       <Footer>
         <Button
-          onPress={() => {
-            share();
-            router.push("/acuse");
-          }}
+          onPress={() =>
+            // Sharing cannot be taken back, so it asks once, naming who receives it.
+            Alert.alert(
+              `¿Compartir con ${counterpartyLabel(purpose).toLowerCase()}?`,
+              "Recibirán solo estas respuestas. Una vez enviadas no se pueden retirar.",
+              [
+                { text: "Cancelar", style: "cancel" },
+                {
+                  text: "Compartir",
+                  onPress: () => {
+                    share();
+                    router.push("/acuse");
+                  },
+                },
+              ],
+            )
+          }
         >
           Compartir →
         </Button>

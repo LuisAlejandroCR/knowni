@@ -184,6 +184,7 @@ export function Row({
 const GLYPH_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   "✓": "checkmark",
   "!": "alert",
+  "✕": "close",
   "↗": "arrow-forward",
   "›": "chevron-forward",
   "◎": "wallet-outline",
@@ -201,6 +202,7 @@ export function Glyph({ glyph, size, style }: { glyph: string; size: number; sty
 const ICON_TONE: Record<string, { box: object; text: object } | undefined> = {
   "✓": { box: { backgroundColor: color.lime }, text: { color: color.deep } },
   "!": { box: { backgroundColor: "#ffe4ad" }, text: { color: color.amberInk } },
+  "✕": { box: { backgroundColor: "#eceee9" }, text: { color: color.inkSoft } },
   "□": { box: { backgroundColor: color.card, borderWidth: 2, borderColor: "#b8c4b2" }, text: {} },
 };
 
@@ -306,7 +308,7 @@ const JOURNEY_STEPS = ["Solicitud", "Autorización", "Consulta", "Revisión"] as
 
 export function Steps({ current, names = JOURNEY_STEPS }: { readonly current: number; readonly names?: readonly string[] }) {
   return (
-    <View style={styles.steps} accessibilityLabel={`Paso ${current} de ${names.length}: ${names[current - 1]}`}>
+    <View style={styles.steps} accessibilityLabel={current > names.length ? `${names.length} pasos completados` : `Paso ${current} de ${names.length}: ${names[current - 1]}`}>
       {names.map((name, index) => {
         const state = index + 1 === current ? "on" : index + 1 < current ? "done" : "next";
         return (

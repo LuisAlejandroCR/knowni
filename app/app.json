@@ -8,7 +8,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "co.knowni.wallet"
+      "bundleIdentifier": "co.knowni.wallet",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "co.knowni.wallet"
@@ -22,7 +25,9 @@
         {
           "rpId": "knowni.vercel.app",
           "scheme": "knowni",
-          "associatedDomains": ["applinks:knowni.vercel.app"]
+          "associatedDomains": [
+            "applinks:knowni.vercel.app"
+          ]
         }
       ]
     ],

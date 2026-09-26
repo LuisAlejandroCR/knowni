@@ -3,7 +3,7 @@
 // stay one product rather than eight interpretations of it.
 
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { InputAccessoryView, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { color, radius, space, type } from "./theme.ts";
 
@@ -149,6 +149,9 @@ export function Steps({ current }: { readonly current: 1 | 2 | 3 | 4 }) {
   );
 }
 
+// The iOS number pad has no return key; this bar gives every field a way out.
+const KEYBOARD_DONE = "knowni-keyboard-done";
+
 export function Field({
   label,
   value,
@@ -172,8 +175,20 @@ export function Field({
         placeholder={placeholder}
         keyboardType={keyboardType ?? "default"}
         autoCapitalize="characters"
+        returnKeyType="done"
+        onSubmitEditing={Keyboard.dismiss}
+        inputAccessoryViewID={Platform.OS === "ios" ? KEYBOARD_DONE : undefined}
         style={styles.input}
       />
+      {Platform.OS === "ios" ? (
+        <InputAccessoryView nativeID={KEYBOARD_DONE}>
+          <View style={styles.keyboardBar}>
+            <Pressable accessibilityRole="button" onPress={Keyboard.dismiss} hitSlop={12}>
+              <Text style={styles.keyboardDone}>Listo</Text>
+            </Pressable>
+          </View>
+        </InputAccessoryView>
+      ) : null}
     </View>
   );
 }
@@ -270,6 +285,15 @@ const styles = StyleSheet.create({
   stepBarNext: { backgroundColor: "#dfe7d8" },
   stepText: { fontSize: 10, color: color.inkFaint },
   stepTextOn: { color: color.deep, fontWeight: "700" },
+  keyboardBar: {
+    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: color.page,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: color.line,
+  },
+  keyboardDone: { color: color.deep, fontSize: 16, fontWeight: "600" },
   input: {
     borderWidth: 1,
     borderColor: color.line,

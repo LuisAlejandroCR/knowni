@@ -60,9 +60,9 @@ export default function Revision() {
               key={item}
               style={{
                 ...typography.small,
-                color: "#5a685d",
+                color: color.inkSoft,
                 textDecorationLine: "line-through",
-                backgroundColor: "#f1f3ee",
+                backgroundColor: color.muted,
                 borderWidth: 1,
                 borderColor: color.line,
                 borderRadius: 8,

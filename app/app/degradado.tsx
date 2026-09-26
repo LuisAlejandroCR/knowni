@@ -30,7 +30,7 @@ export default function Degradado() {
     <Screen>
       <TopBar title="Estado de la consulta" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-        <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: "#ffe4ad", alignItems: "center", justifyContent: "center", marginTop: 20, marginBottom: 12 }}>
+        <View style={{ width: 64, height: 64, borderRadius: 22, backgroundColor: color.amberSoft, alignItems: "center", justifyContent: "center", marginTop: 20, marginBottom: 12 }}>
           <Ionicons name="time-outline" size={32} color={color.amberInk} />
         </View>
         <Label>Puedes continuar después</Label>

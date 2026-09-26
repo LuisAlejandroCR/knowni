@@ -23,6 +23,7 @@ docs/*
 !docs/CROMA.md
 !docs/handoff.md
 !docs/wallets.md
+!docs/cavos-kit-report.md
 
 # soroban test snapshots — generados en cada corrida de `cargo test`
 contracts/**/test_snapshots/

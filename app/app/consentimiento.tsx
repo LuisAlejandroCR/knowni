@@ -3,8 +3,8 @@
 // the issuer and to nobody else.
 
 import { router } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { ScrollView, View } from "react-native";
+import { BackButton, Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
 import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
 
@@ -26,7 +26,7 @@ export default function Consentimiento() {
 
   return (
     <Screen>
-      <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Tu autorización" />
+      <TopBar left={<BackButton />} title="Tu autorización" />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 24 }}
         automaticallyAdjustKeyboardInsets
@@ -44,7 +44,7 @@ export default function Consentimiento() {
             return (
               <Row
                 key={source.id}
-                icon={<Text>{on ? "✓" : "□"}</Text>}
+                icon={on ? "✓" : "□"}
                 title={source.title}
                 scope={source.needs}
                 onPress={() => toggleConsent(source.id)}

@@ -16,9 +16,25 @@ export function TopBar({ left, title, right }: { left?: ReactNode; title?: strin
   return (
     <View style={styles.topBar}>
       <View style={styles.topSide}>{left}</View>
-      {title === undefined ? null : <Text style={styles.topTitle}>{title}</Text>}
+      {title === undefined ? null : <Text accessibilityRole="header" numberOfLines={1} style={styles.topTitle}>{title}</Text>}
       <View style={[styles.topSide, styles.topRight]}>{right}</View>
     </View>
+  );
+}
+
+// Back is a control like any other: a 44 px target, a role and a name a
+// screen reader can say. A bare arrow glyph was none of the three.
+export function BackButton() {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Volver"
+      hitSlop={8}
+      onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+      style={({ pressed }) => [styles.back, pressed && styles.pressed]}
+    >
+      <Text style={styles.backText}>←</Text>
+    </Pressable>
   );
 }
 
@@ -44,7 +60,7 @@ export function Badge({ children, onPress }: { readonly children: ReactNode; onP
     );
   }
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={[styles.badge, styles.badgeTappable]}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.badge, styles.badgeTappable, pressed && styles.pressed]}>
       <Text style={styles.badgeText}>{children}</Text>
     </Pressable>
   );
@@ -55,7 +71,7 @@ export function Label({ children }: { readonly children: ReactNode }) {
 }
 
 export function Title({ children }: { readonly children: ReactNode }) {
-  return <Text style={styles.title}>{children}</Text>;
+  return <Text accessibilityRole="header" style={styles.title}>{children}</Text>;
 }
 
 export function Body({ children }: { readonly children: ReactNode }) {
@@ -82,20 +98,28 @@ export function Row({
   trailing?: ReactNode;
   onPress?: () => void;
 }) {
-  const Wrapper = onPress === undefined ? View : Pressable;
-  return (
-    <Wrapper
-      accessibilityRole={onPress === undefined ? undefined : "button"}
-      onPress={onPress}
-      style={[styles.row, onPress !== undefined && styles.rowTappable]}
-    >
-      {icon === undefined ? null : <View style={styles.icon}>{icon}</View>}
+  const content = (
+    <>
+      {icon === undefined ? null : (
+        <View style={styles.icon}>{typeof icon === "string" ? <Text style={styles.iconText}>{icon}</Text> : icon}</View>
+      )}
       <View style={styles.rowBody}>
         <Text style={styles.rowTitle}>{title}</Text>
         {scope ? <Text style={styles.rowScope}>{scope}</Text> : null}
       </View>
-      {trailing}
-    </Wrapper>
+      {typeof trailing === "string" ? <Text style={styles.trailingText}>{trailing}</Text> : trailing}
+    </>
+  );
+  if (onPress === undefined) return <View style={styles.row}>{content}</View>;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={scope ? `${title}. ${scope}` : title}
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, styles.rowTappable, pressed && styles.pressed]}
+    >
+      {content}
+    </Pressable>
   );
 }
 
@@ -124,9 +148,14 @@ export function Button({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       onPress={disabled ? undefined : onPress}
-      style={[styles.button, isSecondary && styles.buttonSecondary, disabled && styles.buttonDisabled]}
+      style={({ pressed }) => [
+        styles.button,
+        isSecondary && styles.buttonSecondary,
+        disabled && styles.buttonDisabled,
+        pressed && !disabled && styles.pressed,
+      ]}
     >
-      <Text style={[styles.buttonText, isSecondary && styles.buttonTextSecondary]}>{children}</Text>
+      <Text style={[styles.buttonText, isSecondary && styles.buttonTextSecondary, disabled && styles.buttonTextDisabled]}>{children}</Text>
     </Pressable>
   );
 }
@@ -168,11 +197,12 @@ export function TabBar() {
           <Pressable
             key={tab.href}
             accessibilityRole="tab"
+            accessibilityLabel={tab.label}
             accessibilityState={{ selected: on }}
             onPress={() => { if (!on) router.replace(tab.href); }}
-            style={styles.tab}
+            style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
           >
-            <Text style={[styles.tabIcon, on && styles.tabOn]}>{tab.icon}</Text>
+            <Text importantForAccessibility="no" accessibilityElementsHidden style={[styles.tabIcon, on && styles.tabOn]}>{tab.icon}</Text>
             <Text style={[styles.tabLabel, on && styles.tabOn]}>{tab.label}</Text>
           </Pressable>
         );
@@ -248,7 +278,11 @@ const styles = StyleSheet.create({
   },
   topSide: { minWidth: 56 },
   topRight: { alignItems: "flex-end" },
-  topTitle: { ...type.heading, color: color.ink },
+  topTitle: { ...type.heading, color: color.ink, flexShrink: 1, textAlign: "center" },
+  back: { minWidth: 44, minHeight: 44, justifyContent: "center" },
+  backText: { fontSize: 22, color: color.ink },
+  // One pressed state for every control, so a tap always answers back.
+  pressed: { opacity: 0.6 },
   brand: { flexDirection: "row", alignItems: "center", gap: 7 },
   mark: {
     width: 28,
@@ -287,6 +321,8 @@ const styles = StyleSheet.create({
   rowTappable: { minHeight: 44 },
   rowBody: { flex: 1 },
   rowTitle: { ...type.body, fontWeight: "700", color: color.ink },
+  iconText: { fontSize: 14, fontWeight: "700", color: color.deep },
+  trailingText: { fontSize: 20, color: color.inkFaint },
   rowScope: { ...type.small, color: "#647267", marginTop: 3 },
   icon: {
     width: 32,
@@ -312,6 +348,8 @@ const styles = StyleSheet.create({
   buttonDisabled: { backgroundColor: "#dde4d7" },
   buttonText: { color: "#ffffff", fontSize: 15, fontWeight: "700" },
   buttonTextSecondary: { color: "#294c3e" },
+  // White on the pale disabled fill was unreadable; a disabled label still has to be read.
+  buttonTextDisabled: { color: color.inkFaint },
   steps: { flexDirection: "row", gap: 6, paddingVertical: 10 },
   step: { flex: 1 },
   stepBar: { height: 4, borderRadius: 3, marginBottom: 5 },
@@ -326,7 +364,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.canvas,
     paddingTop: 8,
   },
-  tab: { flex: 1, alignItems: "center", paddingVertical: 4 },
+  tab: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 48, paddingVertical: 4 },
   tabIcon: { fontSize: 20, color: color.inkFaint },
   tabLabel: { fontSize: 11, color: color.inkFaint, marginTop: 2 },
   tabOn: { color: color.deep, fontWeight: "700" },

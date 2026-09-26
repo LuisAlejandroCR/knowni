@@ -4,7 +4,7 @@
 
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
@@ -33,7 +33,7 @@ export default function Emision() {
           {flow.consented.map((source) => (
             <Row
               key={source}
-              icon={<Text>{flow.busy ? "◌" : "✓"}</Text>}
+              icon={flow.busy ? "◌" : "✓"}
               title={sourceLabel(source)}
               scope={flow.busy ? "Consultando" : "Consulta terminada"}
             />
@@ -44,7 +44,7 @@ export default function Emision() {
             {flow.answers.map((answer) => (
               <Row
                 key={answer.predicate}
-                icon={<Text>{answer.value === "unavailable" ? "!" : "✓"}</Text>}
+                icon={answer.value === "unavailable" ? "!" : "✓"}
                 title={`${PREDICATE_LABEL[answer.predicate] ?? answer.predicate}: ${answerText(answer)}`}
               />
             ))}

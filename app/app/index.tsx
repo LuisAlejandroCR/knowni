@@ -29,10 +29,10 @@ export default function Home() {
           <Text style={{ ...type.body, color: "#ccdbce", marginTop: 8 }}>Revisa cada solicitud antes de responder.</Text>
         </Card>
         <Row
-          icon={<Text>↗</Text>}
+          icon="↗"
           title={valid ? "Una solicitud pendiente" : "Una solicitud que no verifica"}
           scope={valid ? `${purposeLabel(flow.request.purpose)} · vence en 10 min` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
-          trailing={<Text>›</Text>}
+          trailing="›"
           onPress={() => router.push("/solicitud")}
         />
         <Note>La contraparte pide respuestas.{"\n"}No una copia de tu cédula.</Note>

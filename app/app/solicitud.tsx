@@ -3,8 +3,8 @@
 // is a question they cannot refuse.
 
 import { Link, router } from "expo-router";
-import { Pressable, ScrollView, Text } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { ScrollView, Text } from "react-native";
+import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { useFlow } from "../src/domain/flow.ts";
@@ -18,7 +18,7 @@ export default function Solicitud() {
   if (session.requestState.status === "refused") {
     return (
       <Screen>
-        <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Solicitud" />
+        <TopBar left={<BackButton />} title="Solicitud" />
         <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
           <Label>No se puede responder</Label>
           <Title>Esta solicitud{"\n"}no es válida.</Title>
@@ -36,7 +36,7 @@ export default function Solicitud() {
 
   return (
     <Screen>
-      <TopBar left={<Pressable onPress={() => router.back()}><Text>←</Text></Pressable>} title="Nueva solicitud" />
+      <TopBar left={<BackButton />} title="Nueva solicitud" />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Steps current={1} />
         <Title>¿Qué necesitan{"\n"}saber de ti?</Title>
@@ -48,7 +48,7 @@ export default function Solicitud() {
         {REQUEST.questions.map((question, index) => (
           <Row
             key={question.title}
-            icon={<Text>{String(index + 1).padStart(2, "0")}</Text>}
+            icon={String(index + 1).padStart(2, "0")}
             title={question.title}
             scope={question.scope}
           />

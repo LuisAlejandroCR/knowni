@@ -11,7 +11,7 @@ Fuente de las reglas: las bases oficiales del evento, consultadas el 2026-09-20.
 | Entregable | Estado | Dónde |
 |---|---|---|
 | Repositorio público con README | ✅ público en GitHub (comprobado 2026-09-26) | <https://github.com/LuisAlejandroCR/knowni> |
-| Video demo del producto corriendo | ⏳ por grabar | este guion, §1 |
+| Video demo del producto corriendo | 🎬 grabado 2026-09-26; edición y voz en `build_demo.py`, falta render local con la voz y revisión cuadro a cuadro | este guion, §1; [`edicion.md`](edicion.md) |
 | Video pitch, máximo 3 minutos | ⏳ por grabar | este guion, §2 |
 | Pieza ElevenLabs (Challenge 3) | ✅ renderizada 2026-09-26 (84,9 s, 16:9 con subtítulos, 9:16 y corte de 30 s), sin publicar | prompt en [`elevenlabs-mcp.md`](elevenlabs-mcp.md); archivos fuera del repositorio, en `knowni-media/elevenlabs/out/` |
 | Evidencia on-chain en testnet | ✅ listo | tabla *Evidencia en testnet*, abajo |
@@ -32,11 +32,12 @@ viabilidad 15 %, claridad del README y el video 10 %.
   Android (fila 1).
 - **Un contrato Soroban desplegado verificó una prueba Groth16 real** y la red rechazó una señal
   alterada (D-83).
+- **El pago está dentro del recorrido:** la autorización cotiza, la wallet de Cavos paga 1.2 XLM
+  al emisor y el emisor consulta solo después de verificar el pago (fila 6, D-90).
 
 Y esto **no** se dice, porque no ha corrido:
 
 - Que la respuesta viaja a otra persona: el verificador corre en el mismo teléfono (D-86).
-- Que el pago está dentro del recorrido: se firma en el banco `/firma`, aparte.
 - Que el iPhone genera la prueba ZK, o que la prueba del teléfono se verificó en cadena: la del
   teléfono es Android y local; la de cadena salió del portátil. Las dos usan llave de desarrollo.
 - Modo avión en un dispositivo (A12), o SICAAC, listas, RUNT y SIMIT con consentimiento real.
@@ -46,11 +47,12 @@ Un jurado que descubre una afirmación inflada deja de creer las verdaderas.
 ## Evidencia en testnet
 
 Cada hash, releído con `GET /transactions/{hash}` en `horizon-testnet.stellar.org` el 2026-09-26:
-`successful: true` en los seis.
+`successful: true` en los siete.
 
 | Qué | Transacción | Origen | Respaldo |
 |---|---|---|---|
 | Pago de 1 XLM firmado en el iPhone con Cavos | [`d5041412…4232`](https://stellar.expert/explorer/testnet/tx/d5041412c2add8b23b36e86d251027e8c99e3e777c09df129ee2a142be2b4232) · ledger 4875303 | iPhone | fila 5 |
+| Pago de 1.2 XLM al emisor dentro del recorrido, la toma del video demo | [`53e6ea60…2724`](https://stellar.expert/explorer/testnet/tx/53e6ea60810e6c585c48a45d4fa095aa73e6bdaffdb3be5f7cec71f3ddd52724) · ledger 4876770 | iPhone | fila 6 |
 | Misma cuenta, tras cerrar la app | [`1c07f12e…7127`](https://stellar.expert/explorer/testnet/tx/1c07f12ec292d07fb809f768a0fb1653fe215bee3444a06b5de2ed1de6227127) · ledger 4875857 | iPhone | fila 5b, D-88 |
 | El contrato verifica una prueba Groth16 real | [`0db7a479…0191`](https://stellar.expert/explorer/testnet/tx/0db7a4790d02c3277877ef4b9e79b3449004735928cb73b192bc7694003b0191) · ledger 4866679 | portátil | D-83 |
 | Pago USDC verificado de vuelta por el emisor | [`fb64700b…36b9`](https://stellar.expert/explorer/testnet/tx/fb64700b55ab1094f00fc60c48990c035976c0938036a47f8084990800b836b9) · ledger 4820808 | portátil | A10 |
@@ -61,22 +63,38 @@ Las filas 5 y 5b de la tabla de teléfono y D-88 entran con el PR #140.
 
 ## §1 — Video demo · el producto corriendo en el iPhone
 
-**3 a 4 minutos.** Grabación de pantalla del iPhone (build de desarrollo EAS + Metro) y, solo en
-el tramo de Stellar, el navegador. Sin maquetas: cada pantalla es la app corriendo. Si la consulta
-tarda, se corta y el corte se rotula con los segundos reales.
+**65,6 s.** La grabación del iPhone del 2026-09-26 (build EAS `development` + Metro), cortada y
+montada por [`build_demo.py`](build_demo.py); el mapa de la fuente, las coordenadas y las reglas de
+privacidad están en [`edicion.md`](edicion.md). Sin maquetas: cada cuadro del teléfono es la app
+corriendo; los tramos rápidos o lentos llevan su velocidad en `SEGMENTS`. Documento, correo y
+código van cortados o difuminados.
 
-| Tiempo | Qué se ve | Qué se dice | Respaldo |
-|---|---|---|---|
-| 0:00–0:15 | `/` en el iPhone | "Para firmar un contrato en Colombia entregas un expediente. La contraparte no lo necesita: necesita respuestas." | — |
-| 0:15–0:40 | `/solicitud`: quién pregunta, para qué, hasta cuándo | "Una solicitud firmada. La app comprueba quién pregunta antes de mostrarla, y la solicitud vence." | README, *Solicitud firmada y anti-replay* |
-| 0:40–1:10 | `/consentimiento`: Registraduría marcada a mano, tipo de documento, número **tapado** | "Nada viene marcado. Consultar no es compartir. Y la finalidad sigue a lo que autorizo: sin RUNT ni SIMIT, esto es una verificación de identidad, no una compraventa." | D-86 |
-| 1:10–1:45 | `/emision` con los segundos corriendo | "Esta es una consulta real a la Registraduría, a través de Croma, sobre mi propio documento. El emisor firma la respuesta." | fila *iPhone físico contra el emisor real* |
-| 1:45–2:10 | `/revision`: "Documento vigente: Sí" y lo que **no** se entrega; confirmar antes de compartir | "Esto es lo que recibe la otra parte. Ni mi nombre, ni mi número, ni el expediente." | D-86; fila *El sobre no filtra ningún valor de los reclamos* |
-| 2:10–2:30 | `/verificador`: "Respuestas verificadas". Placa: *verificador en el mismo teléfono* | "La firma del emisor y la frescura se comprueban en el momento de compartir. Hoy el verificador corre en este mismo teléfono; la entrega a una segunda persona es lo siguiente." | D-86 |
-| 2:30–3:10 | `/firma`: código por correo (correo **tapado**) → fondear → *Pagarme 1 XLM* → hash. Placa: *banco de firma, fuera del recorrido* | "El pago también sale del teléfono. La wallet de Cavos vive en el dispositivo, firma, la app verifica la firma y la envía a Horizon." | filas 5 y 5b, D-87, D-88 |
-| 3:10–3:35 | Stellar Expert con el hash recién firmado: `successful`, 1 XLM, `MEMO_HASH` | "Esta transacción la acaba de firmar el teléfono, en Stellar testnet." | fila 5 |
-| 3:35–3:55 | Stellar Expert, [`0db7a479…`](https://stellar.expert/explorer/testnet/tx/0db7a4790d02c3277877ef4b9e79b3449004735928cb73b192bc7694003b0191). Placa: *enviada desde el portátil, llave de desarrollo* | "Y este contrato Soroban, desplegado en testnet, verificó una prueba de conocimiento cero real; una señal alterada, la red la rechaza." | D-83 |
-| 3:55–4:10 | Tabla *Qué está construido y qué no* del README | "Lo que falta, dicho sin adornos: la segunda persona, el pago dentro del recorrido y la prueba del teléfono verificada en cadena." | esta regla |
+La voz es Nayla (ElevenLabs), una línea por segmento, a ~15 caracteres por segundo, y la misma línea
+va quemada como subtítulo. `python design/demo/build_demo.py --plan` imprime esta tabla con la
+duración real y falla si una línea no cabe.
+
+| Tiempo | Segmento | Qué se ve | Qué se dice | Respaldo |
+|---|---|---|---|---|
+| 0:00–0:03 | `titulo` | Tarjeta: *knowni · Stellar testnet · 26/09/2026* | "Una verificación real, en un iPhone." | fila 6 |
+| 0:03–0:07.6 | `intro` | Las tres láminas de introducción | "Para firmar un contrato no hace falta entregar tu expediente." | — |
+| 0:07.6–0:10.6 | `solicitud` | Nueva solicitud, vence en 10 min; zoom a la tarjeta | "Llega una solicitud firmada, y vence." | README, *Solicitud firmada y anti-replay* |
+| 0:10.6–0:13.6 | `autoriza` | Fuentes, tipo de documento; campo difuminado | "Tú eliges qué fuentes se consultan." | D-86 |
+| 0:13.6–0:15.8 | `conectar` | "Conectar wallet para pagar" (×0,55) | "Sin pago, no hay consulta." | D-90, fila 6 |
+| 0:15.8–0:17.8 | `correo` | Wallet: "Entra con tu correo", campo vacío (×0,35) | "Entras con tu correo." | fila 5 |
+| 0:17.8–0:22.5 | `codigo` | Enviando código, correo y código difuminados (×2,6) | "Un código por correo, y la llave queda sellada en este iPhone." | D-88, fila 5b |
+| 0:22.5–0:25.8 | `fondos` | Wallet con saldo; zoom a la cuenta (×0,9) | "Cuenta de testnet, fondeada con Friendbot." | fila 5b |
+| 0:25.8–0:28.5 | `pagar` | "Pagar 1.2 XLM y consultar" | "Una fuente cuesta 1,2 XLM." | D-89, D-90; `issuer/src/pricing.ts` |
+| 0:28.5–0:35.7 | `consulta` | Firmando → pago aceptado → Registraduría (×1,4) | "La wallet firma el pago. El emisor lo verifica en Stellar y solo entonces consulta la Registraduría." | D-90, fila 6 |
+| 0:35.7–0:41.8 | `stellar` | Stellar Expert: `53e6ea60…2724`, Successful, 1.2 XLM (×1,3) | "La transacción está en Stellar testnet: exitosa, 1,2 XLM al emisor." | fila 6; Horizon, abajo |
+| 0:41.8–0:45.1 | `recibiran` | "Esto es lo que recibirán": solo documento vigente (×0,8) | "La otra parte recibe una sola respuesta." | D-86; fila *El sobre no filtra ningún valor de los reclamos* |
+| 0:45.1–0:50.1 | `enviada` | Confirmar compartir → "Respuesta enviada" | "Confirmas antes de enviar. La respuesta va firmada por el emisor." | D-86 |
+| 0:50.1–0:56.6 | `verifica` | Verificador: verificada → "No se puede aceptar" → "Ya recibida" | "En este mismo teléfono se comprueban firma y destinatario. Repetida, se rechaza." | D-86; `app/src/domain/verifier.ts` |
+| 0:56.6–0:59.6 | `espacio` | Mi espacio: historial | "Y el historial queda en tu teléfono." | D-86 |
+| 0:59.6–1:05.6 | `cierre` | Tarjeta: lo que acabas de ver y lo que falta | "Pago real en testnet, emisor real. Falta la contraparte en otro teléfono." | esta regla |
+
+La frase de `verifica` dice *en este mismo teléfono* a propósito: el rótulo del segmento es *la
+contraparte verifica*, y sin esa aclaración la imagen sugeriría la entrega a una segunda persona,
+que no ha corrido (D-86).
 
 **Toma opcional, 10 s, si se graba también el moto g54:** `/prueba` generando Groth16 (9,7 s con
 descarga, 1,3 s después — fila 1). Se rotula *Android, llave de desarrollo, fuera del recorrido*.
@@ -137,6 +155,7 @@ verificación emitida — nunca por vender expedientes.
 
 ## Lo que falta antes de enviar
 
-1. Grabar los dos videos con este guion; la pieza de ElevenLabs ya está renderizada.
+1. Demo: generar las 16 líneas de voz de §1 con Nayla, renderizar en local y revisar cuadro a
+   cuadro (`edicion.md`, *Lo que falta*). Pitch: grabarlo con §2. La pieza de ElevenLabs ya está renderizada.
 2. Confirmar que el historial de git refleja a los contribuyentes declarados.
 3. `LICENSE` ya está en la raíz; las bases exigen un archivo de licencia visible.

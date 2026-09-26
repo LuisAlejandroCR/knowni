@@ -271,6 +271,19 @@ Secuencia de implementación:
 5. conectar el pago al flujo antes de `/issue`, mostrando fallos recuperables;
 6. ejecutar pruebas de app y repositorio, typecheck y build antes de abrir el PR.
 
+### Bloque activo — el emisor cobra XLM nativo en testnet
+
+Para la demo en testnet el emisor debe poder cobrar XLM nativo sin depender de un emisor de USDC.
+USDC sigue siendo el activo por defecto. El bloque toca solo `issuer/` y la documentación; el pago
+dentro del recorrido de la app va en otra rama.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| X1 | Con `KNOWNI_PAYMENT_ASSET=native` el emisor cobra XLM y arranca sin `KNOWNI_PAYMENT_ASSET_ISSUER`; `/quote` publica `currency: "XLM"` y términos con activo `native` | tests unitarios de configuración y de `/quote`; `curl` contra el emisor real en testnet |
+| X2 | Sin la variable, o con `usdc`, el comportamiento es el de hoy: USDC con emisor obligatorio | tests unitarios de configuración y de `/quote` |
+| X3 | La moneda de la cotización siempre coincide con el activo del cobro; nunca se sustituye uno por otro, y un desajuste responde `payment_misconfigured` | tests de `quote` y de `paymentTerms` |
+| X4 | Un valor desconocido de `KNOWNI_PAYMENT_ASSET` impide el arranque en vez de caer a un activo por defecto | test unitario del parser de configuración |
+
 ## Fases
 
 ### Bloque activo — caché idempotente del emisor

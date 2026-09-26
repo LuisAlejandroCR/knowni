@@ -3,16 +3,17 @@
 // screen the whole design exists for.
 
 import { Link, router } from "expo-router";
-import { Alert, ScrollView, Text, View } from "react-native";
-import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { Alert, Linking, ScrollView, Text, View } from "react-native";
+import { BackButton, Body, Button, Callout, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
 import { share, useFlow } from "../src/domain/flow.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
+import { explorerUrl } from "../src/domain/self-payment.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
-  const { answers, request } = useFlow();
+  const { answers, request, paymentTx } = useFlow();
   const purpose = request.purpose;
 
   // No verified answers means nothing to show. A screen that renders what it
@@ -74,6 +75,15 @@ export default function Revision() {
             </Text>
           ))}
         </View>
+        {paymentTx === undefined ? null : (
+          <Callout
+            tone="success"
+            title="Pagaste esta consulta en Stellar testnet. La contraparte no recibe el pago."
+            onPressText={() => void Linking.openURL(explorerUrl(paymentTx))}
+          >
+            {paymentTx}
+          </Callout>
+        )}
         <Note>Este resultado no autoriza la firma del contrato ni sustituye sus requisitos legales.</Note>
       </ScrollView>
       <Footer>

@@ -41,13 +41,22 @@ export default function Emision() {
           <Title>Una consulta.{"\n"}Solo lo necesario.</Title>
           <Body>Aún no compartimos nada con la contraparte.</Body>
         </View>
+        {flow.stage === "signing" || flow.paymentTx !== undefined ? (
+          <Card>
+            <Row
+              icon={flow.paymentTx === undefined ? <Spinner /> : "✓"}
+              title={flow.paymentTx === undefined ? "Firmando el pago" : "Pago aceptado por la red"}
+              scope={flow.paymentTx === undefined ? "Tu wallet firma en este teléfono" : `${flow.paymentTx.slice(0, 12)}…`}
+            />
+          </Card>
+        ) : null}
         <Card>
           {flow.consented.map((source) => (
             <Row
               key={source}
               icon={flow.busy ? <Spinner /> : "✓"}
               title={sourceLabel(source)}
-              scope={flow.busy ? "Consultando" : "Consulta terminada"}
+              scope={flow.busy ? (flow.stage === "signing" ? "Esperando el pago" : "Consultando") : "Consulta terminada"}
             />
           ))}
         </Card>

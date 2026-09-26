@@ -44,14 +44,14 @@ probado contra ambos contratos con Horizon y wallets inyectados; no se presenta 
 |---|---|---|
 | `/` | 01 Inicio | Credenciales, no una identidad pública |
 | `/solicitud` | 02 Solicitud | Quién pregunta, para qué y hasta cuándo |
-| `/consentimiento` | 03 Consentimiento | Consultar no es compartir; nada preseleccionado |
-| `/emision` | 04 Emisión | Progreso por fuente, sin porcentajes inventados |
+| `/consentimiento` | 03 Consentimiento | Consultar no es compartir; nada preseleccionado; si el emisor cobra, se paga antes de consultar — D-90 |
+| `/emision` | 04 Emisión | Progreso por fuente y etapa del pago, sin porcentajes inventados |
 | `/revision` | 05 Revisión | Lo que recibe la contraparte **y lo que no** |
 | `/acuse` | 06 Acuse | Enviar no es firmar |
 | `/verificador` | 07 Verificador | Integridad y frescura, sin expediente |
 | `/degradado` | 08 Degradación | Falta una respuesta ≠ no cumple |
 | `/prueba` | Banco de prueba | Groth16 en el teléfono sobre datos de ejemplo, fuera del recorrido — D-82 |
-| `/firma` | Banco de firma | Cavos por código de correo se paga 1 XLM en testnet; la firma se verifica antes de Horizon — D-85 |
+| `/firma` | Wallet | Cavos por código de correo se paga 1 XLM en testnet; la firma se verifica antes de Horizon — D-85. La cuenta conectada es la que paga en el recorrido — D-90 |
 
 ## Corrida en un teléfono físico
 

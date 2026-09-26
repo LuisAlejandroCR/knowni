@@ -300,6 +300,21 @@ dentro del recorrido de la app va en otra rama.
 | X3 | La moneda de la cotización siempre coincide con el activo del cobro; nunca se sustituye uno por otro, y un desajuste responde `payment_misconfigured` | tests de `quote` y de `paymentTerms` |
 | X4 | Un valor desconocido de `KNOWNI_PAYMENT_ASSET` impide el arranque en vez de caer a un activo por defecto | test unitario del parser de configuración |
 
+### Bloque activo — pagar primero, consultar después
+
+Cierra el hueco de A10 dentro del recorrido: `flow.issue()` llamaba `/issue` sin pagar, aunque
+`requestPaidIssuance` ya ordenaba `quote → pago → issue` (P9). El pago es XLM nativo en testnet con
+la cuenta Cavos del bloque K; el emisor publica los términos (bloque X, PR #149, fuera de este
+bloque). Parte de `feat/cavos-persistent-key` (#140) y no toca `issuer/`.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| Q1 | La wallet conectada en `/firma` queda en una sesión compartida de la app: el recorrido la lee sin volver a pedir correo y código, y desconectar la borra | prueba de la sesión: conectar, leer, borrar |
+| Q2 | La pantalla de autorización muestra el total que cotiza `/quote` en XLM, calculado en enteros desde `amountStroops`, y el botón dice *Pagar X XLM y consultar*; si el emisor cobra y no hay wallet, el botón lleva a conectarla y no consulta | prueba del formato en stroops; prueba de que sin wallet no hay `/issue` |
+| Q3 | `issue()` pasa por `requestPaidIssuance`: si `/quote` exige pago, se firma y envía antes de `/issue`; un pago fallido deja la persona en autorización con una de las razones de P6 y **ninguna fuente consultada** | prueba del flujo con `fetch` inyectado: orden de llamadas, y cero `/issue` tras un pago rechazado |
+| Q4 | La pantalla de emisión nombra la etapa en curso — firmando el pago, pago aceptado con su hash, consultando fuentes — en vez de una sola espera | prueba de las etapas del estado del flujo |
+| Q5 | La revisión muestra el hash del pago con enlace a Stellar Expert testnet; el hash no viaja a la contraparte | prueba de que `paymentTx` está en el estado y no en `results`; corrida en el iPhone con el hash en `verificacion.md` |
+
 ## Fases
 
 ### Bloque activo — caché idempotente del emisor
@@ -546,7 +561,7 @@ presenta como cerrada. Estados: **cumplido**, **parcial**, **bloqueado** y **fut
 | **Cumplido** | A3 | `RegistryPort` con dos adaptadores sobre un mismo documento firmado —web, que confía en la firma de la autoridad, y cadena, que confía en el digest anclado— y `attestation/test/contract/registry.contract.spec.ts`, una suite que corre igual contra los dos: la misma presentación se acepta, la misma raíz revocada se rechaza y un documento fuera de su raíz de confianza se rehúsa. Ejercido contra la testnet el 2026-09-24: el digest viaja en `MEMO_HASH` de `66bf1b7d…` y el adaptador lo lee de Horizon real. Servir el documento por HTTPS sigue pendiente — D-65, D-73 |
 | **Cumplido** | A7 | `publicStateOf` reduce las causas internas a una taxonomía pública, el emisor la devuelve en `sourceStates` **al lado** de las respuestas firmadas —la contraparte sigue recibiendo `unavailable` sin razón— y la pantalla de degradación la pinta con una frase distinta por estado. `issuer/test/unit/source-states.spec.ts` fija que `not_found`, `failed` y `degraded` son tres valores distintos y que ninguno se filtra al sobre firmado; `app/test/unit/source-states.spec.ts`, que cada estado tiene sus palabras, que ninguna suena a veredicto y que solo se reintenta lo que un reintento puede cambiar — D-68 |
 | **Parcial** | A9 | Hay catálogo y llamadas reales sanitizadas a Croma, incluida una empresa pública; faltan llamadas consentidas y fechadas por cada fuente personal habilitada del perfil vehicular |
-| **Parcial** | A10 | Existen anclaje y pago USDC reales en Stellar testnet; falta que el recorrido principal del teléfono produzca su propia transacción con una wallet real |
+| **Cumplido** | A10 | El recorrido principal del iPhone paga con Cavos 1.2 XLM al emisor antes de consultar, tx `3c1bdad5…01d8` en Stellar testnet (`verificacion.md`, fila 6; D-90); pruebas en `app/test/unit/pay-then-query.spec.ts`. Queda en testnet y en XLM: USDC sigue siendo el activo por defecto del emisor |
 | **Bloqueado** | A12 | La suite demuestra operación sin red, pero nunca se ejecutó en un dispositivo físico en modo avión |
 | **Cumplido** | A14 | CI instala desde cero, ejecuta lint, typecheck y tests, compila circuitos y contrato, y empaqueta la app con Metro para iOS y Android: `npm run bundle` en el job `app`, que falla si alguno de los dos `.hbc` no sale |
 | **Cumplido** | A15 | `core/test/unit/verify-vehicle.spec.ts` y el invariante de campos exactos del sobre: `capacity` y `assetStanding` son respuestas entregables, el activo se compara contra la referencia que pide la contraparte y un predicado no pedido vale `unavailable` — D-63 |

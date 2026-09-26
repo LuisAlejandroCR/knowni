@@ -6,7 +6,6 @@ export interface RequestFixture {
   readonly counterparty: string;
   readonly purpose: string;
   readonly purposeLabel: string;
-  readonly expiresInMinutes: number;
   readonly questions: readonly { readonly title: string; readonly scope: string }[];
 }
 
@@ -14,7 +13,6 @@ export const REQUEST: RequestFixture = {
   counterparty: "Comprador",
   purpose: "vehicle-sale",
   purposeLabel: "Compraventa de vehículo",
-  expiresInMinutes: 10,
   questions: [
     { title: "Vigencia del documento", scope: "Respuesta del registro consultado" },
     { title: "Registro de insolvencia", scope: "Alcance limitado a la fuente" },

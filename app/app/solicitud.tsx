@@ -8,10 +8,13 @@ import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Row, S
 import { REQUEST } from "../src/fixtures.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { decline, useFlow } from "../src/domain/flow.ts";
+import { expiryText } from "../src/domain/expiry.ts";
+import { useNowUnix } from "../src/use-now.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Solicitud() {
   const session = useFlow();
+  const now = useNowUnix();
 
   // A request that did not verify is not shown as a question: the screen says
   // what happened and offers no way to answer it.
@@ -44,7 +47,7 @@ export default function Solicitud() {
           <Text style={{ ...typography.heading }}>{counterpartyLabel(session.request.purpose)}</Text>
           <Row title={purposeLabel(session.request.purpose)} scope="Finalidad" />
           <View style={{ flexDirection: "row", marginTop: 8 }}>
-            <Badge>{`⏱ Vence en ${REQUEST.expiresInMinutes} min`}</Badge>
+            <Badge>{`⏱ ${expiryText(session.request.expiresAt, now)}`}</Badge>
           </View>
         </Card>
         <Label>Te preguntan</Label>

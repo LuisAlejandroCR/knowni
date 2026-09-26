@@ -140,6 +140,14 @@ SICAAC, listas, RUNT y SIMIT con consentimiento del titular, evidencia sanitizad
 El xcframework del prover no entra en el build de EAS (#112), así que `/prueba` dice no soportado.
 Sustituir la llave de desarrollo exige ceremonia multiparte: **decisión del humano**.
 
+## Coordinación entre ramas
+
+Quien edite un archivo que otra rama abierta también toca añade aquí su fila antes de hacerlo.
+
+| Rama | Archivos compartidos | Con quién choca | Regla |
+|---|---|---|---|
+| `feat/journey-pay-then-query` (PR-3, J1–J6) | `app/app/consentimiento.tsx`, `emision.tsx`, `revision.tsx`, `firma.tsx`, `app/src/domain/flow.ts` | `claude/dazzling-ptolemy-58ga2v` (pulido visual de las mismas pantallas) | diffs mínimos: solo botón, fase y hash; no cambia estilos ni componentes. `issuer/` no se toca (`feat/issuer-native-xlm`) |
+
 ## Deudas que no son PR todavía
 
 - **Háptica:** `expo-haptics` ya está en `package.json` y `app/src/haptics.ts` calla si falta lo nativo. Sonará en el próximo build, sin cambio de código.

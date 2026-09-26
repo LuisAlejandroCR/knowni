@@ -287,6 +287,28 @@ Enclave o el Keystore (`NativeDeviceUnwrapKey`).
 | K3 | Si no hay sobre, no abre o su pública no es la cuenta de Cavos, no se firma nada y la pantalla dice que la llave de esa cuenta no está en este teléfono | pruebas de sobre ausente, alterado y de otra cuenta |
 | K4 | La firma es del hash de la transacción (`raw_hash`) con la semilla recuperada; ni la semilla ni el sobre aparecen en un resultado, error o log | prueba de firma verificable contra el hash y de que la semilla no aparece en el resultado |
 
+### Bloque activo — el recorrido paga primero y después consulta
+
+Cierra la parte del teléfono de A10 y la fila PR-3 de `docs/handoff.md`. Parte del bloque Cavos
+(K1–K4) y del coordinador P9, que ya existe (`requestPaidIssuance`) pero ningún botón llamaba:
+`flow.issue()` pedía `/issue` sin pagar. El orden es **pagar y solo después consultar**: el emisor
+no gasta una llamada a Croma sin un pago aceptado por la red. El demo cobra XLM nativo de testnet
+porque así lo declara `/quote`; el teléfono nunca elige el activo. No toca `issuer/`, no añade
+persistencia de pagos ni reembolsos, y las pantallas cambian solo en lo que este bloque nombra.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| J1 | La wallet con la que la persona entró en `/firma` queda en una sesión compartida que sobrevive a navegar entre pantallas y que el recorrido lee; salir de la wallet o reiniciar el recorrido la vacía | prueba del almacén de sesión: guardar, leer, vaciar y avisar a quien escucha |
+| J2 | La pantalla de consentimiento muestra el total de `/quote` en el activo de sus términos de pago; si el cobro está activo el botón dice «Pagar X XLM y consultar», y sin wallet conectada dice «Conectar wallet para pagar» y lleva a `/firma` | prueba del texto del botón por estado (sin cotización, gratis, con pago y wallet, con pago sin wallet) |
+| J3 | `flow.issue()` usa `requestPaidIssuance` cuando la cotización exige pago y la emisión simple solo cuando `/quote` declara el cobro desactivado; sin wallet y con cobro activo no llama `/issue` | pruebas del flujo con `fetch` inyectado: la secuencia HTTP es `/quote → Horizon → /issue` |
+| J4 | Si la firma o Horizon fallan, `/issue` no se llama, el recorrido vuelve al consentimiento y el mensaje es una de las razones tipadas de P6, nunca «error» | prueba de pago rechazado: ninguna llamada a `/issue` y la razón en el estado |
+| J5 | La pantalla de emisión distingue tres fases: firmando el pago, pago aceptado (con su hash) y consultando las fuentes | prueba de la fase derivada del estado; el hash queda en el estado antes de `/issue` |
+| J6 | La revisión muestra el hash de la transacción de pago con enlace a Stellar Expert; el hash vive en el estado del recorrido hasta reiniciarlo | prueba de que `paymentTx` persiste tras la emisión; corrida en el iPhone con el hash en `verificacion.md` y comprobado en Horizon |
+
+Secuencia: spec (este bloque) → pruebas de J1–J6 en rojo → sesión de wallet → `flow.ts` →
+pantallas (`firma`, `consentimiento`, `emision`, `revision`) → typecheck, pruebas y bundle →
+corrida en el iPhone con el emisor cobrando XLM nativo. Hasta esa corrida el PR es WIP.
+
 ## Fases
 
 ### Bloque activo — caché idempotente del emisor

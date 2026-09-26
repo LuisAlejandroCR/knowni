@@ -12,8 +12,14 @@ import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { formatDateTime } from "../src/domain/datetime.ts";
 import { expiryText } from "../src/domain/expiry.ts";
 import { useNowUnix } from "../src/use-now.ts";
+import { useOnboardingSeen } from "../src/onboarding.ts";
+import { useEffect } from "react";
 
 export default function Home() {
+  const seenWelcome = useOnboardingSeen();
+  useEffect(() => {
+    if (seenWelcome === false) router.replace("/bienvenida");
+  }, [seenWelcome]);
   const flow = useFlow();
   const now = useNowUnix();
   const valid = flow.requestState.status === "ok";

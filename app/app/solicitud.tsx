@@ -3,8 +3,8 @@
 // is a question they cannot refuse.
 
 import { Link, router } from "expo-router";
-import { ScrollView, Text } from "react-native";
-import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
+import { ScrollView, Text, View } from "react-native";
+import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { useFlow } from "../src/domain/flow.ts";
@@ -43,16 +43,21 @@ export default function Solicitud() {
         <Card>
           <Text style={{ ...typography.heading }}>{counterpartyLabel(session.request.purpose)}</Text>
           <Row title={purposeLabel(session.request.purpose)} scope="Finalidad" />
-          <Body>{`Vence en ${REQUEST.expiresInMinutes} min`}</Body>
+          <View style={{ flexDirection: "row", marginTop: 8 }}>
+            <Badge>{`⏱ Vence en ${REQUEST.expiresInMinutes} min`}</Badge>
+          </View>
         </Card>
-        {REQUEST.questions.map((question, index) => (
-          <Row
-            key={question.title}
-            icon={String(index + 1).padStart(2, "0")}
-            title={question.title}
-            scope={question.scope}
-          />
-        ))}
+        <Label>Te preguntan</Label>
+        <Card>
+          {REQUEST.questions.map((question, index) => (
+            <Row
+              key={question.title}
+              icon={String(index + 1).padStart(2, "0")}
+              title={question.title}
+              scope={question.scope}
+            />
+          ))}
+        </Card>
       </ScrollView>
       <Footer>
         <Link href="/consentimiento" asChild>

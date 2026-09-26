@@ -141,7 +141,8 @@ consulta a Croma es lo que cuesta, y no se gasta sin pago.
 que el precio puede cambiar si el emisor cambia su tarifa entre las dos. La sesión de wallet no
 sobrevive a cerrar la app: hay que volver a entrar en `/firma` (la llave sí sobrevive, D-88). D-89
 queda para la rama `feat/issuer-native-xlm`. Pruebas: 9 de `pay-then-query` (Q2–Q5) y 1 de
-`wallet-session` (Q1). Falta la corrida en el iPhone contra el emisor con cobro nativo.
+`wallet-session` (Q1). Corrido en el iPhone el 2026-09-26 contra el emisor con cobro nativo: 1.2 XLM
+pagados antes de consultar, tx `3c1bdad5…01d8` (`verificacion.md`, fila 6).
 
 ### D-01 — Raíz de Merkle publicada, no firma dentro del circuito · 2026-09-20
 

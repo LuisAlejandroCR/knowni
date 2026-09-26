@@ -5,7 +5,7 @@
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { receivedAt, requiredFor, verifyOnDevice, type PolicySetting, type RevocationSetting } from "../src/domain/verifier.ts";
@@ -50,7 +50,7 @@ export default function Verificador() {
   if (view === undefined) {
     return (
       <Screen>
-        <TopBar left={<Brand />} right={<Badge>Verificador</Badge>} />
+        <TopBar left={<BackButton />} title="Verificador" right={<Badge>Contraparte</Badge>} />
         <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
           <Title>Sin respuestas{"\n"}que verificar.</Title>
           <Body>El titular todavía no ha compartido nada con esta contraparte.</Body>
@@ -61,13 +61,14 @@ export default function Verificador() {
           </Link>
         </Footer>
         <DemoStamp>ACEPTACIÓN REAL · SIN ENVOLTORIO TODAVÍA</DemoStamp>
+        <TabBar />
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <TopBar left={<Brand />} right={<Badge>Verificador</Badge>} />
+      <TopBar left={<BackButton />} title="Verificador" right={<Badge>Contraparte</Badge>} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Label>{session.request.purpose}</Label>
         <Title>{view.headline}</Title>
@@ -133,6 +134,7 @@ export default function Verificador() {
         </Link>
       </Footer>
       <DemoStamp>{acceptanceStamp()}</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

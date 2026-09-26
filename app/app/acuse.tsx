@@ -4,7 +4,7 @@
 
 import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
-import { Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { BackButton, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { color, type as typography } from "../src/theme.ts";
 import { useFlow } from "../src/domain/flow.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
@@ -24,7 +24,7 @@ export default function Acuse() {
   const time = formatDateTime(flow.sharedAt);
   return (
     <Screen>
-      <TopBar left={<Brand />} />
+      <TopBar left={<BackButton />} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <View style={{ height: 85, alignItems: "center", justifyContent: "center" }}>
           <View style={{ width: 80, height: 80, borderRadius: 26, backgroundColor: color.limeSoft, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-9deg" }] }}>
@@ -37,7 +37,7 @@ export default function Acuse() {
           <Label>Destino</Label>
           <Text style={typography.heading}>{counterpartyLabel(flow.request.purpose)}</Text>
           <Row title={purposeLabel(flow.request.purpose)} scope="Finalidad" />
-          <Row title={`Compartida · ${time}`} scope="Hora en que la compartiste" trailing={<Text>✓</Text>} />
+          <Row title={`Compartida · ${time}`} scope="Hora en que la compartiste" trailing="✓" />
         </Card>
         <Note>Enviar una respuesta no significa que hayas firmado un contrato.</Note>
         <Body>
@@ -54,6 +54,7 @@ export default function Acuse() {
         </Link>
       </Footer>
       {celebrate ? <Confetti /> : null}
+      <TabBar />
     </Screen>
   );
 }

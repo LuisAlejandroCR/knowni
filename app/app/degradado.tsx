@@ -4,7 +4,7 @@
 
 import { Link } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { DEGRADED } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL, RETRYABLE_STATES, sourceStateText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
@@ -74,6 +74,7 @@ export default function Degradado() {
         </Link>
       </Footer>
       <DemoStamp>ESTADO FIRMADO POR EL EMISOR · UNAVAILABLE ≠ FALSE</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

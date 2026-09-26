@@ -3,8 +3,8 @@
 // part of the verification journey — the stamp says so on screen.
 
 import { useState } from "react";
-import { ScrollView, Text } from "react-native";
-import { Body, Button, Card, DemoStamp, Footer, Note, Screen, Title, TopBar } from "../src/components.tsx";
+import { ScrollView } from "react-native";
+import { Body, Button, Callout, DemoStamp, Footer, Note, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { runDeviceProof, type DeviceProofResult } from "../src/domain/device-proof.ts";
 import { createNativeProver } from "../src/domain/prover.ts";
 import { ZKEY_URL } from "../src/domain/proving-key.ts";
@@ -52,22 +52,20 @@ export default function Prueba() {
           La primera vez descarga la llave de prueba (21 MB).
         </Body>
         {result?.kind === "proved" && (
-          <Card tone="deep">
-            <Text>{`Prueba generada y verificada en ${(result.millis / 1000).toFixed(1)} s.`}</Text>
-            <Text>{`Persona ${result.outputs[0]} · solvencia ${result.outputs[1]} · formalidad ${result.outputs[2]} · sanciones ${result.outputs[3]}`}</Text>
-          </Card>
+          <Callout tone="success" title={`Prueba generada y verificada en ${(result.millis / 1000).toFixed(1)} s.`}>
+            {`Persona ${result.outputs[0]} · solvencia ${result.outputs[1]} · formalidad ${result.outputs[2]} · sanciones ${result.outputs[3]}`}
+          </Callout>
         )}
         {result !== undefined && result.kind !== "proved" && (
-          <Card tone="amber">
-            <Text>{MESSAGE[result.kind]}</Text>
-          </Card>
+          <Callout tone="warning" title={MESSAGE[result.kind]} />
         )}
         <Note>Datos de ejemplo inventados: ninguna persona real detrás. Llave de desarrollo, no de producción.</Note>
       </ScrollView>
       <Footer>
-        <Button onPress={run} disabled={busy}>{busy ? "Probando…" : "Generar prueba"}</Button>
+        <Button onPress={run} disabled={busy} loading={busy}>{busy ? "Probando…" : "Generar prueba"}</Button>
       </Footer>
       <DemoStamp>BANCO DE PRUEBA · DATOS DE EJEMPLO</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

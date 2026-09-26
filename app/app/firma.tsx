@@ -3,10 +3,11 @@
 // run, outside the journey; the transaction hash on screen is the evidence.
 
 import { useRef, useState } from "react";
-import { Keyboard, Linking, Platform, ScrollView, Text, TextInput } from "react-native";
+import { Keyboard, Linking, Platform, ScrollView, TextInput } from "react-native";
 import { cleanOtp, otpComplete } from "../src/domain/otp.ts";
 import { getRandomBytes } from "expo-crypto";
-import { Body, Button, Card, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
+import { Body, Button, Callout, DemoStamp, Footer, KEYBOARD_DONE, KeyboardDone, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
+import { color } from "../src/theme.ts";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
@@ -141,7 +142,8 @@ function CavosSigner() {
             keyboardType={step === "email" ? "email-address" : "number-pad"}
             autoCapitalize="none"
             autoCorrect={false}
-            style={{ borderWidth: 1, borderColor: "#c9cfc2", borderRadius: 12, padding: 14, marginTop: 16, fontSize: 16 }}
+            placeholderTextColor={color.inkFaint}
+            style={{ borderWidth: 1, borderColor: color.line, backgroundColor: color.card, borderRadius: 14, padding: 14, minHeight: 48, marginTop: 16, fontSize: 16, color: color.ink }}
           />
         )}
         <KeyboardDone />
@@ -156,39 +158,38 @@ function CavosSigner() {
           </>
         )}
         {message !== undefined && (
-          <Card tone="amber">
-            <Text>{message}</Text>
-          </Card>
+          <Callout tone="warning" title={message} />
         )}
         {result?.status === "paid" && (
-          <Card tone="deep">
-            <Text>Pagado y aceptado por la red.</Text>
-            <Text onPress={() => void Linking.openURL(explorerUrl(result.txHash))}>{result.txHash}</Text>
-          </Card>
+          <Callout
+            tone="success"
+            title="Pagado y aceptado por la red."
+            onPressText={() => void Linking.openURL(explorerUrl(result.txHash))}
+          >
+            {result.txHash}
+          </Callout>
         )}
         {result?.status === "failed" && (
-          <Card tone="amber">
-            <Text>{REASON[result.reason]}</Text>
-          </Card>
+          <Callout tone="warning" title={REASON[result.reason]} />
         )}
         <Note>Testnet: el XLM no tiene valor. Pase o falle, anota una fila en docs/verificacion.md.</Note>
       </ScrollView>
       <Footer>
         {step === "email" && (
-          <Button onPress={() => void sendCode()} disabled={busy || email.trim() === ""}>
+          <Button onPress={() => void sendCode()} disabled={busy || email.trim() === ""} loading={busy}>
             {busy ? "Enviando…" : "Enviarme un código"}
           </Button>
         )}
         {step === "code" && (
-          <Button onPress={() => void verify()} disabled={busy || !otpComplete(code)}>
+          <Button onPress={() => void verify()} disabled={busy || !otpComplete(code)} loading={busy}>
             {busy ? "Abriendo…" : "Entrar"}
           </Button>
         )}
         {step === "wallet" && !funded && (
-          <Button onPress={() => void fund()} disabled={busy}>{busy ? "Fondeando…" : "Fondear con Friendbot"}</Button>
+          <Button onPress={() => void fund()} disabled={busy} loading={busy}>{busy ? "Fondeando…" : "Fondear con Friendbot"}</Button>
         )}
         {step === "wallet" && funded && (
-          <Button onPress={() => void pay()} disabled={busy}>{busy ? "Firmando…" : "Pagarme 1 XLM"}</Button>
+          <Button onPress={() => void pay()} disabled={busy} loading={busy}>{busy ? "Firmando…" : "Pagarme 1 XLM"}</Button>
         )}
       </Footer>
       <DemoStamp>STELLAR TESTNET</DemoStamp>

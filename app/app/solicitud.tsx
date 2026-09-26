@@ -3,11 +3,11 @@
 // is a question they cannot refuse.
 
 import { Link, router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST } from "../src/fixtures.ts";
 import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
-import { useFlow } from "../src/domain/flow.ts";
+import { decline, useFlow } from "../src/domain/flow.ts";
 import { type as typography } from "../src/theme.ts";
 
 export default function Solicitud() {
@@ -63,9 +63,24 @@ export default function Solicitud() {
         <Link href="/consentimiento" asChild>
           <Button>Continuar</Button>
         </Link>
-        <Link href="/" asChild>
-          <Button tone="secondary">Rechazar solicitud</Button>
-        </Link>
+        <Button
+          tone="secondary"
+          onPress={() =>
+            Alert.alert("¿Rechazar la solicitud?", "No se consultará ni se enviará nada.", [
+              { text: "Cancelar", style: "cancel" },
+              {
+                text: "Rechazar",
+                style: "destructive",
+                onPress: () => {
+                  decline();
+                  router.replace("/");
+                },
+              },
+            ])
+          }
+        >
+          Rechazar solicitud
+        </Button>
       </Footer>
       <DemoStamp>SOLICITUD FIRMADA Y VERIFICADA EN EL DISPOSITIVO</DemoStamp>
     </Screen>

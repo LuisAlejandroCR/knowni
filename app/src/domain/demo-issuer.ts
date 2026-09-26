@@ -5,8 +5,9 @@
 import type { AttestedAnswer, AttestedResults, SignedRequest, IssuerRegistry } from "@knowni/attestation";
 import { attestResults, createMemoryRegistry, signRequest } from "@knowni/attestation";
 import type { SessionRequest } from "@knowni/core";
-import { toHex, utf8 } from "@knowni/core";
+import { fromHex, toHex, utf8 } from "@knowni/core";
 import { appHash, appSignatures } from "./crypto.ts";
+import { IDENTITY_CHECK } from "./purpose.ts";
 
 export const DEMO_ISSUER = "co-operador-demo";
 export const DEMO_COUNTERPARTY = "comprador-de-prueba";
@@ -35,9 +36,17 @@ function demoKeys(): DemoKeys {
 }
 
 export function demoRegistry(): IssuerRegistry {
+  const pinned = process.env.EXPO_PUBLIC_ISSUER_PUBLIC_KEY;
+  return issuerRegistry(pinned === "" ? undefined : pinned);
+}
+
+// The real issuer's key, pinned at build or Metro start, takes the demo key's
+// place: its answers come from Croma and are signed by a key the device did not
+// invent. Without a pin, the demo issuer is the only one trusted.
+export function issuerRegistry(pinnedIssuerKeyHex: string | undefined): IssuerRegistry {
   const { issuerPublicKey, counterpartyPublicKey } = demoKeys();
   return createMemoryRegistry({
-    [DEMO_ISSUER]: issuerPublicKey,
+    [DEMO_ISSUER]: pinnedIssuerKeyHex === undefined ? issuerPublicKey : fromHex(pinnedIssuerKeyHex),
     [DEMO_COUNTERPARTY]: counterpartyPublicKey,
   });
 }
@@ -48,15 +57,15 @@ function nonce(): string {
   return toHex(appSignatures.randomSeed().subarray(0, 16));
 }
 
-export function demoRequest(nowUnix: number): SignedRequest {
+export function demoRequest(nowUnix: number, purpose: string = IDENTITY_CHECK): SignedRequest {
   const request: SessionRequest = {
     relyingPartyId: DEMO_COUNTERPARTY,
-    purpose: "vehicle-sale",
+    purpose,
     nonce: nonce(),
     expiresAt: nowUnix + 600,
     // The parameters this demo asks about, hashed: the real product puts the
     // thresholds here, and they are public.
-    paramsHash: appHash.hash("knowni/demo-params/v1", [utf8("vehicle-sale")]),
+    paramsHash: appHash.hash("knowni/demo-params/v1", [utf8(purpose)]),
   };
   return signRequest(appSignatures, demoKeys().counterpartySeed, request);
 }

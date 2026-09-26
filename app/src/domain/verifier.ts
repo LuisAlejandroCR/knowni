@@ -89,6 +89,27 @@ export function disclosureFor(request: SessionRequest, nowUnix: number): Disclos
   };
 }
 
+// The counterparty receives the answer when it is shared, not when someone
+// opens its screen: judging at the later moment expired answers that arrived
+// in time. Before anything is shared, the moment is now.
+export function receivedAt(sharedAt: number | undefined, nowUnix: number): number {
+  return sharedAt ?? nowUnix;
+}
+
+// The same map the issuer prices with: each consented source answers one
+// predicate, and the counterparty requires exactly those — not a fixed pair
+// the person may never have authorised.
+const SOURCE_PREDICATE = new Map<string, string>([
+  ["registraduria", "personhood"],
+  ["sicaac", "capacity"],
+  ["listas", "sanctions"],
+  ["vehiculo", "assetStanding"],
+]);
+
+export function requiredFor(consented: readonly string[]): readonly string[] {
+  return consented.map((source) => SOURCE_PREDICATE.get(source)).filter((p): p is string => p !== undefined);
+}
+
 // Strict refuses anything it cannot confirm; tolerant accepts and records the
 // doubt. Which one applies is the counterparty's call, not the product's.
 export type PolicySetting = "strict" | "tolerant";
@@ -100,6 +121,7 @@ export function verifyOnDevice(
   revocation: RevocationSetting,
   policy: PolicySetting,
   nowUnix: number,
+  required: readonly string[] = ["personhood", "capacity"],
 ): VerificationView {
   // Refused, not accepted: without the spent set an answer already used could
   // pass as new, and "no lo sabemos todavía" never becomes "sí".
@@ -129,7 +151,7 @@ export function verifyOnDevice(
     },
     nowUnix,
     issuerRoot: "f".repeat(64),
-    requiredPredicates: ["personhood", "capacity"],
+    requiredPredicates: required,
   });
 
   if (outcome.status === "refused") {

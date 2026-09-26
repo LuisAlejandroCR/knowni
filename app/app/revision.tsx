@@ -7,11 +7,13 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
 import { REQUEST, WITHHELD } from "../src/fixtures.ts";
 import { answerText, PREDICATE_LABEL } from "../src/domain/session.ts";
-import { useFlow } from "../src/domain/flow.ts";
+import { share, useFlow } from "../src/domain/flow.ts";
+import { counterpartyLabel, purposeLabel } from "../src/domain/purpose.ts";
 import { color, type as typography } from "../src/theme.ts";
 
 export default function Revision() {
-  const { answers } = useFlow();
+  const { answers, request } = useFlow();
+  const purpose = request.purpose;
 
   // No verified answers means nothing to show. A screen that renders what it
   // could not check is a screen that can be lied to.
@@ -39,7 +41,7 @@ export default function Revision() {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Steps current={4} />
         <Title>Esto es lo que{"\n"}recibirán.</Title>
-        <Body>{`${REQUEST.counterparty}\nSolo para esta ${REQUEST.purposeLabel.toLowerCase()}.`}</Body>
+        <Body>{`${counterpartyLabel(purpose)}\nSolo para: ${purposeLabel(purpose).toLowerCase()}.`}</Body>
         <Card>
           {answers.map((answer) => (
             <Row
@@ -72,9 +74,14 @@ export default function Revision() {
         <Note>Este resultado no autoriza la firma del contrato ni sustituye sus requisitos legales.</Note>
       </ScrollView>
       <Footer>
-        <Link href="/acuse" asChild>
-          <Button>Compartir respuesta de demo →</Button>
-        </Link>
+        <Button
+          onPress={() => {
+            share();
+            router.push("/acuse");
+          }}
+        >
+          Compartir →
+        </Button>
       </Footer>
       <DemoStamp>RESPUESTAS FIRMADAS Y VERIFICADAS · ENVÍO REAL BLOQUEADO</DemoStamp>
     </Screen>

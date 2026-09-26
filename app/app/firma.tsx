@@ -5,7 +5,7 @@
 import { useRef, useState } from "react";
 import { Linking, ScrollView, Text, TextInput } from "react-native";
 import { getRandomBytes } from "expo-crypto";
-import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, Title, TopBar } from "../src/components.tsx";
+import { Body, Button, Card, DemoStamp, Footer, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { connectCavos, createCavosAuth } from "../src/cavos-bridge.ts";
 import { explorerUrl, fundOnTestnet, selfPaymentTerms } from "../src/domain/self-payment.ts";
 import { payQuote, type PaymentResult } from "../src/domain/stellar-payment.ts";
@@ -13,7 +13,7 @@ import { cavosConfigured, createCavosWallet } from "../src/domain/wallet-cavos.t
 import { balancesOf, type Balance, type PayerWalletPort } from "../src/domain/wallet-port.ts";
 
 const REASON: Record<Extract<PaymentResult, { status: "failed" }>["reason"], string> = {
-  quote_expired: "El pago de prueba venció antes de firmarse.",
+  quote_expired: "El pago venció antes de firmarse.",
   invalid_terms: "Los términos del pago no se pudieron construir.",
   wallet_not_connected: "La wallet no está conectada.",
   account_not_found: "La cuenta no existe en testnet todavía: fondéala primero.",
@@ -39,7 +39,8 @@ function NotConfigured() {
         <Title>Falta la llave{"\n"}de Cavos.</Title>
         <Body>Esta build no trae EXPO_PUBLIC_CAVOS_APP_ID. Los pasos están en docs/wallets.md.</Body>
       </ScrollView>
-      <DemoStamp>BANCO DE PRUEBA · TESTNET</DemoStamp>
+      <DemoStamp>STELLAR TESTNET</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }
@@ -172,7 +173,8 @@ function CavosSigner() {
           <Button onPress={() => void pay()} disabled={busy}>{busy ? "Firmando…" : "Pagarme 1 XLM"}</Button>
         )}
       </Footer>
-      <DemoStamp>BANCO DE PRUEBA · TESTNET</DemoStamp>
+      <DemoStamp>STELLAR TESTNET</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

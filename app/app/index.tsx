@@ -4,9 +4,10 @@
 
 import { router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
-import { Badge, Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TopBar, Title } from "../src/components.tsx";
+import { Body, Brand, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, TopBar, Title } from "../src/components.tsx";
 import { useFlow } from "../src/domain/flow.ts";
 import { color, type } from "../src/theme.ts";
+import { purposeLabel } from "../src/domain/purpose.ts";
 
 export default function Home() {
   const flow = useFlow();
@@ -14,7 +15,7 @@ export default function Home() {
 
   return (
     <Screen>
-      <TopBar left={<Brand />} right={<Badge onPress={() => router.push("/espacio")}>Mi espacio</Badge>} />
+      <TopBar left={<Brand />} />
       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
         <Label>Tú decides qué compartes</Label>
         <Title>Demuestra más.{"\n"}Revela menos.</Title>
@@ -30,7 +31,7 @@ export default function Home() {
         <Row
           icon={<Text>↗</Text>}
           title={valid ? "Una solicitud pendiente" : "Una solicitud que no verifica"}
-          scope={valid ? "Compraventa de vehículo · vence en 10 min" : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
+          scope={valid ? `${purposeLabel(flow.request.purpose)} · vence en 10 min` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
           trailing={<Text>›</Text>}
           onPress={() => router.push("/solicitud")}
         />
@@ -39,7 +40,7 @@ export default function Home() {
       <Footer>
         <Button onPress={() => router.push("/solicitud")}>Revisar solicitud →</Button>
       </Footer>
-      <DemoStamp>EMISOR Y CONTRAPARTE DE DEMOSTRACIÓN · FUENTES REALES</DemoStamp>
+      <TabBar />
     </Screen>
   );
 }

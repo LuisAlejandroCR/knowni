@@ -11,7 +11,7 @@ export interface RequestFixture {
 }
 
 export const REQUEST: RequestFixture = {
-  counterparty: "Comprador de prueba",
+  counterparty: "Comprador",
   purpose: "vehicle-sale",
   purposeLabel: "Compraventa de vehículo",
   expiresInMinutes: 10,
@@ -68,11 +68,11 @@ export const ANSWERS: readonly AnswerFixture[] = [
 export const WITHHELD = ["Nombre", "N.º de documento", "Expediente"] as const;
 
 export const VERIFIER_CHECKS = [
-  { title: "Firma e integridad", note: "Emisor reconocido · ejemplo", state: "done" as const },
-  { title: "Destinatario y solicitud", note: "Esta operación · ejemplo", state: "done" as const },
+  { title: "Firma e integridad", note: "Emisor reconocido", state: "done" as const },
+  { title: "Destinatario y solicitud", note: "Esta operación", state: "done" as const },
   {
     title: "Estado de revocación",
-    note: "Copia consultada a las 9:40 · ejemplo",
+    note: "Copia consultada",
     state: "waiting" as const,
   },
 ];

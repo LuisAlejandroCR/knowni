@@ -7,6 +7,26 @@
 
 El razonamiento va aquí, no en el commit. Un commit de este repositorio es una línea.
 
+### D-86 — El recorrido corre en un iPhone contra el emisor real · 2026-09-25
+
+*Qué se hizo:* EAS reemplaza a Codemagic para iOS (build `development` con `expo-dev-client`, así el
+JS llega por Metro sin gastar builds). El emisor corre en el portátil y el teléfono lo alcanza en
+`https://issuer.voltarut.com`, un túnel con nombre de Cloudflare (`knowni-issuer`). La llave del
+emisor se fija con `KNOWNI_ISSUER_SEED` y su pública se ancla en la app
+(`EXPO_PUBLIC_ISSUER_PUBLIC_KEY`): el verificador del teléfono confía en esa llave y no en la de
+demostración. El verificador exige solo los predicados de las fuentes consentidas, juzga la
+respuesta en el momento de compartirla (`sharedAt`), y la finalidad sigue al consentimiento: sin
+RUNT y SIMIT es `identity-check`, no `vehicle-sale`.
+
+*Por qué:* la primera corrida en el iPhone mostró tres rechazos que eran ciertos pero no útiles:
+firma de un emisor desconocido (la llave cambiaba en cada arranque), `capacity` exigido sin que
+nadie consintiera SICAAC, y "ventana cerrada" porque el verificador miraba el reloj al abrir la
+pantalla, diez minutos después de compartir. Y las etiquetas "demo" seguían en pantalla cuando la
+consulta ya era real.
+
+*Lo que no cierra:* la contraparte sigue viviendo en el mismo teléfono —el verificador es real, la
+entrega y el acuse no—. El emisor depende del portátil encendido. Modo avión (A12) sin probar.
+
 ## Bitácora reciente
 
 - **2026-09-25 — El pitch se vuelve una historia visual.** El origen es Colombia

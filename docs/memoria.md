@@ -62,6 +62,11 @@ testnet; antes de mainnet va `react-native-quick-crypto` o el firmante nativo de
 
 ## Bitácora reciente
 
+- **2026-09-26 — Tomas reales en la película del pitch.** `design/demo/insert_demo.py` pone la
+  grabación del iPhone dentro de la película generada, en cuatro ventanas elegidas por el titular,
+  como un teléfono rotulado *App real*: lo generado y lo grabado se distinguen a la vista. Escribe un
+  archivo nuevo porque la película sin tomas sigue sirviendo sola, y reutiliza los desenfoques del
+  demo para que ninguna toma muestre documento, correo o código.
 - **2026-09-26 — El video demo tiene voz y subtítulos en el código.** Cada segmento de
   `design/demo/build_demo.py` lleva su línea de Nayla; el script la quema como subtítulo, mezcla
   el audio si existe y se niega a renderizar si una línea no cabe a ~15 caracteres por segundo. Para

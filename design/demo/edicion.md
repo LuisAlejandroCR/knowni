@@ -76,6 +76,24 @@ campo difuminado), y cada segmento dura al menos `MIN_DUR` = 5 s; una toma más 
 contra una fuente sintética (`testsrc2` a 1290×2796, sin datos personales): 96,4 s, video y audio
 estéreo a 48 kHz, y el cuadro sostenido de `conectar` conserva el desenfoque.
 
+## Tomas reales dentro de la película del pitch
+
+`insert_demo.py` mete tomas de la grabación en `knowni-media/demo/out/knowni-stellar.mp4` (la
+película generada, renombrada para el pitch de Stellar) y escribe `knowni-stellar-demo.mp4`; la
+película original no se toca. Cada toma es un teléfono que entra deslizándose a la derecha, con el
+rótulo *App real · iPhone · Stellar testnet*, los mismos desenfoques y borrados del demo, y sin
+tocar el audio ni los subtítulos de la película. Ventanas, en `INSERTS`:
+
+| Película | Toma | Fuente |
+|---|---|---|
+| 20–24 s | `solicitud` | 5,0–8,0 + 1 s sostenido |
+| 27–32 s | `autoriza`, campo difuminado | 8,0–11,9 + 1,1 s sostenido |
+| 47–50 s | `recibiran` | 85,3–87,9 + 0,4 s sostenido |
+| 57–65 s | `consulta`: firmando → pago aceptado → Registraduría | 55,0–63,0 |
+
+Probado el 2026-09-26 con una película sintética de 85 s a 1920×1080 y la fuente sintética: sale
+de 85 s, el teléfono entra y sale en cada ventana y no tapa la franja de subtítulos.
+
 ## Lo que falta
 
 1. **Voz**: generar con Nayla las 16 líneas de `guion.md` §1, una por archivo

@@ -173,15 +173,16 @@ def run(cmd):
     subprocess.run(cmd, check=True)
 
 
-def blur_chain(src, blurs):
-    """Returns filter lines that blur each box during its local window."""
+def blur_chain(src, blurs, tag=""):
+    """Returns filter lines that blur each box during its local window. `tag` keeps labels unique."""
     lines, cur = [], src
     for i, ((x, y, w, h), t0, t1) in enumerate(blurs):
         lr, cr = min(28, h // 2 - 2), min(12, h // 4 - 2)
-        lines.append(f"[{cur}]split[k{i}][c{i}]")
-        lines.append(f"[c{i}]crop={w}:{h}:{x}:{y},boxblur=luma_radius={lr}:luma_power=5:chroma_radius={cr}:chroma_power=3[b{i}]")
-        lines.append(f"[k{i}][b{i}]overlay={x}:{y}:enable='between(t,{t0},{t1})'[s{i}]")
-        cur = f"s{i}"
+        k, c, b, s = (f"{p}{tag}{i}" for p in ("k", "c", "b", "s"))
+        lines.append(f"[{cur}]split[{k}][{c}]")
+        lines.append(f"[{c}]crop={w}:{h}:{x}:{y},boxblur=luma_radius={lr}:luma_power=5:chroma_radius={cr}:chroma_power=3[{b}]")
+        lines.append(f"[{k}][{b}]overlay={x}:{y}:enable='between(t,{t0},{t1})'[{s}]")
+        cur = s
     return lines, cur
 
 

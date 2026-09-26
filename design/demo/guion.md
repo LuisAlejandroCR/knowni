@@ -13,7 +13,7 @@ Fuente de las reglas: las bases oficiales del evento, consultadas el 2026-09-20.
 | Repositorio público con README | ✅ público en GitHub (comprobado 2026-09-26) | <https://github.com/LuisAlejandroCR/knowni> |
 | Video demo del producto corriendo | ⏳ por grabar | este guion, §1 |
 | Video pitch, máximo 3 minutos | ⏳ por grabar | este guion, §2 |
-| Pieza ElevenLabs (Challenge 3) | ✅ prompt listo | [`elevenlabs-mcp.md`](elevenlabs-mcp.md) |
+| Pieza ElevenLabs (Challenge 3) | ✅ renderizada 2026-09-26 (84,9 s, 16:9 con subtítulos, 9:16 y corte de 30 s), sin publicar | prompt en [`elevenlabs-mcp.md`](elevenlabs-mcp.md); archivos fuera del repositorio, en `knowni-media/elevenlabs/out/` |
 | Evidencia on-chain en testnet | ✅ listo | tabla *Evidencia en testnet*, abajo |
 
 Los criterios pesan así: funcionalidad y testnet 30 %, integración Stellar 25 %, originalidad 20 %,
@@ -137,6 +137,6 @@ verificación emitida — nunca por vender expedientes.
 
 ## Lo que falta antes de enviar
 
-1. Grabar los dos videos con este guion y generar la pieza de ElevenLabs.
+1. Grabar los dos videos con este guion; la pieza de ElevenLabs ya está renderizada.
 2. Confirmar que el historial de git refleja a los contribuyentes declarados.
 3. `LICENSE` ya está en la raíz; las bases exigen un archivo de licencia visible.

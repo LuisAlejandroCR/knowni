@@ -4,7 +4,7 @@
 
 import { Link } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Footer, Label, Note, Row, Screen, TabBar, Title, TopBar } from "../src/components.tsx";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { useFlow } from "../src/domain/flow.ts";
@@ -121,9 +121,13 @@ export default function Verificador() {
           title={policy === "strict" ? "Política estricta" : "Política tolerante"}
           scope={policy === "strict" ? "Rechaza lo que no pueda confirmar" : "Acepta y deja constancia"}
           trailing={
-            <Pressable onPress={() => setPolicy(policy === "strict" ? "tolerant" : "strict")} style={{ minHeight: 44, justifyContent: "center" }}>
-              <Text style={{ color: "#294c3e", fontWeight: "700" }}>Cambiar</Text>
-            </Pressable>
+            <Switch
+              accessibilityLabel="Política estricta"
+              value={policy === "strict"}
+              onValueChange={(strict) => setPolicy(strict ? "strict" : "tolerant")}
+              trackColor={{ true: color.deep, false: color.line }}
+              thumbColor={color.card}
+            />
           }
         />
         <Note>“Sin red” no significa “estado actualizado”. Una firma válida no prueba vigencia de hoy.</Note>

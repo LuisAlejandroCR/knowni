@@ -28,13 +28,16 @@ export default function Home() {
           <Text style={{ fontSize: 23, fontWeight: "700", color: "#fff", marginTop: 4 }}>Respuestas bajo{"\n"}tu control.</Text>
           <Text style={{ ...type.body, color: "#ccdbce", marginTop: 8 }}>Revisa cada solicitud antes de responder.</Text>
         </Card>
-        <Row
-          icon="↗"
-          title={valid ? "Una solicitud pendiente" : "Una solicitud que no verifica"}
-          scope={valid ? `${purposeLabel(flow.request.purpose)} · vence en 10 min` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
-          trailing="›"
-          onPress={() => router.push("/solicitud")}
-        />
+        <Label>Pendiente</Label>
+        <Card>
+          <Row
+            icon="↗"
+            title={valid ? "Una solicitud pendiente" : "Una solicitud que no verifica"}
+            scope={valid ? `${purposeLabel(flow.request.purpose)} · vence en 10 min` : flow.requestState.status === "refused" ? flow.requestState.explanation : ""}
+            trailing="›"
+            onPress={() => router.push("/solicitud")}
+          />
+        </Card>
         <Note>La contraparte pide respuestas.{"\n"}No una copia de tu cédula.</Note>
       </ScrollView>
       <Footer>

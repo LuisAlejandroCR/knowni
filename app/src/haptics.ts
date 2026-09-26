@@ -4,6 +4,13 @@
 
 import { requireOptionalNativeModule } from "expo-modules-core";
 
+// A light tick on the main action: the press registered, before anything loads.
+export async function lightTap(): Promise<void> {
+  if (requireOptionalNativeModule("ExpoHaptics") === null) return;
+  const Haptics = await import("expo-haptics");
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+}
+
 export async function successTap(): Promise<void> {
   if (requireOptionalNativeModule("ExpoHaptics") === null) return;
   const Haptics = await import("expo-haptics");

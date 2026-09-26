@@ -26,5 +26,9 @@ Pod::Spec.new do |s|
   }
 
   s.source_files = "**/*.{h,swift}"
-  s.vendored_frameworks = 'KnowniProver.xcframework'
+  # Vendored only when build-ios.sh has run (macOS). Without it the Swift side
+  # compiles its `unsupported` branch instead of failing the whole app build.
+  if File.exist?(File.join(__dir__, 'KnowniProver.xcframework'))
+    s.vendored_frameworks = 'KnowniProver.xcframework'
+  end
 end

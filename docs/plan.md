@@ -287,6 +287,21 @@ Enclave o el Keystore (`NativeDeviceUnwrapKey`).
 | K3 | Si no hay sobre, no abre o su pública no es la cuenta de Cavos, no se firma nada y la pantalla dice que la llave de esa cuenta no está en este teléfono | pruebas de sobre ausente, alterado y de otra cuenta |
 | K4 | La firma es del hash de la transacción (`raw_hash`) con la semilla recuperada; ni la semilla ni el sobre aparecen en un resultado, error o log | prueba de firma verificable contra el hash y de que la semilla no aparece en el resultado |
 
+### Bloque activo — pagar primero, consultar después
+
+Cierra el hueco de A10 dentro del recorrido: `flow.issue()` llamaba `/issue` sin pagar, aunque
+`requestPaidIssuance` ya ordenaba `quote → pago → issue` (P9). El pago es XLM nativo en testnet con
+la cuenta Cavos del bloque K; el emisor publica los términos (rama `feat/issuer-native-xlm`, fuera
+de este bloque). Parte de `feat/cavos-persistent-key` (#140) y no toca `issuer/`.
+
+| # | Criterio | Verificación |
+|---|---|---|
+| Q1 | La wallet conectada en `/firma` queda en una sesión compartida de la app: el recorrido la lee sin volver a pedir correo y código, y desconectar la borra | prueba de la sesión: conectar, leer, borrar |
+| Q2 | La pantalla de autorización muestra el total que cotiza `/quote` en XLM, calculado en enteros desde `amountStroops`, y el botón dice *Pagar X XLM y consultar*; si el emisor cobra y no hay wallet, el botón lleva a conectarla y no consulta | prueba del formato en stroops; prueba de que sin wallet no hay `/issue` |
+| Q3 | `issue()` pasa por `requestPaidIssuance`: si `/quote` exige pago, se firma y envía antes de `/issue`; un pago fallido deja la persona en autorización con una de las razones de P6 y **ninguna fuente consultada** | prueba del flujo con `fetch` inyectado: orden de llamadas, y cero `/issue` tras un pago rechazado |
+| Q4 | La pantalla de emisión nombra la etapa en curso — firmando el pago, pago aceptado con su hash, consultando fuentes — en vez de una sola espera | prueba de las etapas del estado del flujo |
+| Q5 | La revisión muestra el hash del pago con enlace a Stellar Expert testnet; el hash no viaja a la contraparte | prueba de que `paymentTx` está en el estado y no en `results`; corrida en el iPhone con el hash en `verificacion.md` |
+
 ## Fases
 
 ### Bloque activo — caché idempotente del emisor

@@ -28,6 +28,14 @@ Leer en este orden: `AGENTS.md`, `CLAUDE.md`, este archivo, `docs/memoria.md` (D
 4. Decisiones nuevas: **D-89 en adelante** en `docs/memoria.md`. Hay otros agentes en worktrees hermanos: revisa el último número antes de escribir uno.
 5. Secretos solo en `.env.local` y `app/.env.local` (gitignored). Documenta el nombre de la variable en `.env.example`, nunca el valor.
 
+## Coordinación de ramas en paralelo
+
+| Rama | Toca | Pantallas compartidas |
+|---|---|---|
+| `claude/dazzling-ptolemy-58ga2v` | pulido de UI del recorrido | `consentimiento.tsx`, `emision.tsx`, `revision.tsx` |
+| `feat/issuer-native-xlm` | cobro nativo en `issuer/` | ninguna |
+| `feat/journey-pay-then-query` | `flow.ts`, `wallet-session.ts`, `firma.tsx`; Q1–Q5 de `plan.md` | diff mínimo en las tres de arriba: botón de pago, etapa de pago, hash en revisión |
+
 ## Cómo levantar el entorno del teléfono
 
 ```bash

@@ -19,6 +19,8 @@ export const PRICE_MINOR = new Map<string, number>([
   ["assetStanding", 300],
 ]);
 
+// The default. An issuer that charges another asset quotes in that asset's
+// currency instead; the amounts stay the same minor units.
 export const CURRENCY = "USDC";
 
 export interface QuoteLine {
@@ -60,6 +62,7 @@ export function quote(
   predicates: readonly string[],
   nowUnix: number,
   validForSeconds = 600,
+  currency = CURRENCY,
 ): QuoteResult {
   if (predicates.length === 0) return { status: "refused", reason: "empty_request" };
 
@@ -74,7 +77,7 @@ export function quote(
   return {
     status: "quoted",
     quote: {
-      currency: CURRENCY,
+      currency,
       lines,
       totalMinor: lines.reduce((sum, line) => sum + line.priceMinor, 0),
       paymentRef: paymentRef(request, predicates),

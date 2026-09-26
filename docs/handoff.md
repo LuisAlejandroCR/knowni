@@ -97,6 +97,7 @@ redirect `knowni://cavos-auth` puede fallar.
 ### PR-3 — Pago USDC dentro del recorrido (A10)
 
 El emisor corre con `payments off` porque falta `KNOWNI_TREASURY_ACCOUNT` y `KNOWNI_PAYMENT_ASSET_ISSUER`.
+Para la demo basta `KNOWNI_PAYMENT_ASSET=native`: cobra XLM y no necesita emisor de USDC.
 El orden `quote → pago → issue` ya está probado en `app/test/unit/issuer-client.spec.ts`; falta
 ejercerlo con la wallet de Cavos desde la pantalla de consulta.
 - **Archivos:** `issuer/src/main.ts` (solo config), `app/src/domain/flow.ts`, `app/app/emision.tsx`.

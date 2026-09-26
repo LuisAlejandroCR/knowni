@@ -3,8 +3,9 @@
 // signed by the issuer. The phone never sees a key and never calls a registry.
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { chargeableMinor, paymentRef, quote } from "./pricing.ts";
+import { CURRENCY, chargeableMinor, paymentRef, quote } from "./pricing.ts";
 import {
+  assetCurrency,
   createMemorySpentPayments,
   paymentTerms,
   quotedAmountStroops,
@@ -325,6 +326,9 @@ export function createIssuerService(options: IssuerOptions) {
   const notifier = options.notifier ?? noNotifier;
   const quota = options.requestQuota ?? createMemoryRequestQuota();
   const cache = options.issuanceCache ?? createMemoryIssuanceCache<IssuanceResponse>();
+  // Priced in what is charged: a native treasury quotes XLM, never USDC paid
+  // in XLM. Free service keeps the default currency.
+  const quoteCurrency = options.payments === undefined ? CURRENCY : assetCurrency(options.payments.asset);
 
   const handle = async (request: IncomingMessage, response: ServerResponse) => {
     if (request.method === "OPTIONS") return send(response, 204, {});
@@ -344,7 +348,7 @@ export function createIssuerService(options: IssuerOptions) {
       if (body?.request === undefined || !Array.isArray(body.predicates)) {
         return send(response, 400, { error: "invalid_request" });
       }
-      const result = quote(body.request, body.predicates, Math.floor(Date.now() / 1000));
+      const result = quote(body.request, body.predicates, Math.floor(Date.now() / 1000), undefined, quoteCurrency);
       if (result.status !== "quoted") return send(response, 400, { error: result.reason });
       try {
         return send(response, 200, {
@@ -407,7 +411,7 @@ export function createIssuerService(options: IssuerOptions) {
             if (typeof body.paymentTx !== "string") {
               throw new IssueHttpError(402, { error: "payment_required" });
             }
-            const expectedQuote = quote(body.request, predicates, nowUnix);
+            const expectedQuote = quote(body.request, predicates, nowUnix, undefined, quoteCurrency);
             if (expectedQuote.status !== "quoted") {
               throw new IssueHttpError(400, { error: expectedQuote.reason });
             }

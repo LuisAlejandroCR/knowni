@@ -60,7 +60,7 @@ notifications: none
 |---|---|---|
 | Fuentes | `CROMA_API_KEY` | el servicio **no arranca** |
 | Identidad del emisor | `KNOWNI_ISSUER_SEED` | se genera una por arranque, y lo emitido antes deja de verificar |
-| Cobro | `KNOWNI_TREASURY_ACCOUNT` + `KNOWNI_PAYMENT_ASSET_ISSUER` | se responde sin cobrar si no hay tesoro; con tesoro incompleto no arranca |
+| Cobro | `KNOWNI_TREASURY_ACCOUNT` + `KNOWNI_PAYMENT_ASSET` (`usdc` por defecto, o `native`) + `KNOWNI_PAYMENT_ASSET_ISSUER` si es USDC | se responde sin cobrar si no hay tesoro; con tesoro incompleto o un activo desconocido no arranca |
 | Pagos ya canjeados | `KNOWNI_SPENT_PAYMENTS_FILE` | obligatoria **si se cobra**: un conjunto gastado que muere con el proceso deja que una transacción pague dos veces — D-37 |
 | Caché | `KNOWNI_ISSUER_CACHE_MAX_ENTRIES` | usa 1000 entradas en memoria por defecto |
 | Aviso | `KAPSO_*` o `META_*` | no se envía nada, y se reporta como `none` |
@@ -69,8 +69,9 @@ notifications: none
 
 El pago se comprueba **contra la cadena**, no contra un recibo que mande el cliente: `paymentTx` se
 busca en Horizon y tiene que estar exitoso, llevar el `paymentRef` como `MEMO_HASH`, haber llegado a
-la cuenta del tesoro en el activo USDC configurado y cubrir el monto publicado por `/quote`. XLM u
-otro activo con el mismo número no sirve. Una transacción paga **una** pregunta; un pago rechazado
+la cuenta del tesoro en el activo configurado y cubrir el monto publicado por `/quote`. El activo es
+USDC por defecto; con `KNOWNI_PAYMENT_ASSET=native` es XLM, y `/quote` cotiza en `XLM`. La moneda de
+la cotización siempre es la del activo cobrado: otro activo con el mismo número no sirve. Una transacción paga **una** pregunta; un pago rechazado
 sigue disponible, para que nadie quede cobrado por una consulta que no se hizo.
 
 ## Reintentos e idempotencia

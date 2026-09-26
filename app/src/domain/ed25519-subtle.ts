@@ -67,10 +67,29 @@ export function createEd25519Subtle() {
 }
 
 // Installs the shim only where crypto.subtle is missing: a browser or Node keeps
-// its own, non-extractable implementation.
-export function installEd25519Subtle(target: { crypto?: { subtle?: unknown } } = globalThis as never): void {
-  if (target.crypto?.subtle !== undefined) return;
+// its own, non-extractable implementation. A crypto object that refuses new
+// properties is replaced by one that keeps its getRandomValues and adds subtle.
+export function installEd25519Subtle(target: { crypto?: { subtle?: unknown } } = globalThis as never): boolean {
+  const current = target.crypto as { subtle?: unknown; getRandomValues?: unknown } | undefined;
+  if (current?.subtle !== undefined) return true;
   const subtle = createEd25519Subtle();
-  if (target.crypto === undefined) (target as { crypto: unknown }).crypto = { subtle };
-  else (target.crypto as { subtle: unknown }).subtle = subtle;
+  if (current !== undefined) {
+    try {
+      Object.defineProperty(current, "subtle", { value: subtle, configurable: true, enumerable: true, writable: true });
+    } catch {
+      // Not extensible: fall through and replace the object.
+    }
+    if (current.subtle !== undefined) return true;
+  }
+  const getRandomValues = current?.getRandomValues;
+  const replacement = {
+    ...(typeof getRandomValues === "function" ? { getRandomValues: getRandomValues.bind(current) } : {}),
+    subtle,
+  };
+  try {
+    Object.defineProperty(target, "crypto", { value: replacement, configurable: true, enumerable: true, writable: true });
+  } catch {
+    (target as { crypto: unknown }).crypto = replacement;
+  }
+  return target.crypto?.subtle !== undefined;
 }

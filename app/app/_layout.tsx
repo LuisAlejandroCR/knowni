@@ -5,13 +5,10 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { installPlatformCrypto } from "../src/domain/platform.ts";
-import { installEd25519Subtle } from "../src/domain/ed25519-subtle.ts";
 import { createDeviceNullifierStore } from "../src/domain/nullifier-store.ts";
 import { hydrateLedger } from "../src/domain/verifier.ts";
 
 installPlatformCrypto();
-// Before anything imports Cavos: it needs crypto.subtle, which React Native lacks (D-87).
-installEd25519Subtle();
 
 // Reads the spent set off the device before anything can be accepted against
 // it — D-36. Until it lands the verifier refuses rather than accepting an

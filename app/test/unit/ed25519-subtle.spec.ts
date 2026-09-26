@@ -47,3 +47,13 @@ test("installed only where crypto.subtle is missing", () => {
   installEd25519Subtle(existing);
   assert.equal(existing.crypto.subtle, real);
 });
+
+test("a crypto object that refuses new properties is replaced, keeping getRandomValues", () => {
+  const getRandomValues = (array: Uint8Array) => array.fill(7);
+  const target: { crypto?: { subtle?: unknown; getRandomValues?: (a: Uint8Array) => Uint8Array } } = {
+    crypto: Object.freeze({ getRandomValues }),
+  };
+  assert.equal(installEd25519Subtle(target), true);
+  assert.ok(target.crypto?.subtle !== undefined);
+  assert.deepEqual(target.crypto?.getRandomValues?.(new Uint8Array(2)), new Uint8Array([7, 7]));
+});

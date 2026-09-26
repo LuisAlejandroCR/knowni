@@ -63,8 +63,9 @@ Las filas 5 y 5b de la tabla de teléfono y D-88 entran con el PR #140.
 
 ## §1 — Video demo · el producto corriendo en el iPhone
 
-**65,6 s.** La grabación del iPhone del 2026-09-26 (build EAS `development` + Metro), cortada y
-montada por [`build_demo.py`](build_demo.py); el mapa de la fuente, las coordenadas y las reglas de
+**Grabación: 2:01 (121 s). Video editado: 1:05,6.** La grabación del iPhone del 2026-09-26 (build
+EAS `development` + Metro) dura 2:01; la edición quita la escritura del documento y del correo,
+la salida a Edge, el selector de apps y el historial repetido, y queda montada por [`build_demo.py`](build_demo.py); el mapa de la fuente, las coordenadas y las reglas de
 privacidad están en [`edicion.md`](edicion.md). Sin maquetas: cada cuadro del teléfono es la app
 corriendo; los tramos rápidos o lentos llevan su velocidad en `SEGMENTS`. Documento, correo y
 código van cortados o difuminados.

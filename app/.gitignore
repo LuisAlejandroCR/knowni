@@ -6,3 +6,4 @@ node_modules/
 # generation): regenerated on every native build, never edited or committed.
 /android/
 /ios/
+/modules/knowni-prover/android/build/

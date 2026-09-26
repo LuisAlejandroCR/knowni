@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { SESSION_SECONDS, boundToDevice, createPrivyAuth, isActive } from "../../src/domain/auth.ts";
+import { SESSION_SECONDS, boundToDevice, createSessionAuth, isActive } from "../../src/domain/auth.ts";
 
 const NOW = 1_789_000_000;
 const DEVICE = "device-1";
@@ -17,7 +17,7 @@ const bridge = {
 };
 
 test("a passkey opens a short session tied to this device", async () => {
-  const auth = createPrivyAuth(bridge);
+  const auth = createSessionAuth(bridge);
   const session = await auth.signInWithPasskey(DEVICE, NOW);
   assert.ok(session);
   assert.equal(session.factor, "passkey");
@@ -27,7 +27,7 @@ test("a passkey opens a short session tied to this device", async () => {
 });
 
 test("the session expires, and one from the future is not active either", async () => {
-  const auth = createPrivyAuth(bridge);
+  const auth = createSessionAuth(bridge);
   const session = (await auth.signInWithPasskey(DEVICE, NOW))!;
   assert.equal(isActive(session, NOW + 60), true);
   assert.equal(isActive(session, NOW + SESSION_SECONDS), false);
@@ -36,7 +36,7 @@ test("the session expires, and one from the future is not active either", async 
 });
 
 test("the magic link recovers, and says it was a recovery", async () => {
-  const auth = createPrivyAuth(bridge);
+  const auth = createSessionAuth(bridge);
   const session = await auth.recoverWithMagicLink("bueno", DEVICE, NOW);
   assert.equal(session?.factor, "magic_link");
   // A factor that is recorded can be treated differently later; one that is
@@ -45,13 +45,13 @@ test("the magic link recovers, and says it was a recovery", async () => {
 });
 
 test("without the provider configured nobody gets a session", async () => {
-  const auth = createPrivyAuth(undefined);
+  const auth = createSessionAuth(undefined);
   assert.equal(await auth.signInWithPasskey(DEVICE, NOW), undefined);
   assert.equal(await auth.recoverWithMagicLink("bueno", DEVICE, NOW), undefined);
 });
 
 test("no source password is anywhere in a session", async () => {
-  const auth = createPrivyAuth(bridge);
+  const auth = createSessionAuth(bridge);
   const session = await auth.signInWithPasskey(DEVICE, NOW);
   assert.deepEqual(Object.keys(session!).sort(), [
     "deviceId",

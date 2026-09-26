@@ -21,3 +21,16 @@ export function selfPaymentTerms(account: string, reference: Uint8Array): Paymen
 }
 
 export const explorerUrl = (txHash: string): string => `https://stellar.expert/explorer/testnet/tx/${txHash}`;
+
+// A Cavos account exists only once something funds it. On testnet that is
+// Friendbot; a refusal for an already funded account is not a failure.
+export async function fundOnTestnet(account: string, fetchImpl: typeof fetch = fetch): Promise<boolean> {
+  try {
+    const response = await fetchImpl(`https://friendbot.stellar.org/?addr=${encodeURIComponent(account)}`);
+    if (response.ok) return true;
+    const body = (await response.json().catch(() => ({}))) as { detail?: string };
+    return /already funded|createAccountAlreadyExist/i.test(body.detail ?? "");
+  } catch {
+    return false;
+  }
+}

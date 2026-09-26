@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { balancesOf, createDeviceWallet } from "../../src/domain/wallet-port.ts";
-import { createPrivyWallet } from "../../src/domain/wallet-privy.ts";
+import { createCavosWallet } from "../../src/domain/wallet-cavos.ts";
 import { createFreighterWallet } from "../../src/domain/wallet-freighter.ts";
 
 const ACCOUNT = "GAZONAKJ7XIJVQI37HR2ZZKMQIISUIFAYXVCXJOCXVGQQNGM24BF2UZD";
@@ -33,7 +33,7 @@ test("Horizon being down reads as empty too, and never throws into a screen", as
 });
 
 test("without its key a wallet connects to nothing instead of pretending", async () => {
-  for (const wallet of [createPrivyWallet(undefined), createFreighterWallet(undefined)]) {
+  for (const wallet of [createCavosWallet(undefined), createFreighterWallet(undefined)]) {
     assert.equal(await wallet.connect(), undefined);
     assert.equal(await wallet.signTransaction("AAAA"), undefined);
     assert.equal(await wallet.accountId(), undefined);
@@ -41,50 +41,26 @@ test("without its key a wallet connects to nothing instead of pretending", async
 });
 
 test("a configured wallet connects, signs and disconnects through the same port", async () => {
-  const privy = createPrivyWallet({
-    loginWithPasskey: async () => true,
-    signupWithPasskey: async () => true,
-    stellarAddress: async () => ACCOUNT,
-    createStellarWallet: async () => undefined,
-    signRawHash: async (_address: string, hash: string) => `${hash}ff`,
-    logout: async () => {},
+  let loggedOut = false;
+  const cavos = createCavosWallet({
+    address: async () => ACCOUNT,
+    signXdr: async (xdr) => `${xdr}signed`,
+    logout: async () => {
+      loggedOut = true;
+    },
   });
-  assert.equal(await privy.connect(), ACCOUNT);
-  // The hash goes in `0x`-prefixed and the signature comes back bare, which is
-  // what the XDR envelope needs.
-  assert.equal(await privy.signTransaction("ab".repeat(32)), `${"ab".repeat(32)}ff`);
-  await privy.disconnect();
-  assert.equal(await privy.accountId(), undefined);
+  assert.equal(await cavos.signTransaction("AAAA"), undefined, "nothing is signed before connecting");
+  assert.equal(await cavos.connect(), ACCOUNT);
+  assert.equal(cavos.signingMethod, "envelope");
+  // The envelope goes to the kit as is; payQuote checks what comes back.
+  assert.equal(await cavos.signTransaction("AAAA"), "AAAAsigned");
+  await cavos.disconnect();
+  assert.equal(await cavos.accountId(), undefined);
+  assert.equal(loggedOut, true);
 });
 
 test("the device wallet signs nothing, and says so", async () => {
   const device = createDeviceWallet(ACCOUNT);
   assert.equal(await device.connect(), ACCOUNT);
   assert.equal(await device.signTransaction("AAAA"), undefined);
-});
-
-test("a first-time payer signs up with a passkey instead of logging in with one they lack", async () => {
-  const calls: string[] = [];
-  const bridge = {
-    loginWithPasskey: async () => {
-      calls.push("login");
-      return true;
-    },
-    signupWithPasskey: async () => {
-      calls.push("signup");
-      return true;
-    },
-    stellarAddress: async () => undefined,
-    createStellarWallet: async () => {
-      calls.push("create");
-      return ACCOUNT;
-    },
-    signRawHash: async () => undefined,
-    logout: async () => {},
-  };
-  assert.equal(await createPrivyWallet(bridge, () => "signup").connect(), ACCOUNT);
-  assert.deepEqual(calls, ["signup", "create"]);
-  calls.length = 0;
-  await createPrivyWallet(bridge).connect();
-  assert.deepEqual(calls, ["login", "create"]);
 });

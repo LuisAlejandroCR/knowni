@@ -1835,6 +1835,25 @@ fallara, y leía el usuario del render anterior: la wallet habría creado una se
 *Lo que no cierra:* nada de esto ha corrido en un teléfono. Falta el dominio de la passkey y el dev
 build — `docs/wallets.md`. Freighter sigue sin puente WalletConnect.
 
+### D-85 — Cavos reemplaza a Privy como wallet del teléfono · 2026-09-25
+
+*Qué se hizo:* `wallet-cavos.ts` detrás del mismo `PayerWalletPort`, con `signingMethod: "envelope"`:
+Cavos firma el sobre sin enviarlo (`wallet.signXdr`), igual que Freighter, y `payQuote` verifica esa
+firma antes de Horizon (#104). `/firma` entra con un código por correo, obtiene la cuenta `G…`
+(llave en el Secure Enclave o el Keystore, sin semilla), la fondea con Friendbot y se paga 1 XLM.
+Privy sale entero: adaptador, puente, proveedor, dependencias nativas, polyfills y el rodeo de
+`jose` en Metro.
+
+*Por qué:* la corrida en el teléfono (D-84) se atascó tres veces en configuración de Privy —
+identificador de app, passkey sin registro previo, formato del RP— antes de firmar nada. Cavos no
+pide passkey para abrir la cuenta, su llave nunca está en un servidor ni en fragmentos MPC, y su
+contrato de firma es el que el puerto ya tenía para Freighter.
+
+*Lo que no cierra:* nada de esto ha corrido en un teléfono. `@cavos/kit` se instaló con
+`--legacy-peer-deps`: pide un `expo-modules-core` cuyo peer opcional `react-native-worklets` no
+admite la 0.13 del proyecto. La cuenta no existe hasta que Friendbot la fondea; si `signXdr`
+exige el estado `ready` de Cavos, la primera corrida lo dirá.
+
 ## Bitácora
 
 | Fecha | Qué pasó |
@@ -1933,6 +1952,7 @@ build — `docs/wallets.md`. Freighter sigue sin puente WalletConnect.
 | 2026-09-25 | Banco `/prueba`: el teléfono descarga la llave, prueba sobre un ejemplo generado del fixture del circuito y dice cuánto tardó. Fuera del recorrido, porque el recorrido es otro perfil y no hay reclamos reales para el circuito — D-82. 77 pruebas de la app |
 | 2026-09-25 | El verificador, desplegado en testnet, acepta la prueba Groth16 real: `anchor` en `0db7a479…` gasta el nulificador; una señal alterada da `#4` en la red. Y el `.wasm` de CI no era desplegable: `wasm32-unknown-unknown` emite *reference types*; pasa a `wasm32v1-none` — D-83 |
 | 2026-09-25 | Privy en una pantalla: banco `/firma`, passkey → wallet Stellar → 1 XLM a sí misma en testnet, con la firma verificada antes de Horizon. Empaquetar Privy por primera vez destapó peers nativos sin autolinking, polyfills y `jose` en build de Node — D-84. 86 pruebas de la app |
+| 2026-09-25 | Privy fuera, Cavos dentro: `/firma` entra por código de correo, fondea con Friendbot y se paga 1 XLM firmando el sobre con `signXdr`; `payQuote` verifica la firma antes de Horizon. El bundle de iOS compila sin Privy — D-85. 87 pruebas de la app |
 | 2026-09-20 | RUAF y ADRES no reemplazan PILA para `solvency`; RUAF mejora `formality` y quita la asimetría de D-12 por esa vía — D-16 |
 
 ## Límites de proceso — estado del ejercicio real

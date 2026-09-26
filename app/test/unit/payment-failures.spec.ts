@@ -19,8 +19,8 @@ const TERMS: PaymentTerms = {
 };
 
 const wallet = (): PayerWalletPort => ({
-  id: "privy",
-  label: "Privy",
+  id: "device",
+  label: "Llave del dispositivo",
   signingMethod: "raw_hash",
   accountId: async () => SIGNER_ACCOUNT,
   connect: async () => SIGNER_ACCOUNT,

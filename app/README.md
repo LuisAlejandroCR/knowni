@@ -26,16 +26,16 @@ dominio entra por `paths` de TypeScript, no por el registro.
 |---|---|
 | Tipos | `npx tsc --noEmit`, sin errores |
 | Empaquetado | `npx expo export --platform ios` produce el bundle |
-| Salud del proyecto | `npx expo-doctor` — 21/21, con los peers nativos de Privy instalados |
+| Salud del proyecto | `npx expo-doctor` |
 | Emisión | el cliente llama solo al emisor; las pantallas nunca llaman una fuente |
 | Criptografía | `@noble` produce los mismos bytes que `node:crypto` — prueba cruzada |
 | Aceptación | política, notas, idempotencia y replay, probados en `app/test` |
-| Login | passkey con Privy; sesión de 15 min atada al dispositivo |
+| Login | código por correo con Cavos; la llave Stellar vive en el dispositivo — D-85 |
 | Pago | coordina cotización → firma → Horizon → emisión; nunca consulta fuentes si el pago falla |
 
 **No se ha ejecutado en un teléfono físico.** El criterio A12 del plan sigue abierto; el guion está
 abajo, en *Corrida en un teléfono físico*.
-Tampoco se ha hecho una firma real con Privy o WalletConnect: faltan sus llaves. El motor sí está
+Tampoco se ha hecho una firma real con Cavos o WalletConnect en un teléfono. El motor sí está
 probado contra ambos contratos con Horizon y wallets inyectados; no se presenta eso como corrida real.
 
 ## Las pantallas
@@ -51,12 +51,12 @@ probado contra ambos contratos con Horizon y wallets inyectados; no se presenta 
 | `/verificador` | 07 Verificador | Integridad y frescura, sin expediente |
 | `/degradado` | 08 Degradación | Falta una respuesta ≠ no cumple |
 | `/prueba` | Banco de prueba | Groth16 en el teléfono sobre datos de ejemplo, fuera del recorrido — D-82 |
-| `/firma` | Banco de firma | Privy con passkey se paga 1 XLM en testnet; la firma se verifica antes de Horizon — D-84 |
+| `/firma` | Banco de firma | Cavos por código de correo se paga 1 XLM en testnet; la firma se verifica antes de Horizon — D-85 |
 
 ## Corrida en un teléfono físico
 
 Nada de esto se ha ejecutado aún. Es el guion para hacerlo una vez y dejar evidencia en
-`docs/verificacion.md`, bajo *Corrida en teléfono físico*. Expo Go **no sirve**: el prover y Privy
+`docs/verificacion.md`, bajo *Corrida en teléfono físico*. Expo Go **no sirve**: el prover y Cavos
 son código nativo, así que hace falta una build de desarrollo.
 
 ```bash

@@ -16,8 +16,21 @@
     "plugins": [
       "expo-router",
       "expo-asset",
-      "expo-secure-store",
-      "expo-web-browser"
-    ]
+      "expo-web-browser",
+      [
+        "@cavos/kit",
+        {
+          "rpId": "knowni.vercel.app",
+          "scheme": "knowni",
+          "associatedDomains": ["applinks:knowni.vercel.app"]
+        }
+      ]
+    ],
+    "owner": "alejoo_oo",
+    "extra": {
+      "eas": {
+        "projectId": "92506628-fb1b-403d-818a-92f843839a52"
+      }
+    }
   }
 }

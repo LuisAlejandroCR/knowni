@@ -3,9 +3,11 @@
 // the issuer and to nobody else.
 
 import { router } from "expo-router";
+import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { BackButton, Badge, Body, Button, Card, DemoStamp, Field, Footer, Label, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
-import { setConsent, setSubject, toggleConsent, useFlow, issue } from "../src/domain/flow.ts";
+import { loadQuote, setConsent, setSubject, toggleConsent, useFlow, issue, type QuoteView } from "../src/domain/flow.ts";
+import { useWalletSession } from "../src/domain/wallet-session.ts";
 import { DOCUMENT_KINDS, cleanDocumentNumber } from "../src/domain/document.ts";
 import { consentBlocker } from "../src/domain/consent.ts";
 
@@ -16,8 +18,25 @@ const SOURCES = [
   { id: "vehiculo", title: "RUNT y SIMIT", needs: "Placa y documento del propietario" },
 ] as const;
 
+// What the button offers, from the issuer's own quote: the amount is never
+// assumed, and a paid quote with no wallet asks for the wallet first.
+function action(quote: QuoteView | undefined, hasWallet: boolean): { label: string; needsWallet: boolean; waiting: boolean } {
+  if (quote?.status === "loading") return { label: "Calculando el precio…", needsWallet: false, waiting: true };
+  if (quote?.status !== "quoted" || !quote.paymentRequired) return { label: "Autorizar y consultar", needsWallet: false, waiting: false };
+  const amount = quote.amount ?? "";
+  return hasWallet
+    ? { label: `Pagar ${amount} y consultar`, needsWallet: false, waiting: false }
+    : { label: `Conectar wallet para pagar ${amount}`, needsWallet: true, waiting: false };
+}
+
 export default function Consentimiento() {
   const flow = useFlow();
+  const wallet = useWalletSession();
+  // The price follows what is consented: a new choice is a new quote.
+  useEffect(() => {
+    if (flow.consented.length > 0) void loadQuote();
+  }, [flow.consented]);
+  const next = action(flow.quote, wallet !== undefined);
   const numeric = flow.subject.documentKind === "CC" || flow.subject.documentKind === "CE";
   const needsPlate = flow.consented.includes("vehiculo");
   const blocker = consentBlocker({ consented: flow.consented, ...flow.subject });
@@ -98,13 +117,17 @@ export default function Consentimiento() {
       </ScrollView>
       <Footer>
         <Button
-          disabled={!ready || flow.busy}
+          disabled={!ready || flow.busy || next.waiting}
           onPress={() => {
+            if (next.needsWallet) {
+              router.push({ pathname: "/firma", params: { volver: "consentimiento" } });
+              return;
+            }
             router.push("/emision");
             void issue();
           }}
         >
-          {blocker ?? "Autorizar y consultar"}
+          {blocker ?? next.label}
         </Button>
       </Footer>
       <DemoStamp>CONSULTA REAL A LAS FUENTES AUTORIZADAS</DemoStamp>

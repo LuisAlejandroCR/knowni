@@ -4,13 +4,23 @@
 
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
 import { Body, Button, Callout, Spinner, Card, DemoStamp, Footer, Note, Row, Screen, Steps, TopBar, Title } from "../src/components.tsx";
-import { useFlow } from "../src/domain/flow.ts";
+import { useFlow, type Phase } from "../src/domain/flow.ts";
+import { explorerUrl } from "../src/domain/self-payment.ts";
 import { PREDICATE_LABEL, answerText } from "../src/domain/session.ts";
 import { sourceLabel } from "../src/domain/sources.ts";
 
 const SLOW_AFTER_S = 20;
+
+// A source is queried only once the payment is accepted, so until then it waits.
+const SOURCE_SCOPE: Record<Phase, string> = {
+  quoting: "En espera del pago",
+  paying: "En espera del pago",
+  querying: "Consultando",
+};
+
+const shortHash = (hash: string): string => `${hash.slice(0, 8)}…${hash.slice(-8)}`;
 
 export default function Emision() {
   const flow = useFlow();
@@ -41,13 +51,29 @@ export default function Emision() {
           <Title>Una consulta.{"\n"}Solo lo necesario.</Title>
           <Body>Aún no compartimos nada con la contraparte.</Body>
         </View>
+        {flow.phase === "paying" ? (
+          <Card>
+            <Row icon={<Spinner />} title="Firmando el pago" scope="Tu wallet firma y la red lo recibe" />
+          </Card>
+        ) : null}
+        {flow.paymentTx === undefined ? null : (
+          <Card>
+            <Row
+              icon="✓"
+              title="Pago aceptado por la red"
+              scope={shortHash(flow.paymentTx)}
+              trailing="↗"
+              onPress={() => void Linking.openURL(explorerUrl(flow.paymentTx!))}
+            />
+          </Card>
+        )}
         <Card>
           {flow.consented.map((source) => (
             <Row
               key={source}
-              icon={flow.busy ? <Spinner /> : "✓"}
+              icon={flow.phase === "querying" ? <Spinner /> : flow.busy ? "·" : "✓"}
               title={sourceLabel(source)}
-              scope={flow.busy ? "Consultando" : "Consulta terminada"}
+              scope={flow.phase === undefined ? (flow.busy ? "Preparando" : "Consulta terminada") : SOURCE_SCOPE[flow.phase]}
             />
           ))}
         </Card>
@@ -71,7 +97,7 @@ export default function Emision() {
       </ScrollView>
       <Footer>
         <Button disabled={flow.busy} loading={flow.busy} onPress={() => router.replace("/revision")}>
-          {flow.busy ? `Esperando al emisor… ${waited} s` : "Ver revisión →"}
+          {flow.phase === "paying" ? "Firmando el pago…" : flow.busy ? `Esperando al emisor… ${waited} s` : "Ver revisión →"}
         </Button>
       </Footer>
       <DemoStamp>EMISIÓN REAL · LAS RESPUESTAS SE VERIFICAN EN ESTE TELÉFONO</DemoStamp>

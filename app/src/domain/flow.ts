@@ -241,5 +241,5 @@ function failureText(outcome: { readonly stage: "quote" | "payment" | "issuance"
   }
   return outcome.paymentTx === undefined
     ? outcome.reason
-    : `${outcome.reason} El pago sí fue aceptado por la red; su hash queda abajo.`;
+    : `${outcome.reason} El pago sí fue aceptado por la red: ${outcome.paymentTx.slice(0, 8)}…${outcome.paymentTx.slice(-8)}.`;
 }

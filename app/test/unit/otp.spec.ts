@@ -3,7 +3,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cleanOtp, otpComplete, resendWaitSeconds } from "../../src/domain/otp.ts";
+import { cleanOtp, looksLikeEmail, otpComplete, resendWaitSeconds } from "../../src/domain/otp.ts";
 
 test("a pasted code keeps only its six digits", () => {
   assert.equal(cleanOtp(" 037 847 "), "037847");
@@ -23,4 +23,13 @@ test("a new code waits 30 s after the last send, counting down in whole seconds"
   assert.equal(resendWaitSeconds(0, 29_001), 1);
   assert.equal(resendWaitSeconds(0, 30_000), 0);
   assert.equal(resendWaitSeconds(0, 90_000), 0);
+});
+
+test("only an address-shaped email enables sending a code", () => {
+  assert.equal(looksLikeEmail("ana@correo.com"), true);
+  assert.equal(looksLikeEmail("  ana@correo.co  "), true);
+  assert.equal(looksLikeEmail("ana@correo"), false);
+  assert.equal(looksLikeEmail("ana correo.com"), false);
+  assert.equal(looksLikeEmail("@correo.com"), false);
+  assert.equal(looksLikeEmail(""), false);
 });
